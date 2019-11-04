@@ -1,0 +1,271 @@
+* Violas wallet RESTful API Web service
+** API调用路径
+   前缀： =https://xxx.xxx.xxx.xxx:xxxx/api=
+   完整调用路径为： =前缀= + =具体接口路径=
+** 接口调用说明
+   - 如果参数格式是 =JSON= ： 提交request请求时必须添加header头： =Content-Type:application/json=
+   - 请求头参数 =location= 国际化参数说明
+     在请求头中加入 =location= 字段用于判断返回错误信息语言
+     - 英文： EN
+     - 中文： CN
+     - 繁体中文: CNT
+** 接口说明
+*** 新用户创建提交信息
+    用于保存用户第一次登录Violas钱包时提交的用户基本信息
+**** Request
+     - Method: *POST*
+     - URL: =/1.0/wallet=
+     - Headers: Content-Type:application/json
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "wid":"wid",
+             "nickname":"nickname",
+             "pwdhash":"pwdhash",
+             "wallets":[
+                 {
+                     "name":"name1",
+                     "address":"address",
+                     "currency":"Vtoken"
+                 },
+                 {
+                     "name":"name2",
+                     "address":"address",
+                     "currency":"libra"
+                 },
+                 {
+                     "name":"name3",
+                     "address":"address",
+                     "currency":"btc"
+                 }
+             ]
+         }
+       #+END_SRC
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok"
+         }
+       #+END_SRC
+*** 修改钱包名
+    用于修改钱包名称
+**** Request
+     - Method: *PUT*
+     - URL: =/1.0/wallet/name=
+     - Headers: Content-Type:application/json
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "wid":"wid",
+             "oldName":"oldName",
+             "newName":"newName"
+         }
+       #+END_SRC
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok"
+         }
+       #+END_SRC
+*** 获取资产信息
+    用于获取钱包首页资产信息
+**** Request
+     - Method: *GET*
+     - URL: =/1.0/wallet/balance?wid=wid&wname=wname=
+     - Headers: None
+     - Body: None
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok",
+             "balance":[
+                 {
+                     "address":"addr1",
+                     "currency":"Vtoken",
+                     "balance":1
+                 },
+                 {
+                     "address":"addr2",
+                     "currency":"Xcoin",
+                     "balance":1
+                 }
+                 ...
+             ]
+         }
+       #+END_SRC
+*** 获取币种信息
+    用于获取Violas钱包币种信息
+**** Request
+     - Method: *GET*
+     - URL: =/1.0/wallet/currency=
+     - Headers: None
+     - Body: None
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok",
+             "currencies":[
+                 {
+                     "name":"Xcoin",
+                     "description":"desc of Xcoin"
+                 },
+                 {
+                     "name":"Ycoin",
+                     "description":"desc of Ycoin"
+                 },
+                 {
+                     "name":"Zcoin",
+                     "description":"desc of Zcoin"
+                 }
+             ]
+         }
+       #+END_SRC
+*** 添加币种
+    用于Violas钱包增加币种信息
+**** Request
+     - Method: *PUT*
+     - URL: =/1.0/wallet/currency=
+     - Headers: Content-Type:application/json
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "wid":"wid",
+             "walletName":"name",
+             "address":"address",
+             "currency":"Ycoin"
+         }
+       #+END_SRC
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":"2000",
+             "message":"ok"
+         }
+       #+END_SRC
+*** 发起转账
+    发起转账交易
+**** Request
+     - Method: *POST*
+     - URL: =/1.0/transaction=
+     - Headers: Content-Type:application/json
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "from":"xxxxxx",
+             "to":"xxxxxxx",
+             "value":1,
+             "pubKey":"xxxxxxxx",
+             "signature":"xxxxx"
+         }
+       #+END_SRC
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok"
+         }
+       #+END_SRC
+*** 获取交易记录
+**** Request
+     - Method: *GET*
+     - URL: =/1.0/transaction?wname=wname=
+     - Headers: None
+     - Body: None
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok",
+             "transactions":[
+                 {
+                     "address":"address",
+                     "value":100,
+                     "date":1572771944,
+                     "type":1,
+                 },
+                 {
+                     "address":"address",
+                     "value":90,
+                     "date":1572742342,
+                     "type":2,
+                 }
+             ]
+         }
+       #+END_SRC
+*** 获取地址簿
+**** Request
+     - Method: *GET*
+     - URL: =/1.0/contacts=
+     - Headers: None
+     - Body: None
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok",
+             "contacts":[
+                 {
+                     "name":"name1",
+                     "address":"address"
+                 },
+                 {
+                     "name":"name2",
+                     "address":"address
+                 }
+             ]
+         }
+       #+END_SRC
+*** 添加地址信息
+**** Request
+     - Method: *POST*
+     - URL: =/1.0/contacts=
+     - Headers: Content-Type:application/json
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "wid":"wid",
+             "name":"name",
+             "address":"address"
+         }
+       #+END_SRC
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok"
+         }
+       #+END_SRC
+*** 密码验证
+**** Request
+     - Method: *POST*
+     - URL: =/1.0/authenticate=
+     - Headers: Content-Type:application/json
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "wid":"wid",
+             "pwd":"pwd"
+         }
+       #+END_SRC
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok"
+         }
+       #+END_SRC
+*** BTC/Vtoken兑换
