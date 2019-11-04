@@ -71,7 +71,7 @@
              "message":"ok"
          }
        #+END_SRC
-*** 获取资产信息
+*** 获取余额信息
     用于获取钱包首页资产信息
 **** Request
      - Method: *GET*

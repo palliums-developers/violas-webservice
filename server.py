@@ -4,7 +4,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, resources = r"/*")
 
-@app.route("/1.0/wallet")
+@app.route("/1.0/wallet", methods = ["POST"])
 def GetAuth():
     resp = {}
     resp["code"] = 2000
@@ -12,7 +12,7 @@ def GetAuth():
 
     return resp
 
-@app.route("/1.0/wallet/name", methods = ["POST"])
+@app.route("/1.0/wallet/name", methods = ["PUT"])
 def ModifyWalletName():
     resp = {}
     resp["code"] = 2000
@@ -44,10 +44,15 @@ def GetCurrency():
     info = {}
     info["name"] = "Xcoin"
     info["description"] = "desc of Xcoin"
-
+    currencies.append(info)
+    info["name"] = "Ycoin"
+    info["description"] = "desc of Ycoin"
+    currencies.append(info)
+    info["name"] = "Zcoin"
+    info["description"] = "desc of Zcoin"
     currencies.append(info)
 
-    resp["currencies"] = info
+    resp["currencies"] = currencies
     return resp
 
 @app.route("/1.0/wallet/currency", methods = ["PUT"])
