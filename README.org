@@ -1,6 +1,7 @@
 * Violas wallet RESTful API Web service
 ** API调用路径
-   前缀： =https://xxx.xxx.xxx.xxx:xxxx/api=
+   前缀： =https://xxx.xxx.xxx.xxx:xxxx=
+
    完整调用路径为： =前缀= + =具体接口路径=
 ** 接口调用说明
    - 如果参数格式是 =JSON= ： 提交request请求时必须添加header头： =Content-Type:application/json=
@@ -10,72 +11,11 @@
      - 中文： CN
      - 繁体中文: CNT
 ** 接口说明
-*** 新用户创建提交信息
-    用于保存用户第一次登录Violas钱包时提交的用户基本信息
-**** Request
-     - Method: *POST*
-     - URL: =/1.0/wallet=
-     - Headers: Content-Type:application/json
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "wid":"wid",
-             "nickname":"nickname",
-             "pwdhash":"pwdhash",
-             "wallets":[
-                 {
-                     "name":"name1",
-                     "address":"address",
-                     "currency":"Vtoken"
-                 },
-                 {
-                     "name":"name2",
-                     "address":"address",
-                     "currency":"libra"
-                 },
-                 {
-                     "name":"name3",
-                     "address":"address",
-                     "currency":"btc"
-                 }
-             ]
-         }
-       #+END_SRC
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok"
-         }
-       #+END_SRC
-*** 修改钱包名
-    用于修改钱包名称
-**** Request
-     - Method: *PUT*
-     - URL: =/1.0/wallet/name=
-     - Headers: Content-Type:application/json
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "wid":"wid",
-             "oldName":"oldName",
-             "newName":"newName"
-         }
-       #+END_SRC
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok"
-         }
-       #+END_SRC
-*** 获取余额信息
-    用于获取钱包首页资产信息
+*** 获取libra余额信息
+    用于获取libra钱包资产信息
 **** Request
      - Method: *GET*
-     - URL: =/1.0/wallet/balance?wid=wid&wname=wname=
+     - URL: =/1.0/libra/balance?addr=address=
      - Headers: None
      - Body: None
 **** Response
@@ -87,13 +27,168 @@
              "balance":[
                  {
                      "address":"addr1",
-                     "currency":"Vtoken",
+                     "balance":1
+                 }
+             ]
+         }
+       #+END_SRC
+*** 获取violas余额信息
+    用于获取violas钱包资产信息
+**** Request
+     - Method: *GET*
+     - URL: =/1.0/violas/balance?addr=address&modu=modu1[,modu2,modu3...]=
+     - Headers: None
+     - Body: None
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok",
+             "balance":[
+                 {
+                     "address":"addr",
+                     "module":"modu1",
                      "balance":1
                  },
                  {
-                     "address":"addr2",
-                     "currency":"Xcoin",
+                     "address":"addr",
+                     "module":"modu2",
                      "balance":1
+                 }
+                 ...
+             ]
+         }
+       #+END_SRC
+*** 获取libra钱包sequence number
+    用于获取libra钱包sequence_number
+**** Request
+     - Method: *GET*
+     - URL: =/1.0/libra/seqnum?addr=address=
+     - Headers: None
+     - Body: None
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok",
+             "sequence":3
+         }
+       #+END_SRC
+*** 获取violas钱包sequence number
+    用于获取violas钱包sequence_number
+**** Request
+     - Method: *GET*
+     - URL: =/1.0/violas/seqnum?addr=address=
+     - Headers: None
+     - Body: None
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok",
+             "sequence":3
+         }
+       #+END_SRC
+*** 发起libra转账
+    发起转账交易
+**** Request
+     - Method: *POST*
+     - URL: =/1.0/libra/transaction=
+     - Headers: Content-Type:application/json
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "signedtxn":"xxxxx"
+         }
+       #+END_SRC
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok"
+         }
+       #+END_SRC
+*** 发起violas转账
+    发起转账交易
+**** Request
+     - Method: *POST*
+     - URL: =/1.0/violas/transaction=
+     - Headers: Content-Type:application/json
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "signedtxn":"xxxxx"
+         }
+       #+END_SRC
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok"
+         }
+       #+END_SRC
+*** 获取libra交易记录
+**** Request
+     - Method: *GET*
+     - URL: =/1.0/libra/transaction?addr=addr&limit=5&offset=0=
+     - Headers: None
+     - Body: None
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok",
+             "transactions":[
+                 {
+                     "version":1
+                     "address":"address",
+                     "value":100,
+                     "sequence_number":1,
+                     "expiration_time":1572771944,
+                 },
+                 {
+                     "version":2
+                     "address":"address",
+                     "value":100,
+                     "sequence_number":2,
+                     "expiration_time":1572771224,
+                 }
+                 ...
+             ]
+         }
+       #+END_SRC
+*** 获取violas交易记录
+**** Request
+     - Method: *GET*
+     - URL: =/1.0/violas/transaction?addr=addr&limit=5&offset=0=
+     - Headers: None
+     - Body: None
+**** Response
+     - Body:
+       #+BEGIN_SRC js
+         {
+             "code":2000,
+             "message":"ok",
+             "transactions":[
+                 {
+                     "version":1
+                     "address":"address",
+                     "value":100,
+                     "sequence_number":1,
+                     "expiration_time":1572771944,
+                 },
+                 {
+                     "version":2
+                     "address":"address",
+                     "value":100,
+                     "sequence_number":2,
+                     "expiration_time":1572771224,
                  }
                  ...
              ]
@@ -103,7 +198,7 @@
     用于获取Violas钱包币种信息
 **** Request
      - Method: *GET*
-     - URL: =/1.0/wallet/currency=
+     - URL: =/1.0/wallet/violas/currency=
      - Headers: None
      - Body: None
 **** Response
@@ -126,146 +221,5 @@
                      "description":"desc of Zcoin"
                  }
              ]
-         }
+        }
        #+END_SRC
-*** 添加币种
-    用于Violas钱包增加币种信息
-**** Request
-     - Method: *PUT*
-     - URL: =/1.0/wallet/currency=
-     - Headers: Content-Type:application/json
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "wid":"wid",
-             "walletName":"name",
-             "address":"address",
-             "currency":"Ycoin"
-         }
-       #+END_SRC
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":"2000",
-             "message":"ok"
-         }
-       #+END_SRC
-*** 发起转账
-    发起转账交易
-**** Request
-     - Method: *POST*
-     - URL: =/1.0/transaction=
-     - Headers: Content-Type:application/json
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "from":"xxxxxx",
-             "to":"xxxxxxx",
-             "value":1,
-             "pubKey":"xxxxxxxx",
-             "signature":"xxxxx"
-         }
-       #+END_SRC
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok"
-         }
-       #+END_SRC
-*** 获取交易记录
-**** Request
-     - Method: *GET*
-     - URL: =/1.0/transaction?wname=wname=
-     - Headers: None
-     - Body: None
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok",
-             "transactions":[
-                 {
-                     "address":"address",
-                     "value":100,
-                     "date":1572771944,
-                     "type":1,
-                 },
-                 {
-                     "address":"address",
-                     "value":90,
-                     "date":1572742342,
-                     "type":2,
-                 }
-             ]
-         }
-       #+END_SRC
-*** 获取地址簿
-**** Request
-     - Method: *GET*
-     - URL: =/1.0/contacts=
-     - Headers: None
-     - Body: None
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok",
-             "contacts":[
-                 {
-                     "name":"name1",
-                     "address":"address"
-                 },
-                 {
-                     "name":"name2",
-                     "address":"address
-                 }
-             ]
-         }
-       #+END_SRC
-*** 添加地址信息
-**** Request
-     - Method: *POST*
-     - URL: =/1.0/contacts=
-     - Headers: Content-Type:application/json
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "wid":"wid",
-             "name":"name",
-             "address":"address"
-         }
-       #+END_SRC
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok"
-         }
-       #+END_SRC
-*** 密码验证
-**** Request
-     - Method: *POST*
-     - URL: =/1.0/authenticate=
-     - Headers: Content-Type:application/json
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "wid":"wid",
-             "pwd":"pwd"
-         }
-       #+END_SRC
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok"
-         }
-       #+END_SRC
-*** BTC/Vtoken兑换
