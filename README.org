@@ -210,15 +210,18 @@
               "data":[
                   {
                       "name":"Xcoin",
-                      "description":"desc of Xcoin"
+                      "description":"desc of Xcoin",
+                      "address":"xxxxxxxx"
                   },
                   {
                       "name":"Ycoin",
-                      "description":"desc of Ycoin"
+                      "description":"desc of Ycoin",
+                      "address":"xxxxxxxx"
                   },
                   {
                       "name":"Zcoin",
-                      "description":"desc of Zcoin"
+                      "description":"desc of Zcoin",
+                      "address":"xxxxxxxx"
                   },
                   ...
               ]
