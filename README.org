@@ -4,222 +4,230 @@
 
    完整调用路径为： =前缀= + =具体接口路径=
 ** 接口调用说明
-   - 如果参数格式是 =JSON= ： 提交request请求时必须添加header头： =Content-Type:application/json=
-   - 请求头参数 =location= 国际化参数说明
-     在请求头中加入 =location= 字段用于判断返回错误信息语言
+   - 如果参数格式是 =JSON= ：提交request请求时必须添加header头： =Content-Type:application/json=
+   - 请求头参数 =location= 国际化参数说明：在请求头中加入 =location= 字段用于判断返回错误信息语言
      - 英文： EN
      - 中文： CN
      - 繁体中文: CNT
 ** 接口说明
-*** 获取libra余额信息
-    用于获取libra钱包资产信息
-**** Request
-     - Method: *GET*
-     - URL: =/1.0/libra/balance?addr=address=
-     - Headers: None
-     - Body: None
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok",
-             "balance":[
-                 {
-                     "address":"addr1",
-                     "balance":1
-                 }
-             ]
-         }
-       #+END_SRC
-*** 获取violas余额信息
-    用于获取violas钱包资产信息
-**** Request
-     - Method: *GET*
-     - URL: =/1.0/violas/balance?addr=address&modu=modu1[,modu2,modu3...]=
-     - Headers: None
-     - Body: None
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok",
-             "balance":[
-                 {
-                     "address":"addr",
-                     "module":"modu1",
-                     "balance":1
-                 },
-                 {
-                     "address":"addr",
-                     "module":"modu2",
-                     "balance":1
-                 }
-                 ...
-             ]
-         }
-       #+END_SRC
-*** 获取libra钱包sequence number
-    用于获取libra钱包sequence_number
-**** Request
-     - Method: *GET*
-     - URL: =/1.0/libra/seqnum?addr=address=
-     - Headers: None
-     - Body: None
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok",
-             "sequence":3
-         }
-       #+END_SRC
-*** 获取violas钱包sequence number
-    用于获取violas钱包sequence_number
-**** Request
-     - Method: *GET*
-     - URL: =/1.0/violas/seqnum?addr=address=
-     - Headers: None
-     - Body: None
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok",
-             "sequence":3
-         }
-       #+END_SRC
-*** 发起libra转账
-    发起转账交易
-**** Request
-     - Method: *POST*
-     - URL: =/1.0/libra/transaction=
-     - Headers: Content-Type:application/json
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "signedtxn":"xxxxx"
-         }
-       #+END_SRC
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok"
-         }
-       #+END_SRC
-*** 发起violas转账
-    发起转账交易
-**** Request
-     - Method: *POST*
-     - URL: =/1.0/violas/transaction=
-     - Headers: Content-Type:application/json
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "signedtxn":"xxxxx"
-         }
-       #+END_SRC
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok"
-         }
-       #+END_SRC
-*** 获取libra交易记录
-**** Request
-     - Method: *GET*
-     - URL: =/1.0/libra/transaction?addr=addr&limit=5&offset=0=
-     - Headers: None
-     - Body: None
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok",
-             "transactions":[
-                 {
-                     "version":1
-                     "address":"address",
-                     "value":100,
-                     "sequence_number":1,
-                     "expiration_time":1572771944,
-                 },
-                 {
-                     "version":2
-                     "address":"address",
-                     "value":100,
-                     "sequence_number":2,
-                     "expiration_time":1572771224,
-                 }
-                 ...
-             ]
-         }
-       #+END_SRC
-*** 获取violas交易记录
-**** Request
-     - Method: *GET*
-     - URL: =/1.0/violas/transaction?addr=addr&limit=5&offset=0=
-     - Headers: None
-     - Body: None
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok",
-             "transactions":[
-                 {
-                     "version":1
-                     "address":"address",
-                     "value":100,
-                     "sequence_number":1,
-                     "expiration_time":1572771944,
-                 },
-                 {
-                     "version":2
-                     "address":"address",
-                     "value":100,
-                     "sequence_number":2,
-                     "expiration_time":1572771224,
-                 }
-                 ...
-             ]
-         }
-       #+END_SRC
-*** 获取币种信息
-    用于获取Violas钱包币种信息
-**** Request
-     - Method: *GET*
-     - URL: =/1.0/wallet/violas/currency=
-     - Headers: None
-     - Body: None
-**** Response
-     - Body:
-       #+BEGIN_SRC js
-         {
-             "code":2000,
-             "message":"ok",
-             "currencies":[
-                 {
-                     "name":"Xcoin",
-                     "description":"desc of Xcoin"
-                 },
-                 {
-                     "name":"Ycoin",
-                     "description":"desc of Ycoin"
-                 },
-                 {
-                     "name":"Zcoin",
-                     "description":"desc of Zcoin"
-                 }
-             ]
-        }
-       #+END_SRC
+*** 支付钱包
+**** 获取libra余额信息
+     用于获取libra钱包资产信息
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/libra/balance?addr=address=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":{
+                  "address":"addr1",
+                  "balance":1
+              }
+          }
+        #+END_SRC
+**** 获取violas余额信息
+     用于获取violas钱包资产信息
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/balance?addr=address&modu=modu1[,modu2,modu3...]=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":{
+                  "address":"address",
+                  "balance":1,
+                  "modules":[
+                      {
+                          "address":"address",
+                          "balance":1
+                      },
+                      {
+                          "address":"address",
+                          "balance":1
+                      },
+                      ...
+                  ]
+              }
+          }
+        #+END_SRC
+**** 获取libra钱包sequence number
+     用于获取libra钱包sequence_number
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/libra/seqnum?addr=address=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":3
+          }
+        #+END_SRC
+**** 获取violas钱包sequence number
+     用于获取violas钱包sequence_number
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/seqnum?addr=address=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":3
+          }
+        #+END_SRC
+**** 发起libra转账
+     发起转账交易
+***** Request
+      - Method: *POST*
+      - URL: =/1.0/libra/transaction=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "signedtxn":"xxxxx"
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
+**** 发起violas转账
+     发起转账交易
+***** Request
+      - Method: *POST*
+      - URL: =/1.0/violas/transaction=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "signedtxn":"xxxxx"
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
+**** 获取libra交易记录
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/libra/transaction?addr=addr&limit=5&offset=0=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":[
+                  {
+                      "version":1
+                      "address":"address",
+                      "value":100,
+                      "sequence_number":1,
+                      "expiration_time":1572771944,
+                  },
+                  {
+                      "version":2
+                      "address":"address",
+                      "value":100,
+                      "sequence_number":2,
+                      "expiration_time":1572771224,
+                  }
+                  ...
+              ]
+          }
+        #+END_SRC
+**** 获取violas交易记录
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/transaction?addr=addr&limit=5&offset=0=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":[
+                  {
+                      "version":1
+                      "address":"address",
+                      "value":100,
+                      "sequence_number":1,
+                      "expiration_time":1572771944,
+                  },
+                  {
+                      "version":2
+                      "address":"address",
+                      "value":100,
+                      "sequence_number":2,
+                      "expiration_time":1572771224,
+                  }
+                  ...
+              ]
+          }
+        #+END_SRC
+**** 获取币种信息
+     用于获取Violas钱包币种信息
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/wallet/violas/currency=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":[
+                  {
+                      "name":"Xcoin",
+                      "description":"desc of Xcoin"
+                  },
+                  {
+                      "name":"Ycoin",
+                      "description":"desc of Ycoin"
+                  },
+                  {
+                      "name":"Zcoin",
+                      "description":"desc of Zcoin"
+                  },
+                  ...
+              ]
+          }
+        #+END_SRC
+*** SSO钱包
+**** 申请发行SSO
+**** 提交KYC文件
+**** 提交储备金文件
+*** 州长钱包
+**** 获取待审批文件
+**** 提交审核结果

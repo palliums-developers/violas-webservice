@@ -7,7 +7,8 @@ app = Flask(__name__)
 CORS(app, resources = r"/*")
 
 LIBRA = "testnet"
-VIOLAS = ""
+VIOLAS_HOST = "125.39.5.57"
+VIOLAS_PORT = 46454
 
 @app.route("/1.0/libra/balance")
 def GetLibraBalance():
@@ -16,8 +17,6 @@ def GetLibraBalance():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    balance = []
-
     cli = Client(LIBRA)
     result = cli.get_balance(address)
     print(result)
@@ -25,38 +24,44 @@ def GetLibraBalance():
     info["address"] = address
     info["balance"] = result
 
-    balance.append(info)
-
-    resp["balance"] = balance
+    resp["data"] = info
     return resp
 
 @app.route("/1.0/violas/balance")
 def GetViolasBalance():
     address = request.args.get("addr")
-    modules = request.args.get("modu")
+    modules = request.args.get("modu", "")
 
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    balance = []
+    cli = Client(LIBRA)
+    result = cli.get_balance(address)
+    info = {}
+    info["address"] = address
+    info["balance"] = result
 
-    cli = Client(VIOLAS)
-    for i in modules:
-        result = cli.violas_get_balance(address, i)
-        print(result)
-        info = {}
-        info["address"] = address
-        inof["module"] = i
-        info["balance"] = result
+    if len(modules) != 0:
+        modulesBalance = []
+        cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
+        moduleList = modules.split(",")
+        for i in moduleList:
+            result = cli.violas_get_balance(address, i)
+            print(result)
+            moduleInfo = {}
+            moduleInfo["address"] = i
+            moduleInfo["balance"] = result
 
-        balance.append(info)
+            modulesBalance.append(moduleInfo)
 
-    resp["balance"] = balance
+        info["modules"] = modulesBalance
+
+    resp["data"] = info
     return resp
 
 @app.route("/1.0/libra/seqnum")
-def GetSequenceNumbert():
+def GetLibraSequenceNumbert():
     address = request.args.get("addr")
     cli = Client(LIBRA)
     seqNum = cli.get_sequence_number(address)
@@ -64,20 +69,20 @@ def GetSequenceNumbert():
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
-    resp["sequence_number"] = seqNum
+    resp["data"] = seqNum
 
     return resp
 
 @app.route("/1.0/violas/seqnum")
-def GetSequenceNumbert():
+def GetViolasSequenceNumbert():
     address = request.args.get("addr")
-    cli = Client(VIOLAS)
+    cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
     seqNum = cli.get_sequence_number(address)
 
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
-    resp["sequence_number"] = seqNum
+    resp["data"] = seqNum
 
     return resp
 
@@ -106,7 +111,7 @@ def MakeLibraTransaction():
 
 @app.route("/1.0/violas/transaction", methods = ["POST"])
 def MakeViolasTransaction():
-    cli = Client(VIOLAS)
+    cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
 
     params = request.get_json()
     signedtxn = params["signedtxn"]
@@ -164,7 +169,7 @@ def GetLibraTransactionInfo():
 
         transactions.append(info)
 
-    resp["transactions"] = transactions
+    resp["data"] = transactions
 
     return resp
 
@@ -178,7 +183,7 @@ def GetViolasTransactionInfo():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    cli = Client(VIOLAS)
+    cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
     seqNum = cli.get_sequence_number(address)
     print(seqNum)
     if offset > seqNum:
@@ -205,7 +210,7 @@ def GetViolasTransactionInfo():
 
         transactions.append(info)
 
-    resp["transactions"] = transactions
+    resp["data"] = transactions
 
     return resp
 
@@ -226,5 +231,5 @@ def GetCurrency():
     info["description"] = "desc of Zcoin"
     currencies.append(info)
 
-    resp["currencies"] = currencies
+    resp["data"] = currencies
     return resp
