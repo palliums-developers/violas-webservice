@@ -223,12 +223,15 @@ def GetCurrency():
     info = {}
     info["name"] = "Xcoin"
     info["description"] = "desc of Xcoin"
+    info["address"] = "xxxxxxxxxxxxxxxxxxxxxxxx"
     currencies.append(info)
     info["name"] = "Ycoin"
     info["description"] = "desc of Ycoin"
+    info["address"] = "xxxxxxxxxxxxxxxxxxxxxxxx"
     currencies.append(info)
     info["name"] = "Zcoin"
     info["description"] = "desc of Zcoin"
+    info["address"] = "xxxxxxxxxxxxxxxxxxxxxxxx"
     currencies.append(info)
 
     resp["data"] = currencies
