@@ -13,6 +13,7 @@ VIOLAS_PORT = 40001
 
 def MakeClient():
     return Client.new(VIOLAS_HOST, VIOLAS_PORT, "/tmp/consensus_peers.config.toml")
+    # return Client.new(VIOLAS_HOST, VIOLAS_PORT)
 
 @app.route("/1.0/libra/balance")
 def GetLibraBalance():
@@ -24,18 +25,19 @@ def GetLibraBalance():
     cli = MakeClient()
     try:
         result = cli.get_balance(address)
+
+        info = {}
+        info["address"] = address
+        info["balance"] = result
+
+        resp["data"] = info
     except AccountError:
-        resp["code"] = 2000
-        resp["message"] = "Account Error."
+        info = {}
+        info["address"] = address
+        info["balance"] = 0
 
-        return resp
+        resp["data"] = info
 
-    print(result)
-    info = {}
-    info["address"] = address
-    info["balance"] = result
-
-    resp["data"] = info
     return resp
 
 @app.route("/1.0/violas/balance")
@@ -50,15 +52,19 @@ def GetViolasBalance():
     cli = MakeClient()
     try:
         result = cli.get_balance(address)
+
+        info = {}
+        info["address"] = address
+        info["balance"] = result
+
     except AccountError:
-        resp["code"] = 2000
-        resp["message"] = "Account Error."
+        info  = {}
+        info["address"] = address
+        info["balance"] = 0
+
+        resp["data"] = info
 
         return resp
-
-    info = {}
-    info["address"] = address
-    info["balance"] = result
 
     if len(modules) != 0:
         modulesBalance = []
@@ -95,8 +101,7 @@ def GetLibraSequenceNumbert():
     try:
         seqNum = cli.get_sequence_number(address)
     except AccountError:
-        resp["code"] = 2000
-        resp["message"] = "Account Error."
+        resp["data"] = 0
 
         return resp
 
@@ -115,8 +120,7 @@ def GetViolasSequenceNumbert():
     try:
         seqNum = cli.get_sequence_number(address)
     except AccountError:
-        resp["code"] = 2000
-        resp["message"] = "Account Error."
+        resp["data"] = 0
 
         return resp
 
@@ -184,15 +188,13 @@ def GetLibraTransactionInfo():
     try:
         seqNum = cli.get_sequence_number(address)
     except AccountError:
-        resp["code"] = 2002
-        resp["message"] = "Account Error."
+        resp["data"] = []
 
         return resp
 
     print(seqNum)
     if offset > seqNum:
-        resp["code"] = 2001
-        resp["message"] = "Error offset"
+        resp["data"] = []
 
         return resp
 
@@ -205,9 +207,7 @@ def GetLibraTransactionInfo():
         try:
             tran = cli.get_account_transaction(address, i)
         except AccountError:
-            resp["code"] = 2002
-            resp["message"] = "Account Error."
-
+            resp["data"] = []
             return resp
 
         print(tran)
@@ -239,15 +239,14 @@ def GetViolasTransactionInfo():
     try:
         seqNum = cli.get_sequence_number(address)
     except AccountError:
-        resp["code"] = 2002
-        resp["message"] = "Account Error."
+        resp["data"] = []
 
         return resp
 
     print(seqNum)
     if offset > seqNum:
-        resp["code"] = 2001
-        resp["message"] = "Error offset"
+        resp["data"] = []
+
         return resp
 
     transactions = []
@@ -259,8 +258,7 @@ def GetViolasTransactionInfo():
         try:
             tran = cli.get_account_transaction(address, i)
         except AccountError:
-            resp["code"] = 2002
-            resp["message"] = "Account Error."
+            resp["data"] = []
 
             return resp
 
