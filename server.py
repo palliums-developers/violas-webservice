@@ -17,7 +17,8 @@ def GetLibraBalance():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    cli = Client(LIBRA)
+    # cli = Client(LIBRA)
+    cli = Client.net(VIOLAS_HOST, VIOLAS_PORT)
     result = cli.get_balance(address)
     print(result)
     info = {}
@@ -36,7 +37,7 @@ def GetViolasBalance():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    cli = Client(LIBRA)
+    cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
     result = cli.get_balance(address)
     info = {}
     info["address"] = address
@@ -63,7 +64,8 @@ def GetViolasBalance():
 @app.route("/1.0/libra/seqnum")
 def GetLibraSequenceNumbert():
     address = request.args.get("addr")
-    cli = Client(LIBRA)
+    # cli = Client(LIBRA)
+    cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
     seqNum = cli.get_sequence_number(address)
 
     resp = {}
@@ -88,7 +90,8 @@ def GetViolasSequenceNumbert():
 
 @app.route("/1.0/libra/transaction", methods = ["POST"])
 def MakeLibraTransaction():
-    cli = Client(LIBRA)
+    # cli = Client(LIBRA)
+    cli = Client(VIOLAS_HOST, VIOLAS_PORT)
 
     params = request.get_json()
     signedtxn = params["signedtxn"]
@@ -142,7 +145,8 @@ def GetLibraTransactionInfo():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    cli = Client(LIBRA)
+    # cli = Client(LIBRA)
+    cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
     seqNum = cli.get_sequence_number(address)
     print(seqNum)
     if offset > seqNum:
@@ -156,7 +160,6 @@ def GetLibraTransactionInfo():
         if (i - offset) >= limit:
             break;
 
-        tranInfo = cli.get_account_transaction_info(address, i)
         tran = cli.get_account_transaction(address, i)
         print(tran)
 
@@ -197,7 +200,6 @@ def GetViolasTransactionInfo():
         if (i - offset) >= limit:
             break;
 
-        tranInfo = cli.get_account_transaction_info(address, i)
         tran = cli.get_account_transaction(address, i)
         print(tran)
 
