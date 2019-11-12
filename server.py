@@ -154,7 +154,7 @@ def GetLibraTransactionInfo():
         resp["code"] = 2002
         resp["message"] = "Account Error."
 
-        return reap
+        return resp
 
     print(seqNum)
     if offset > seqNum:
@@ -175,7 +175,7 @@ def GetLibraTransactionInfo():
             resp["code"] = 2002
             resp["message"] = "Account Error."
 
-            return reap
+            return resp
 
         print(tran)
 
@@ -209,7 +209,7 @@ def GetViolasTransactionInfo():
         resp["code"] = 2002
         resp["message"] = "Account Error."
 
-        return reap
+        return resp
 
     print(seqNum)
     if offset > seqNum:
@@ -229,7 +229,7 @@ def GetViolasTransactionInfo():
             resp["code"] = 2002
             resp["message"] = "Account Error."
 
-            return reap
+            return resp
 
         print(tran)
 
