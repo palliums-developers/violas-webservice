@@ -286,16 +286,18 @@ def GetCurrency():
     info = {}
     info["name"] = "Xcoin"
     info["description"] = "desc of Xcoin"
-    info["address"] = "xxxxxxxxxxxxxxxxxxxxxxxx"
+    info["address"] = "05599ef248e215849cc599f563b4883fc8aff31f1e43dff1e3ebe4de1370e054"
     currencies.append(info)
-    info["name"] = "Ycoin"
-    info["description"] = "desc of Ycoin"
-    info["address"] = "xxxxxxxxxxxxxxxxxxxxxxxx"
-    currencies.append(info)
-    info["name"] = "Zcoin"
-    info["description"] = "desc of Zcoin"
-    info["address"] = "xxxxxxxxxxxxxxxxxxxxxxxx"
-    currencies.append(info)
+    info1 = {}
+    info1["name"] = "Ycoin"
+    info1["description"] = "desc of Ycoin"
+    info1["address"] = "xxxxxxxxxxxxxxxxxxxxxxxx"
+    currencies.append(info1)
+    info2 = {}
+    info2["name"] = "Zcoin"
+    info2["description"] = "desc of Zcoin"
+    info2["address"] = "xxxxxxxxxxxxxxxxxxxxxxxx"
+    currencies.append(info2)
 
     resp["data"] = currencies
     return resp
