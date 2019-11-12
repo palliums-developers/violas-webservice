@@ -22,7 +22,14 @@ def GetLibraBalance():
     resp["message"] = "ok"
 
     cli = MakeClient()
-    result = cli.get_balance(address)
+    try:
+        result = cli.get_balance(address)
+    except AccountError:
+        resp["code"] = 2000
+        resp["message"] = "Account Error."
+
+        return resp
+
     print(result)
     info = {}
     info["address"] = address
@@ -41,7 +48,14 @@ def GetViolasBalance():
     resp["message"] = "ok"
 
     cli = MakeClient()
-    result = cli.get_balance(address)
+    try:
+        result = cli.get_balance(address)
+    except AccountError:
+        resp["code"] = 2000
+        resp["message"] = "Account Error."
+
+        return resp
+
     info = {}
     info["address"] = address
     info["balance"] = result
@@ -50,7 +64,14 @@ def GetViolasBalance():
         modulesBalance = []
         moduleList = modules.split(",")
         for i in moduleList:
-            result = cli.violas_get_balance(address, i)
+            try:
+                result = cli.violas_get_balance(address, i)
+            except AccountError:
+                resp["code"] = 2000
+                resp["message"] = "Account Error."
+
+                return resp
+
             print(result)
             moduleInfo = {}
             moduleInfo["address"] = i
@@ -67,7 +88,13 @@ def GetViolasBalance():
 def GetLibraSequenceNumbert():
     address = request.args.get("addr")
     cli = MakeClient()
-    seqNum = cli.get_sequence_number(address)
+    try:
+        seqNum = cli.get_sequence_number(address)
+    except AccountError:
+        resp["code"] = 2000
+        resp["message"] = "Account Error."
+
+        return resp
 
     resp = {}
     resp["code"] = 2000
@@ -80,7 +107,13 @@ def GetLibraSequenceNumbert():
 def GetViolasSequenceNumbert():
     address = request.args.get("addr")
     cli = MakeClient()
-    seqNum = cli.get_sequence_number(address)
+    try:
+        seqNum = cli.get_sequence_number(address)
+    except AccountError:
+        resp["code"] = 2000
+        resp["message"] = "Account Error."
+
+        return resp
 
     resp = {}
     resp["code"] = 2000
