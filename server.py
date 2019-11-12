@@ -19,7 +19,7 @@ def GetLibraBalance():
     resp["message"] = "ok"
 
     # cli = Client(LIBRA)
-    cli = Client.net(VIOLAS_HOST, VIOLAS_PORT)
+    cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
     result = cli.get_balance(address)
     print(result)
     info = {}
