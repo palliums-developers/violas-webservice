@@ -1,6 +1,7 @@
 from flask import Flask, request, redirect, url_for, jsonify
 from flask_cors import CORS
 from libra import Client
+from libra import AccountError
 from libra.transaction import SignedTransaction
 
 app = Flask(__name__)
@@ -147,11 +148,19 @@ def GetLibraTransactionInfo():
 
     # cli = Client(LIBRA)
     cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
-    seqNum = cli.get_sequence_number(address)
+    try:
+        seqNum = cli.get_sequence_number(address)
+    except AccountError:
+        resp["code"] = 2002
+        resp["message"] = "Account Error."
+
+        return reap
+
     print(seqNum)
     if offset > seqNum:
         resp["code"] = 2001
         resp["message"] = "Error offset"
+
         return resp
 
     transactions = []
@@ -160,7 +169,14 @@ def GetLibraTransactionInfo():
         if (i - offset) >= limit:
             break;
 
-        tran = cli.get_account_transaction(address, i)
+        try:
+            tran = cli.get_account_transaction(address, i)
+        except AccountError:
+            resp["code"] = 2002
+            resp["message"] = "Account Error."
+
+            return reap
+
         print(tran)
 
         info = {}
@@ -187,7 +203,14 @@ def GetViolasTransactionInfo():
     resp["message"] = "ok"
 
     cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
-    seqNum = cli.get_sequence_number(address)
+    try:
+        seqNum = cli.get_sequence_number(address)
+    except AccountError:
+        resp["code"] = 2002
+        resp["message"] = "Account Error."
+
+        return reap
+
     print(seqNum)
     if offset > seqNum:
         resp["code"] = 2001
@@ -200,7 +223,14 @@ def GetViolasTransactionInfo():
         if (i - offset) >= limit:
             break;
 
-        tran = cli.get_account_transaction(address, i)
+        try:
+            tran = cli.get_account_transaction(address, i)
+        except AccountError:
+            resp["code"] = 2002
+            resp["message"] = "Account Error."
+
+            return reap
+
         print(tran)
 
         info = {}
