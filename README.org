@@ -198,7 +198,7 @@
      用于获取Violas钱包币种信息
 ***** Request
       - Method: *GET*
-      - URL: =/1.0/wallet/violas/currency=
+      - URL: =/1.0/violas/currency=
       - Headers: None
       - Body: None
 ***** Response
