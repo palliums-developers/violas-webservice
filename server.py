@@ -87,6 +87,10 @@ def GetViolasBalance():
 @app.route("/1.0/libra/seqnum")
 def GetLibraSequenceNumbert():
     address = request.args.get("addr")
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
     cli = MakeClient()
     try:
         seqNum = cli.get_sequence_number(address)
@@ -96,9 +100,6 @@ def GetLibraSequenceNumbert():
 
         return resp
 
-    resp = {}
-    resp["code"] = 2000
-    resp["message"] = "ok"
     resp["data"] = seqNum
 
     return resp
@@ -106,6 +107,10 @@ def GetLibraSequenceNumbert():
 @app.route("/1.0/violas/seqnum")
 def GetViolasSequenceNumbert():
     address = request.args.get("addr")
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
     cli = MakeClient()
     try:
         seqNum = cli.get_sequence_number(address)
@@ -115,9 +120,6 @@ def GetViolasSequenceNumbert():
 
         return resp
 
-    resp = {}
-    resp["code"] = 2000
-    resp["message"] = "ok"
     resp["data"] = seqNum
 
     return resp
