@@ -8,8 +8,11 @@ app = Flask(__name__)
 CORS(app, resources = r"/*")
 
 LIBRA = "testnet"
-VIOLAS_HOST = "125.39.5.57"
-VIOLAS_PORT = 46454
+VIOLAS_HOST = "52.27.228.84"
+VIOLAS_PORT = 40001
+
+def MakeClient():
+    return Client.new(VIOLAS_HOST, VIOLAS_PORT, "/tmp/consensus_peers.config.toml")
 
 @app.route("/1.0/libra/balance")
 def GetLibraBalance():
@@ -18,8 +21,7 @@ def GetLibraBalance():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    # cli = Client(LIBRA)
-    cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
+    cli = MakeClient()
     result = cli.get_balance(address)
     print(result)
     info = {}
@@ -38,7 +40,7 @@ def GetViolasBalance():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
+    cli = MakeClient()
     result = cli.get_balance(address)
     info = {}
     info["address"] = address
@@ -46,7 +48,6 @@ def GetViolasBalance():
 
     if len(modules) != 0:
         modulesBalance = []
-        cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
         moduleList = modules.split(",")
         for i in moduleList:
             result = cli.violas_get_balance(address, i)
@@ -65,8 +66,7 @@ def GetViolasBalance():
 @app.route("/1.0/libra/seqnum")
 def GetLibraSequenceNumbert():
     address = request.args.get("addr")
-    # cli = Client(LIBRA)
-    cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
+    cli = MakeClient()
     seqNum = cli.get_sequence_number(address)
 
     resp = {}
@@ -79,7 +79,7 @@ def GetLibraSequenceNumbert():
 @app.route("/1.0/violas/seqnum")
 def GetViolasSequenceNumbert():
     address = request.args.get("addr")
-    cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
+    cli = MakeClient()
     seqNum = cli.get_sequence_number(address)
 
     resp = {}
@@ -91,8 +91,7 @@ def GetViolasSequenceNumbert():
 
 @app.route("/1.0/libra/transaction", methods = ["POST"])
 def MakeLibraTransaction():
-    # cli = Client(LIBRA)
-    cli = Client(VIOLAS_HOST, VIOLAS_PORT)
+    cli = MakeClient()
 
     params = request.get_json()
     signedtxn = params["signedtxn"]
@@ -115,7 +114,7 @@ def MakeLibraTransaction():
 
 @app.route("/1.0/violas/transaction", methods = ["POST"])
 def MakeViolasTransaction():
-    cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
+    cli = MakeClient()
 
     params = request.get_json()
     signedtxn = params["signedtxn"]
@@ -146,8 +145,7 @@ def GetLibraTransactionInfo():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    # cli = Client(LIBRA)
-    cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
+    cli = MakeClient()
     try:
         seqNum = cli.get_sequence_number(address)
     except AccountError:
@@ -202,7 +200,7 @@ def GetViolasTransactionInfo():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    cli = Client.new(VIOLAS_HOST, VIOLAS_PORT)
+    cli = MakeClient()
     try:
         seqNum = cli.get_sequence_number(address)
     except AccountError:
