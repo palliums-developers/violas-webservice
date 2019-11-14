@@ -323,7 +323,7 @@ def GetViolasTransactionInfo():
         info["version"] = tran.get_version()
         info["address"] = tran.get_sender_address()
         info["sequence_number"] = tran.get_sender_sequence()
-        info["value"] = tran.raw_txn.payload.args[1]
+        info["value"] = tran.raw_txn.payload.args["U64"]
         info["expiration_time"] = tran.get_expiration_time()
 
         transactions.append(info)
