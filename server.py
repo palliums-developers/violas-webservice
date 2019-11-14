@@ -37,6 +37,9 @@ def GetLibraBalance():
         info["balance"] = 0
 
         resp["data"] = info
+    except Exception as e:
+        resp["code"] = 3000
+        resp["message"] = "Error:{0}".format(e);
 
     return resp
 
@@ -65,6 +68,11 @@ def GetViolasBalance():
         resp["data"] = info
 
         return resp
+    except Exception as e:
+        resp["code"] = 3000
+        resp["message"] = "Error:{0}".format(e);
+
+        return resp
 
     if len(modules) != 0:
         modulesBalance = []
@@ -75,6 +83,11 @@ def GetViolasBalance():
             except AccountError:
                 resp["code"] = 2000
                 resp["message"] = "Account Error."
+
+                return resp
+            except Exception as e:
+                resp["code"] = 3000
+                resp["message"] = "Error:{0}".format(e);
 
                 return resp
 
@@ -105,6 +118,12 @@ def GetLibraSequenceNumbert():
 
         return resp
 
+    except Exception as e:
+        resp["code"] = 3000
+        resp["message"] = "Error:{0}".format(e);
+
+        return resp
+
     resp["data"] = seqNum
 
     return resp
@@ -121,6 +140,12 @@ def GetViolasSequenceNumbert():
         seqNum = cli.get_sequence_number(address)
     except AccountError:
         resp["data"] = 0
+
+        return resp
+
+    except Exception as e:
+        resp["code"] = 3000
+        resp["message"] = "Error:{0}".format(e);
 
         return resp
 
@@ -143,11 +168,15 @@ def MakeLibraTransaction():
     signature = "".join(["{:02x}".format(i) for i in sigTxn.signature])
     print(signature)
 
-    cli.submit_signed_txn(signedtxn, True)
-
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
+
+    try:
+        cli.submit_signed_txn(signedtxn, True)
+    except Exception as e:
+        resp["code"] = 3000
+        resp["message"] = "Error:{0}".format(e);
 
     return resp
 
@@ -166,11 +195,15 @@ def MakeViolasTransaction():
     signature = "".join(["{:02x}".format(i) for i in sigTxn.signature])
     print(signature)
 
-    cli.submit_signed_txn(signedtxn, True)
-
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
+
+    try:
+        cli.submit_signed_txn(signedtxn, True)
+    except Exception as e:
+        resp["code"] = 3000
+        resp["message"] = "Error:{0}".format(e);
 
     return resp
 
@@ -191,6 +224,11 @@ def GetLibraTransactionInfo():
         resp["data"] = []
 
         return resp
+    except Exception as e:
+        resp["code"] = 3000
+        resp["message"] = "Error:{0}".format(e);
+
+        return resp
 
     print(seqNum)
     if offset > seqNum:
@@ -208,6 +246,12 @@ def GetLibraTransactionInfo():
             tran = cli.get_account_transaction(address, i)
         except AccountError:
             resp["data"] = []
+
+            return resp
+        except Exception as e:
+            resp["code"] = 3000
+            resp["message"] = "Error:{0}".format(e);
+
             return resp
 
         print(tran)
@@ -242,6 +286,11 @@ def GetViolasTransactionInfo():
         resp["data"] = []
 
         return resp
+    except Exception as e:
+        resp["code"] = 3000
+        resp["message"] = "Error:{0}".format(e);
+
+        return resp
 
     print(seqNum)
     if offset > seqNum:
@@ -259,7 +308,10 @@ def GetViolasTransactionInfo():
             tran = cli.get_account_transaction(address, i)
         except AccountError:
             resp["data"] = []
-
+            return resp
+        except Exception as e:
+            resp["code"] = 3000
+            resp["message"] = "Error:{0}".format(e);
             return resp
 
         print(tran)
