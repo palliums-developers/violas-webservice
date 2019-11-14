@@ -79,7 +79,7 @@ def GetViolasBalance():
         moduleList = modules.split(",")
         for i in moduleList:
             try:
-                result = cli.violas_get_balance(address, i)
+                result = cli.violas_get_balance(bytes.fromhex(address), bytes.fromhex(i))
             except AccountError:
                 resp["code"] = 2000
                 resp["message"] = "Account Error."
