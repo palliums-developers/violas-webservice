@@ -18,6 +18,7 @@ def MakeClient():
 @app.route("/1.0/libra/balance")
 def GetLibraBalance():
     address = request.args.get("addr")
+
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
@@ -106,6 +107,7 @@ def GetViolasBalance():
 @app.route("/1.0/libra/seqnum")
 def GetLibraSequenceNumbert():
     address = request.args.get("addr")
+
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
@@ -131,6 +133,7 @@ def GetLibraSequenceNumbert():
 @app.route("/1.0/violas/seqnum")
 def GetViolasSequenceNumbert():
     address = request.args.get("addr")
+
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
@@ -282,6 +285,7 @@ def GetViolasTransactionInfo():
     cli = MakeClient()
     try:
         seqNum = cli.get_sequence_number(address)
+        print(seqNum)
     except AccountError:
         resp["data"] = []
 
@@ -292,7 +296,6 @@ def GetViolasTransactionInfo():
 
         return resp
 
-    print(seqNum)
     if offset > seqNum:
         resp["data"] = []
 
@@ -306,6 +309,7 @@ def GetViolasTransactionInfo():
 
         try:
             tran = cli.get_account_transaction(address, i)
+            print(tran)
         except AccountError:
             resp["data"] = []
             return resp
@@ -314,7 +318,6 @@ def GetViolasTransactionInfo():
             resp["message"] = "Error:{0}".format(e);
             return resp
 
-        print(tran)
 
         info = {}
         info["version"] = tran.get_version()
