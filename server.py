@@ -322,6 +322,7 @@ def GetViolasTransactionInfo():
             info["version"] = tran.get_version()
             info["sequence_number"] = tran.get_sender_sequence()
             info["expiration_time"] = tran.get_expiration_time()
+            info["gas"] = tran.get_gas_unit_price()
             info["sender"] = tran.raw_txn.type.sender
             info["receiver"] = tran.raw_txn.type.receiver
             info["sender_module"] = tran.raw_txn.type.sender_module_address
@@ -334,6 +335,7 @@ def GetViolasTransactionInfo():
             info["version"] = tran.get_version()
             info["sequence_number"] = tran.get_sender_sequence()
             info["expiration_time"] = tran.get_expiration_time()
+            info["gas"] = tran.get_gas_unit_price()
             info["sender"] = tran.raw_txn.type.sender
             info["receiver"] = tran.raw_txn.type.receiver
             info["sender_module"] = tran.raw_txn.type.sender_module_address

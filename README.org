@@ -185,7 +185,8 @@
                       "sender_module": "05599ef248e215849cc599f563b4883fc8aff31f1e43dff1e3ebe4de1370e054",
                       "sequence_number": 0,
                       "type": 1,          // publish transaction
-                      "version": 240
+                      "version": 240,
+                      "gas":1000
                   },
                   {
                       "amount": 1500000,
@@ -196,7 +197,8 @@
                       "sender_module": "05599ef248e215849cc599f563b4883fc8aff31f1e43dff1e3ebe4de1370e054",
                       "sequence_number": 2, // p2p transaction
                       "type": 2,
-                      "version": 272
+                      "version": 272,
+                      "gas":1000
                   },
                   ...
               ]
