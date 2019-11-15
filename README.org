@@ -235,6 +235,22 @@
               ]
           }
         #+END_SRC
+**** 检测稳定币状态
+     查看账户下是否拥有某稳定币
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/module?addr=xxxxxxx&modu=xxxxxxxx=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":0                    // 0：未拥有， 1：拥有
+          }
+        #+END_SRC
 *** SSO钱包
 **** 申请发行SSO
 **** 提交KYC文件

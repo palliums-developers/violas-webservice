@@ -40,7 +40,7 @@ def GetLibraBalance():
         resp["data"] = info
     except Exception as e:
         resp["code"] = 3000
-        resp["message"] = "Error:{0}".format(e);
+        resp["message"] = "Error:{0}".format(e)
 
     return resp
 
@@ -71,7 +71,7 @@ def GetViolasBalance():
         return resp
     except Exception as e:
         resp["code"] = 3000
-        resp["message"] = "Error:{0}".format(e);
+        resp["message"] = "Error:{0}".format(e)
 
         return resp
 
@@ -88,7 +88,7 @@ def GetViolasBalance():
                 return resp
             except Exception as e:
                 resp["code"] = 3000
-                resp["message"] = "Error:{0}".format(e);
+                resp["message"] = "Error:{0}".format(e)
 
                 return resp
 
@@ -122,7 +122,7 @@ def GetLibraSequenceNumbert():
 
     except Exception as e:
         resp["code"] = 3000
-        resp["message"] = "Error:{0}".format(e);
+        resp["message"] = "Error:{0}".format(e)
 
         return resp
 
@@ -148,7 +148,7 @@ def GetViolasSequenceNumbert():
 
     except Exception as e:
         resp["code"] = 3000
-        resp["message"] = "Error:{0}".format(e);
+        resp["message"] = "Error:{0}".format(e)
 
         return resp
 
@@ -179,7 +179,7 @@ def MakeLibraTransaction():
         cli.submit_signed_txn(signedtxn, True)
     except Exception as e:
         resp["code"] = 3000
-        resp["message"] = "Error:{0}".format(e);
+        resp["message"] = "Error:{0}".format(e)
 
     return resp
 
@@ -206,7 +206,7 @@ def MakeViolasTransaction():
         cli.submit_signed_txn(signedtxn, True)
     except Exception as e:
         resp["code"] = 3000
-        resp["message"] = "Error:{0}".format(e);
+        resp["message"] = "Error:{0}".format(e)
 
     return resp
 
@@ -225,25 +225,21 @@ def GetLibraTransactionInfo():
         seqNum = cli.get_sequence_number(address)
     except AccountError:
         resp["data"] = []
-
         return resp
     except Exception as e:
         resp["code"] = 3000
-        resp["message"] = "Error:{0}".format(e);
-
+        resp["message"] = "Error:{0}".format(e)
         return resp
 
-    print(seqNum)
     if offset > seqNum:
         resp["data"] = []
-
         return resp
 
     transactions = []
 
     for i in range(offset, seqNum):
         if (i - offset) >= limit:
-            break;
+            break
 
         try:
             tran = cli.get_account_transaction(address, i)
@@ -291,7 +287,7 @@ def GetViolasTransactionInfo():
         return resp
     except Exception as e:
         resp["code"] = 3000
-        resp["message"] = "Error:{0}".format(e);
+        resp["message"] = "Error:{0}".format(e)
 
         return resp
 
@@ -304,7 +300,7 @@ def GetViolasTransactionInfo():
 
     for i in range(offset, seqNum):
         if (i - offset) >= limit:
-            break;
+            break
 
         try:
             tran = cli.get_account_transaction(address, i)
@@ -314,7 +310,7 @@ def GetViolasTransactionInfo():
             return resp
         except Exception as e:
             resp["code"] = 3000
-            resp["message"] = "Error:{0}".format(e);
+            resp["message"] = "Error:{0}".format(e)
             return resp
 
         print(tran.raw_txn.type)
@@ -373,4 +369,29 @@ def GetCurrency():
     currencies.append(info2)
 
     resp["data"] = currencies
+    return resp
+
+@app.route("/1.0/violas/module")
+def CheckMoudleExise():
+    addr = request.args.get("addr")
+    modu = request.args.get("modu")
+
+    cli = MakeClient()
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    try:
+        info = cli.violas_get_info(addr, modu)
+        if info.get(modu) is None:
+            resp["data"] = 0
+        else:
+            resp["data"] = 1
+
+    except Exception as e:
+        resp["code"] = 3000
+        resp["message"] = "Error: {0}".format(e)
+
+        return resp
+
     return resp
