@@ -285,7 +285,6 @@ def GetViolasTransactionInfo():
     cli = MakeClient()
     try:
         seqNum = cli.get_sequence_number(address)
-        print(seqNum)
     except AccountError:
         resp["data"] = []
 
@@ -318,13 +317,32 @@ def GetViolasTransactionInfo():
             resp["message"] = "Error:{0}".format(e);
             return resp
 
+        print(tran.raw_txn.type)
+        print(tran.raw_txn.type.type)
 
-        info = {}
-        info["version"] = tran.get_version()
-        info["address"] = tran.get_sender_address()
-        info["sequence_number"] = tran.get_sender_sequence()
-        info["value"] = tran.raw_txn.payload.args["U64"]
-        info["expiration_time"] = tran.get_expiration_time()
+        if tran.raw_txn.type.type == "violas_init":
+            info = {}
+            info["type"] = 1
+            info["version"] = tran.get_version()
+            info["sequence_number"] = tran.get_sender_sequence()
+            info["expiration_time"] = tran.get_expiration_time()
+            info["sender"] = tran.raw_txn.type.sender
+            info["receiver"] = tran.raw_txn.type.receiver
+            info["sender_module"] = tran.raw_txn.type.sender_module_address
+            info["receiver_module"] = ""
+            info["amount"] = 0
+
+        elif tran.raw_txn.type.type == "violas_peer_to_peer_transfer":
+            info = {}
+            info["type"] = 2
+            info["version"] = tran.get_version()
+            info["sequence_number"] = tran.get_sender_sequence()
+            info["expiration_time"] = tran.get_expiration_time()
+            info["sender"] = tran.raw_txn.type.sender
+            info["receiver"] = tran.raw_txn.type.receiver
+            info["sender_module"] = tran.raw_txn.type.sender_module_address
+            info["receiver_module"] = tran.raw_txn.type.receiver_module_address
+            info["amount"] = tran.raw_txn.type.amount
 
         transactions.append(info)
 

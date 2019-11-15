@@ -177,19 +177,27 @@
               "message":"ok",
               "data":[
                   {
-                      "version":1
-                      "address":"address",
-                      "value":100,
-                      "sequence_number":1,
-                      "expiration_time":1572771944,
+                      "amount": 0,
+                      "expiration_time": 1573718237,
+                      "receiver": "9db71b006cb300c1682e3a1ab375552344fa808b2acd4f53340470a5267bf082",
+                      "receiver_module": "",
+                      "sender": "9db71b006cb300c1682e3a1ab375552344fa808b2acd4f53340470a5267bf082",
+                      "sender_module": "05599ef248e215849cc599f563b4883fc8aff31f1e43dff1e3ebe4de1370e054",
+                      "sequence_number": 0,
+                      "type": 1,          // publish transaction
+                      "version": 240
                   },
                   {
-                      "version":2
-                      "address":"address",
-                      "value":100,
-                      "sequence_number":2,
-                      "expiration_time":1572771224,
-                  }
+                      "amount": 1500000,
+                      "expiration_time": 1573725157,
+                      "receiver": "9db71b006cb300c1682e3a1ab375552344fa808b2acd4f53340470a5267bf082",
+                      "receiver_module": "05599ef248e215849cc599f563b4883fc8aff31f1e43dff1e3ebe4de1370e054",
+                      "sender": "9db71b006cb300c1682e3a1ab375552344fa808b2acd4f53340470a5267bf082",
+                      "sender_module": "05599ef248e215849cc599f563b4883fc8aff31f1e43dff1e3ebe4de1370e054",
+                      "sequence_number": 2, // p2p transaction
+                      "type": 2,
+                      "version": 272
+                  },
                   ...
               ]
           }
