@@ -267,6 +267,7 @@ def GetViolasTransactionInfo():
             info["receiver_module"] = ""
             info["amount"] = 0
 
+            transactions.append(info)
         elif tran.raw_txn.type.type == "violas_peer_to_peer_transfer":
             info = {}
             info["type"] = 2
@@ -280,7 +281,7 @@ def GetViolasTransactionInfo():
             info["receiver_module"] = tran.raw_txn.type.receiver_module_address
             info["amount"] = tran.raw_txn.type.amount
 
-        transactions.append(info)
+            transactions.append(info)
 
     resp["data"] = transactions
 
