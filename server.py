@@ -315,17 +315,16 @@ def GetCurrency():
 @app.route("/1.0/violas/module")
 def CheckMoudleExise():
     addr = request.args.get("addr")
-    modu = request.args.get("modu")
 
     cli = MakeClient()
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    info = cli.violas_get_info(addr, modu)
-    if info.get(modu) is None:
-        resp["data"] = 0
-    else:
-        resp["data"] = 1
+    info = cli.violas_get_info(addr)
+    modus = []
+    for key in info.keys():
+        modus.append(key)
 
+    resp["data"] = modus
     return resp
