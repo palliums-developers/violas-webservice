@@ -1,7 +1,7 @@
 from flask import Flask, request, redirect, url_for, jsonify
 from flask_cors import CORS
 from libra import Client
-from libra import AccountError
+from libra import AccountError, TransactionTimeoutError
 from libra.transaction import SignedTransaction
 
 app = Flask(__name__)
@@ -146,7 +146,7 @@ def MakeLibraTransaction():
         cli.submit_signed_txn(signedtxn, True)
     except TransactionTimeoutError as e:
         resp["code"] = 2002
-        resp["message"] = "Error:" + e
+        resp["message"] = "Error: Waiting for background response timeout!"
 
     return resp
 
@@ -173,7 +173,7 @@ def MakeViolasTransaction():
         cli.submit_signed_txn(signedtxn, True)
     except TransactionTimeoutError as e:
         resp["code"] = 2002
-        resp["message"] = "Error:" + e
+        resp["message"] = "Error: Waiting for background response timeout!"
 
     return resp
 
