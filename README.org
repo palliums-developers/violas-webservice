@@ -241,7 +241,7 @@
      查看账户下是否拥有某稳定币
 ***** Request
       - Method: *GET*
-      - URL: =/1.0/violas/module?addr=xxxxxxx&modu=xxxxxxxx=
+      - URL: =/1.0/violas/module?addr=xxxxxxx=
       - Headers: None
       - Body: None
 ***** Response
@@ -250,7 +250,11 @@
           {
               "code":2000,
               "message":"ok",
-              "data":0                    // 0：未拥有， 1：拥有
+              "data": [
+                  "xxxxxxxxxxxxxxxxxxxx",
+                  "cccccccccccccccccccc",
+                  ...
+              ]
           }
         #+END_SRC
 *** SSO钱包

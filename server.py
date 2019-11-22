@@ -11,9 +11,11 @@ LIBRA = "testnet"
 VIOLAS_HOST = "52.27.228.84"
 VIOLAS_PORT = 40001
 
-def MakeClient():
+def MakeLibraClient():
+    return Client(LIBRA)
+
+def MakeViolasClient():
     return Client.new(VIOLAS_HOST, VIOLAS_PORT, "/tmp/consensus_peers.config.toml")
-    # return Client.new(VIOLAS_HOST, VIOLAS_PORT)
 
 @app.route("/1.0/libra/balance")
 def GetLibraBalance():
@@ -23,7 +25,7 @@ def GetLibraBalance():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    cli = MakeClient()
+    cli = MakeLibraClient()
     try:
         result = cli.get_balance(address)
         info = {}
@@ -47,7 +49,7 @@ def GetViolasBalance():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    cli = MakeClient()
+    cli = MakeViolasClient()
     try:
         result = cli.get_balance(address)
         info = {}
@@ -91,7 +93,7 @@ def GetLibraSequenceNumbert():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    cli = MakeClient()
+    cli = MakeLibraClient()
     try:
         seqNum = cli.get_sequence_number(address)
     except AccountError:
@@ -110,7 +112,7 @@ def GetViolasSequenceNumbert():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    cli = MakeClient()
+    cli = MakeViolasClient()
     try:
         seqNum = cli.get_sequence_number(address)
     except AccountError:
@@ -123,7 +125,7 @@ def GetViolasSequenceNumbert():
 
 @app.route("/1.0/libra/transaction", methods = ["POST"])
 def MakeLibraTransaction():
-    cli = MakeClient()
+    cli = MakeLibraClient()
 
     params = request.get_json()
     signedtxn = params["signedtxn"]
@@ -140,13 +142,17 @@ def MakeLibraTransaction():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    cli.submit_signed_txn(signedtxn, True)
+    try:
+        cli.submit_signed_txn(signedtxn, True)
+    except TransactionTimeoutError as e:
+        resp["code"] = 2002
+        resp["message"] = "Error:" + e
 
     return resp
 
 @app.route("/1.0/violas/transaction", methods = ["POST"])
 def MakeViolasTransaction():
-    cli = MakeClient()
+    cli = MakeViolasClient()
 
     params = request.get_json()
     signedtxn = params["signedtxn"]
@@ -163,7 +169,11 @@ def MakeViolasTransaction():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    cli.submit_signed_txn(signedtxn, True)
+    try:
+        cli.submit_signed_txn(signedtxn, True)
+    except TransactionTimeoutError as e:
+        resp["code"] = 2002
+        resp["message"] = "Error:" + e
 
     return resp
 
@@ -177,7 +187,7 @@ def GetLibraTransactionInfo():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    cli = MakeClient()
+    cli = MakeLibraClient()
     try:
         seqNum = cli.get_sequence_number(address)
     except AccountError:
@@ -225,7 +235,7 @@ def GetViolasTransactionInfo():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    cli = MakeClient()
+    cli = MakeViolasClient()
     try:
         seqNum = cli.get_sequence_number(address)
     except AccountError:
@@ -316,7 +326,7 @@ def GetCurrency():
 def CheckMoudleExise():
     addr = request.args.get("addr")
 
-    cli = MakeClient()
+    cli = MakeViolasClient()
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
