@@ -258,9 +258,143 @@
           }
         #+END_SRC
 *** SSO钱包
-**** 申请发行SSO
-**** 提交KYC文件
-**** 提交储备金文件
+**** SSO钱包注册
+     用户使用身份证信息注册SSO钱包
+***** Request
+      - Method: *POST*
+      - URL: =/1.0/violas/sso/user=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "wallet_address":"wallet_address",
+              "name":"name",
+              "country":"country",
+              "id_number":"id_number",
+              "phone_number":"phone_number",
+              "email_address":"email_address",
+              "id_photo_positive_url":"id_photo_positive_url",
+              "id_photo_back_url":"id_photo_back_url"
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+          }
+        #+END_SRC
+**** 申请发行稳定币
+     用户提交申请发行稳定币
+***** Request
+      - Method: *POST*
+      - URL: =/1.0/violas/sso/token=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "wallet_address":"wallet_address",
+              "token_type":"token_type",
+              "amount":"amount",
+              "token_value":"token_value",
+              "token_name":"token_name",
+              "reserive_photo_url":"reserive_photo_url",
+              "account_info_photo_positive_url":"account_info_photo_positive_url",
+              "account_info_photo_back_url":"account_info_photo_back_url"
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
+**** 查询审批状态
+     查询用户申请发行稳定币的审批状态
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/sso/token?address=xxxxxxxxxxxxx=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":{
+                  "amount":10000000,
+                  "token_name":"token_name",
+                  "approval_status": 0    // 0: 未审批; 1: 审批通过; 2: 审批失败
+              }
+          }
+        #+END_SRC
+**** 更改Publish状态
+     审批成功后用户申请铸币时更改Publish状态
+***** Request
+      - Method: *PUT*
+      - URL: =/1.0/violas/sso/token=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "address":"address"
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
+**** 提交照片文件
+     用户提交照片文件
+***** Request
+      - Method: *POST*
+      - URL: =/1.0/violas/photo=
+      - Headers: Content-Type:multipart/form-data; <input type=file>
+      - Body: 图片文件路径
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
+**** 发送验证码
+     用户发送手机验证码或邮箱验证码
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/verify_code?receiver=xxxxxxxxxxxxx=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
+**** 验证验证码
+     验证用户输入的验证码是否正确
+***** Request
+      - Method: *POST*
+      - URL: =/1.0/violas/verify_code=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "receiver":"xxxxxxxxxx",
+              "code":222222
+          }
+        #+END_SRC
 *** 州长钱包
 **** 获取待审批文件
 **** 提交审核结果

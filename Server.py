@@ -1,8 +1,14 @@
-from flask import Flask, request, redirect, url_for, jsonify
+import os, random, logging, configparser
+from flask import Flask, request, send_file
 from flask_cors import CORS
-from libra import Client
-from libra import AccountError, TransactionTimeoutError
+from libra import Client, AccountError, TransactionTimeoutError
 from libra.transaction import SignedTransaction
+
+from ViolasPGHandler import ViolasPGHandler
+
+logging.basicConfig(filename = "log.out", level = logging.DEBUG)
+config = configparser.ConfigParser()
+config.read("./config.ini")
 
 app = Flask(__name__)
 CORS(app, resources = r"/*")
@@ -10,18 +16,28 @@ CORS(app, resources = r"/*")
 LIBRA = "testnet"
 VIOLAS_HOST = "52.27.228.84"
 VIOLAS_PORT = 40001
+PHOTO_FOLDER = os.path.abspath(".")
+
+libraDBInfo = config["LIBRA DB INFO"]
+libraDBUrl = f"{libraDBInfo['DBTYPE']}+{libraDBInfo['DRIVER']}://{libraDBInfo['USERNAME']}:{libraDBInfo['PASSWORD']}@{libraDBInfo['HOSTNAME']}:{libraDBInfo['PORT']}/{libraDBInfo['DATABASE']}"
+# HLibra = LibraPGHandler(libraDBUrl)
+
+violasDBInfo = config["VIOLAS DB INFO"]
+violasDBUrl = f"{violasDBInfo['DBTYPE']}+{violasDBInfo['DRIVER']}://{violasDBInfo['USERNAME']}:{violasDBInfo['PASSWORD']}@{violasDBInfo['HOSTNAME']}:{violasDBInfo['PORT']}/{violasDBInfo['DATABASE']}"
+HViolas = ViolasPGHandler(violasDBUrl)
 
 def MakeLibraClient():
     return Client(LIBRA)
 
 def MakeViolasClient():
-    return Client.new(VIOLAS_HOST, VIOLAS_PORT, "/tmp/consensus_peers.config.toml")
+    return Client(LIBRA)
+    # return Client.new(VIOLAS_HOST, VIOLAS_PORT, "../../documents/consensus_peers.config.toml")
 
 @app.route("/1.0/libra/balance")
 def GetLibraBalance():
     address = request.args.get("addr")
 
-    resp = {}
+    resp = {}n
     resp["code"] = 2000
     resp["message"] = "ok"
 
@@ -337,4 +353,115 @@ def CheckMoudleExise():
         modus.append(key)
 
     resp["data"] = modus
+    return resp
+
+@app.route("/1.0/violas/sso/user", methods = ["POST"])
+def SSORegister():
+    params = request.get_json()
+    HViolas.AddSSOUserInfo(params)
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    return resp
+
+@app.route("/1.0/violas/sso/token")
+def GetTokenApprovalStatus():
+    address = request.args.get("address")
+    info = HViolas.GetSSOApprovalStatus(address)
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+    resp["data"] = info
+
+    return resp
+
+@app.route("/1.0/violas/sso/token", methods = ["POST"])
+def SubmitTokenInfo():
+    params = request.get_json()
+    HViolas.AddSSOInfo(params)
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    return resp
+
+@app.route("/1.0/violas/sso/token", methods = ["PUT"])
+def TokenPublish():
+    params = request.get_json()
+    HViolas.ModifySSOPublishStatus(params["address"], 1)
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    return resp
+
+@app.route("/1.0/violas/photo", methods = ["POST"])
+def UploadPhoto():
+    photo = request.files["photo"]
+    photoName = photo.filename
+    path = os.path.join(PHOTO_FOLDER, photoName)
+    photo.save(path)
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+    resp["data"] = path
+
+    return resp
+
+@app.route("/1.0/violas/photo")
+def DownloadPhoto():
+    path = request.args.get("path")
+
+    return send_file(path, attachment_filename = os.path.basename(path))
+
+@app.route("/1.0/violas/verify_code")
+def SendVerifyCode():
+    receiver = request.args.get("receiver")
+    verifyCode = random.randint(100000, 999999)
+
+    if receiver.find("@") >= 0:
+        # email
+    else:
+        # phone
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    return resp
+
+@app.route("/1.0/violas/verify_code", methods = ["POST"])
+def CheckVerifyCode():
+    receiver = request.args.get("receiver")
+    verifyCode = request.args.get("code")
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    if not VerifyCodeExist():
+        resp["code"] = 2003
+        resp["message"] = "Verify error!"
+
+    return resp
+
+@app.route("/1.0/violas/governor")
+def GetGovernorInfo():
+    resp = {}
+    return resp
+
+@app.route("/1.0/violas/governor", methods = ["POST"])
+def AddGovernorInfo():
+    resp = {}
+    return resp
+
+@app.route("/1.0/violas/governor", methods = ["PUT"])
+def ModifyGovernorInfo():
+    resp = {}
     return resp
