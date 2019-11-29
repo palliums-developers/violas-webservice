@@ -429,9 +429,9 @@ def SendVerifyCode():
     verifyCode = random.randint(100000, 999999)
 
     if receiver.find("@") >= 0:
-        # email
+        pass
     else:
-        # phone
+        pass
 
     resp = {}
     resp["code"] = 2000
