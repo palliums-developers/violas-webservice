@@ -357,7 +357,7 @@
 ***** Request
       - Method: *POST*
       - URL: =/1.0/violas/photo=
-      - Headers: Content-Type:multipart/form-data; <input type=file>
+      - Headers: Content-Type:multipart/form-data;name="photo"
       - Body: 图片文件路径
 ***** Response
       - Body:

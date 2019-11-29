@@ -1,6 +1,7 @@
-import os, random, logging, configparser
+import os, random, logging, configparser, datetime
 from flask import Flask, request, send_file
 from flask_cors import CORS
+from werkzeug.utils import secure_filename
 from libra import Client, AccountError, TransactionTimeoutError
 from libra.transaction import SignedTransaction
 
@@ -30,8 +31,7 @@ def MakeLibraClient():
     return Client(LIBRA)
 
 def MakeViolasClient():
-    return Client(LIBRA)
-    # return Client.new(VIOLAS_HOST, VIOLAS_PORT, "../../documents/consensus_peers.config.toml")
+    return Client.new(VIOLAS_HOST, VIOLAS_PORT, "/tmp/consensus_peers.config.toml")
 
 @app.route("/1.0/libra/balance")
 def GetLibraBalance():
@@ -403,8 +403,11 @@ def TokenPublish():
 @app.route("/1.0/violas/photo", methods = ["POST"])
 def UploadPhoto():
     photo = request.files["photo"]
-    photoName = photo.filename
-    path = os.path.join(PHOTO_FOLDER, photoName)
+    ext = secure_filename(sphoto.filename).rsplit(".", 1)[1]
+    nowTime = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    randomNum = random.randint(100, 999)
+    uuid = str(nowTime) + str(randomNum) + "." + ext
+    path = os.path.join(PHOTO_FOLDER, uuid)
     photo.save(path)
 
     resp = {}
