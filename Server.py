@@ -37,7 +37,7 @@ def MakeViolasClient():
 def GetLibraBalance():
     address = request.args.get("addr")
 
-    resp = {}n
+    resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
 
