@@ -403,7 +403,7 @@ def TokenPublish():
 @app.route("/1.0/violas/photo", methods = ["POST"])
 def UploadPhoto():
     photo = request.files["photo"]
-    ext = secure_filename(sphoto.filename).rsplit(".", 1)[1]
+    ext = secure_filename(photo.filename).rsplit(".", 1)[1]
     nowTime = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     randomNum = random.randint(100, 999)
     uuid = str(nowTime) + str(randomNum) + "." + ext

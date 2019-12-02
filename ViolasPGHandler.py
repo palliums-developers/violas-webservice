@@ -41,7 +41,7 @@ class ViolasPGHandler():
             amount = data["amount"],
             token_value = data["token_value"],
             token_name = data["token_name"],
-            application_data = timestamp,
+            application_date = timestamp,
             validity_period = 5,
             expiration_date = timestamp + 60 * 60 * 24 * 5,
             reserive_photo_url = data["reserive_photo_url"],
