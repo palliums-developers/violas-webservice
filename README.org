@@ -271,8 +271,6 @@
               "name":"name",
               "country":"country",
               "id_number":"id_number",
-              "phone_number":"phone_number",
-              "email_address":"email_address",
               "id_photo_positive_url":"id_photo_positive_url",
               "id_photo_back_url":"id_photo_back_url"
           }
