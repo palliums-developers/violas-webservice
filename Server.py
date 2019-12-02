@@ -430,6 +430,11 @@ def SubmitTokenInfo():
     resp["message"] = "ok"
 
     userInfo = HViolas.GetSSOUserInfo(params["wallet_address"])
+    if userInfo is None:
+        resp["code"] = 2005
+        resp["message"] = "Address info not exists!"
+        return resp
+
     if not VerifyCodeExist(userInfo["phone_number"], params["phone_verify_code"]):
         resp["code"] = 2003
         resp["message"] = "Verify error!"
