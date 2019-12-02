@@ -424,11 +424,23 @@ def GetTokenApprovalStatus():
 @app.route("/1.0/violas/sso/token", methods = ["POST"])
 def SubmitTokenInfo():
     params = request.get_json()
-    HViolas.AddSSOInfo(params)
 
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
+
+    userInfo = HViolas.GetSSOUserInfo(params["wallet_address"])
+    if not VerifyCodeExist(userInfo["phone_number"], params["phone_verify_code"]):
+        resp["code"] = 2003
+        resp["message"] = "Verify error!"
+        return resp
+
+    if not VerifyCodeExist(userInfo["email_address"], params["email_verify_code"]):
+        resp["code"] = 2003
+        resp["message"] = "Verify error!"
+        return resp
+
+    HViolas.AddSSOInfo(params)
 
     return resp
 
