@@ -8,13 +8,13 @@ class ViolasSSOUserInfo(Base):
 
     id = Column(BigInteger, primary_key = True, autoincrement = True)
     wallet_address = Column(String(64), nullable = False)
-    name = Column(String(32), nullable = False)
-    country = Column(String(32), nullable = False)
-    id_number = Column(String(32), nullable = False)
-    phone_number = Column(String(32), nullable = False)
-    email_address = Column(String(64), nullable = False)
-    id_photo_positive_url = Column(String(64), nullable = False)
-    id_photo_back_url = Column(String(64), nullable = False)
+    name = Column(String(32), nullable = True)
+    country = Column(String(32), nullable = True)
+    id_number = Column(String(32), nullable = True)
+    phone_number = Column(String(32), nullable = True)
+    email_address = Column(String(64), nullable = True)
+    id_photo_positive_url = Column(String(64), nullable = True)
+    id_photo_back_url = Column(String(64), nullable = True)
 
 class ViolasSSOInfo(Base):
     __tablename__ = "sso_info"

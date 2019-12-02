@@ -285,6 +285,31 @@
               "message":"ok",
           }
         #+END_SRC
+**** 获取SSO钱包用户信息
+     获取该SSO钱包地址的注册信息
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/sso/user?address=xxxxxxxxxxxx=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code": 2000,
+              "message": "ok",
+              "data": {
+                  "country": "xxxxxx",
+                  "email_address": "xxxxxx",
+                  "id_number": "xxxxxxxxxxxxxxx",
+                  "id_photo_back_url": "xxxxxxxxxxxxxx",
+                  "id_photo_positive_url": "xxxxxxxxxxxxx",
+                  "name": "xxxxxxxxxxxxx",
+                  "phone_number": "xxxxxxxxxxxxxxx",
+                  "wallet_address": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              }
+          }
+        #+END_SRC
 **** 申请发行稳定币
      用户提交申请发行稳定币
 ***** Request
@@ -367,13 +392,19 @@
               "message":"ok"
           }
         #+END_SRC
-**** 发送验证码
+**** 获取验证码
      用户发送手机验证码或邮箱验证码
 ***** Request
-      - Method: *GET*
-      - URL: =/1.0/violas/verify_code?receiver=xxxxxxxxxxxxx=
-      - Headers: None
-      - Body: None
+      - Method: *POST*
+      - URL: =/1.0/violas/verify_code=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "address":"xxxxxxxxxxxxxxxxx",
+              "receiver":"xxxxxxxxxx"
+          }
+        #+END_SRC
 ***** Response
       - Body:
         #+BEGIN_SRC js
@@ -382,15 +413,16 @@
               "message":"ok"
           }
         #+END_SRC
-**** 验证验证码
-     验证用户输入的验证码是否正确
+**** 绑定信息
+     绑定用户手机号或邮箱
 ***** Request
       - Method: *POST*
-      - URL: =/1.0/violas/verify_code=
+      - URL: =/1.0/violas/sso/bind=
       - Headers: Content-Type:application/json
       - Body:
         #+BEGIN_SRC js
           {
+              "address":"xxxxxxxxxx",
               "receiver":"xxxxxxxxxx",
               "code":222222
           }

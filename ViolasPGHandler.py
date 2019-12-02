@@ -3,6 +3,7 @@ from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import exists
 
 class ViolasPGHandler():
     def __init__(self, dbUrl):
@@ -11,25 +12,77 @@ class ViolasPGHandler():
 
         return
 
-    def AddSSOUserInfo(self, data):
+    def AddSSOUserInfo(self, address):
         s = self.session()
 
-        info = ViolasSSOUserInfo(
-            wallet_address = data["wallet_address"],
-            name = data["name"],
-            country = data["country"],
-            id_number = data["id_number"],
-            phone_number = data["phone_number"],
-            email_address = data["email_address"],
-            id_photo_positive_url = data["id_photo_positive_url"],
-            id_photo_back_url = data["id_photo_back_url"]
-        )
+        if not s.query(exists().where(ViolasSSOUserInfo.wallet_address == address)).scalar():
+            info = ViolasSSOUserInfo(
+                wallet_address = address # data["wallet_address"],
+                # name = data["name"],
+                # country = data["country"],
+                # id_number = data["id_number"],
+                # phone_number = data["phone_number"],
+                # email_address = data["email_address"],
+                # id_photo_positive_url = data["id_photo_positive_url"],
+                # id_photo_back_url = data["id_photo_back_url"]
+            )
 
-        s.add(info)
+            s.add(info)
+            s.commit()
+
+        s.close()
+
+        return
+
+    def UpdateSSOUserInfo(self, data):
+        s = self.session()
+
+        result = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == data["address"]).first()
+
+        if "name" in data:
+            result.name = data["name"]
+
+        if "country" in data:
+            result.country = data["country"]
+
+        if "id_number" in data:
+            result.id_number = data["id_number"]
+
+        if "phone_number" in data:
+            result.phone_number = data["phone_number"]
+
+        if "email_address" in data:
+            result.email_address = data["email_address"]
+
+        if "id_photo_positive_url" in data:
+            result.id_phone_positive_url = data["id_photo_positive_url"]
+
+        if "id_photo_back_url" in data:
+            result.id_photo_back_url = data["id_photo_back_url"]
+
         s.commit()
         s.close()
 
         return
+
+    def GetSSOUserInfo(self, address):
+        s = self.session()
+
+        if s.query(exists().where(ViolasSSOUserInfo.wallet_address == address)).scalar():
+            result = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == address).first()
+            info = {}
+            info["wallet_address"] = result.wallet_address
+            info["name"] = result.name
+            info["country"] = result.country
+            info["id_number"] = result.id_number
+            info["phone_number"] = result.phone_number
+            info["email_address"] = result.email_address
+            info["id_photo_positive_url"] = result.id_photo_positive_url
+            info["id_photo_back_url"] = result.id_photo_back_url
+        else:
+            return None
+
+        return info
 
     def AddSSOInfo(self, data):
         s = self.session()

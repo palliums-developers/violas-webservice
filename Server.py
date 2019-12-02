@@ -6,6 +6,7 @@ from libra import Client, AccountError, TransactionTimeoutError
 from libra.transaction import SignedTransaction
 
 from ViolasPGHandler import ViolasPGHandler
+from PushServerHandler import PushServerHandler
 
 logging.basicConfig(filename = "log.out", level = logging.DEBUG)
 config = configparser.ConfigParser()
@@ -26,6 +27,10 @@ libraDBUrl = f"{libraDBInfo['DBTYPE']}+{libraDBInfo['DRIVER']}://{libraDBInfo['U
 violasDBInfo = config["VIOLAS DB INFO"]
 violasDBUrl = f"{violasDBInfo['DBTYPE']}+{violasDBInfo['DRIVER']}://{violasDBInfo['USERNAME']}:{violasDBInfo['PASSWORD']}@{violasDBInfo['HOSTNAME']}:{violasDBInfo['PORT']}/{violasDBInfo['DATABASE']}"
 HViolas = ViolasPGHandler(violasDBUrl)
+
+pushHost = "52.231.74.79"
+pushPort = 48332
+pushh = PushServerHandler(pushHost, pushPort)
 
 def MakeLibraClient():
     return Client(LIBRA)
@@ -355,8 +360,26 @@ def CheckMoudleExise():
     resp["data"] = modus
     return resp
 
+@app.route("/1.0/violas/sso/user")
+def GetSSOUserInfo():
+    address = request.args.get("address")
+
+    info = HViolas.GetSSOUserInfo(address)
+
+    resp = {}
+
+    if info is None:
+        resp["code"] = 2005
+        resp["message"] = "Address info not exists!"
+    else:
+        resp["code"] = 2000
+        resp["message"] = "ok"
+        resp["data"] = info
+
+    return resp
+
 @app.route("/1.0/violas/sso/user", methods = ["POST"])
-def SSORegister():
+def SSOUserRegister():
     params = request.get_json()
     HViolas.AddSSOUserInfo(params)
 
@@ -423,34 +446,58 @@ def DownloadPhoto():
 
     return send_file(path, attachment_filename = os.path.basename(path))
 
-@app.route("/1.0/violas/verify_code")
+@app.route("/1.0/violas/verify_code", methods = ["POST"])
 def SendVerifyCode():
-    receiver = request.args.get("receiver")
+    params = request.get_json()
+    receiver = params["receiver"]
+    address = params["address"]
     verifyCode = random.randint(100000, 999999)
 
-    if receiver.find("@") >= 0:
-        pass
-    else:
-        pass
-
+    print(receiver)
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
+
+    HViolas.AddSSOUserInfo(address)
+
+    if receiver.find("@") >= 0:
+        succ = pushh.PushEmailSMSCode(verifyCode, receiver, 3)
+    else:
+        succ = pushh.PushPhoneSMSCode(verifyCode, receiver, 3)
+
+    if not succ:
+        resp["code"] = 2004
+        resp["message"] = "Verify code send failed!"
+        return resp
 
     return resp
 
-@app.route("/1.0/violas/verify_code", methods = ["POST"])
-def CheckVerifyCode():
-    receiver = request.args.get("receiver")
-    verifyCode = request.args.get("code")
+def VerifyCodeExist(receiver, code):
+    return True
+
+@app.route("/1.0/violas/sso/bind", methods = ["POST"])
+def BindUserInfo():
+    params = request.get_json()
+    receiver = params["receiver"]
+    verifyCode = params["code"]
+    address = params["address"]
 
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    if not VerifyCodeExist():
+    if not VerifyCodeExist(receiver, verifyCode):
         resp["code"] = 2003
         resp["message"] = "Verify error!"
+    else:
+        data = {}
+        data["address"] = address
+        if receiver.find("@") >= 0:
+            data["email_address"] = receiver
+        else:
+            data["phone_number"] = receiver
+
+        HViolas.UpdateSSOUserInfo(data)
 
     return resp
 
