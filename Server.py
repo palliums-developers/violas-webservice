@@ -401,8 +401,8 @@ def GetSSOUserInfo():
 @app.route("/1.0/violas/sso/user", methods = ["POST"])
 def SSOUserRegister():
     params = request.get_json()
-    HViolas.AddSSOUserInfo(params)
-
+    HViolas.AddSSOUser(params["wallet_address"])
+    HViolas.UpdateSSOUserInfo(params)
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
@@ -495,7 +495,7 @@ def SendVerifyCode():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    HViolas.AddSSOUserInfo(address)
+    HViolas.AddSSOUser(address)
 
     if receiver.find("@") >= 0:
         succ = pushh.PushEmailSMSCode(verifyCode, receiver, 3)

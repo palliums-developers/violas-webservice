@@ -12,7 +12,7 @@ class ViolasPGHandler():
 
         return
 
-    def AddSSOUserInfo(self, address):
+    def AddSSOUser(self, address):
         s = self.session()
 
         if not s.query(exists().where(ViolasSSOUserInfo.wallet_address == address)).scalar():
@@ -37,7 +37,7 @@ class ViolasPGHandler():
     def UpdateSSOUserInfo(self, data):
         s = self.session()
 
-        result = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == data["address"]).first()
+        result = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == data["wallet_address"]).first()
 
         if "name" in data:
             result.name = data["name"]
