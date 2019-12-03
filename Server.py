@@ -4,6 +4,7 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from libra import Client, AccountError, TransactionTimeoutError
 from libra.transaction import SignedTransaction
+from redis import Redis
 
 from ViolasPGHandler import ViolasPGHandler
 from PushServerHandler import PushServerHandler
@@ -30,6 +31,9 @@ HViolas = ViolasPGHandler(violasDBUrl)
 
 pushInfo = config["PUSH SERVER"]
 pushh = PushServerHandler(pushInfo["HOST"], int(pushInfo["PORT"]))
+
+cachingInfo = config["CACHING SERVER"]
+rds = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["DB"], cachingInfo["PASSWORD"])
 
 def MakeLibraClient():
     return Client(LIBRA)
@@ -515,8 +519,10 @@ def SendVerifyCode():
 
     if receiver.find("@") >= 0:
         succ = pushh.PushEmailSMSCode(verifyCode, receiver, 3)
+        rds.setex(receiver, 60, str(verifyCode))
     else:
         succ = pushh.PushPhoneSMSCode(verifyCode, local_number + receiver, 3)
+        rds.setex(local_number + receiver, 60, str(verifyCode))
 
     if not succ:
         resp["code"] = 2004
@@ -526,6 +532,15 @@ def SendVerifyCode():
     return resp
 
 def VerifyCodeExist(receiver, code):
+    value = rds.get(receiver)
+
+    if value is None:
+        return False
+    elif value.decode("utf8") != str(code):
+        return False
+
+    rds.delete(receiver)
+
     return True
 
 @app.route("/1.0/violas/sso/bind", methods = ["POST"])
@@ -540,7 +555,12 @@ def BindUserInfo():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    if not VerifyCodeExist(receiver, verifyCode):
+    if receiver.find("@") >= 0:
+        match = VerifyCodeExist(receiver, verifyCode)
+    else:
+        match = VerifyCodeExist(local_number + receiver, verifyCode)
+
+    if not match:
         resp["code"] = 2003
         resp["message"] = "Verify error!"
     else:
