@@ -29,7 +29,7 @@ violasDBUrl = f"{violasDBInfo['DBTYPE']}+{violasDBInfo['DRIVER']}://{violasDBInf
 HViolas = ViolasPGHandler(violasDBUrl)
 
 pushInfo = config["PUSH SERVER"]
-pushh = PushServerHandler(pushInfo["HOST"], pushInfo["PORT"])
+pushh = PushServerHandler(pushInfo["HOST"], int(pushInfo["PORT"]))
 
 def MakeLibraClient():
     return Client(LIBRA)
