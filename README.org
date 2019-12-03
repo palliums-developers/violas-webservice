@@ -304,7 +304,8 @@
                   "id_photo_positive_url": "xxxxxxxxxxxxx",
                   "name": "xxxxxxxxxxxxx",
                   "phone_number": "xxxxxxxxxxxxxxx",
-                  "wallet_address": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                  "wallet_address": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                  "phone_local_number":"+86"
               }
           }
         #+END_SRC
@@ -402,7 +403,8 @@
         #+BEGIN_SRC js
           {
               "address":"xxxxxxxxxxxxxxxxx",
-              "receiver":"xxxxxxxxxx"
+              "receiver":"xxxxxxxxxx",
+              "phone_local_number":"+86"
           }
         #+END_SRC
 ***** Response
@@ -424,7 +426,16 @@
           {
               "address":"xxxxxxxxxx",
               "receiver":"xxxxxxxxxx",
-              "code":222222
+              "code":222222,
+              "phone_local_number":"+86"
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
           }
         #+END_SRC
 *** 州长钱包

@@ -48,6 +48,9 @@ class ViolasPGHandler():
         if "id_number" in data:
             result.id_number = data["id_number"]
 
+        if "phone_local_number" in data:
+            result.phone_local_number = data["phone_local_number"]
+
         if "phone_number" in data:
             result.phone_number = data["phone_number"]
 
@@ -75,6 +78,7 @@ class ViolasPGHandler():
             info["name"] = result.name
             info["country"] = result.country
             info["id_number"] = result.id_number
+            info["phone_local_number"] = result.phone_local_number
             info["phone_number"] = result.phone_number
             info["email_address"] = result.email_address
             info["id_photo_positive_url"] = result.id_photo_positive_url

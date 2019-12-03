@@ -441,7 +441,7 @@ def SubmitTokenInfo():
         resp["message"] = "Address info not exists!"
         return resp
 
-    if not VerifyCodeExist(userInfo["phone_number"], params["phone_verify_code"]):
+    if not VerifyCodeExist(userInfo["phone_local_number"] + userInfo["phone_number"], params["phone_verify_code"]):
         resp["code"] = 2003
         resp["message"] = "Verify error!"
         return resp
@@ -495,6 +495,7 @@ def SendVerifyCode():
     receiver = params["receiver"]
     address = params["address"]
     verifyCode = random.randint(100000, 999999)
+    local_number = params["phone_local_number"]
 
     print(receiver)
     resp = {}
@@ -506,7 +507,7 @@ def SendVerifyCode():
     if receiver.find("@") >= 0:
         succ = pushh.PushEmailSMSCode(verifyCode, receiver, 3)
     else:
-        succ = pushh.PushPhoneSMSCode(verifyCode, receiver, 3)
+        succ = pushh.PushPhoneSMSCode(verifyCode, local_number + receiver, 3)
 
     if not succ:
         resp["code"] = 2004
@@ -524,6 +525,7 @@ def BindUserInfo():
     receiver = params["receiver"]
     verifyCode = params["code"]
     address = params["address"]
+    local_number = params["phone_local_number"]
 
     resp = {}
     resp["code"] = 2000
@@ -538,6 +540,7 @@ def BindUserInfo():
         if receiver.find("@") >= 0:
             data["email_address"] = receiver
         else:
+            data["phone_local_number"] = local_number
             data["phone_number"] = receiver
 
         HViolas.UpdateSSOUserInfo(data)

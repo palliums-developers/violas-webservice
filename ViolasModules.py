@@ -11,6 +11,7 @@ class ViolasSSOUserInfo(Base):
     name = Column(String(32), nullable = True)
     country = Column(String(32), nullable = True)
     id_number = Column(String(32), nullable = True)
+    phone_local_number = Column(String(8), nullable = True)
     phone_number = Column(String(32), nullable = True)
     email_address = Column(String(64), nullable = True)
     id_photo_positive_url = Column(String(64), nullable = True)
