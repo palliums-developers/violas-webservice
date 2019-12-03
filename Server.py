@@ -441,9 +441,19 @@ def SubmitTokenInfo():
         resp["message"] = "Address info not exists!"
         return resp
 
+    if userInfo["phone_number"] is None:
+        resp["code"] = 2007
+        resp["message"] = "Phone unbound!"
+        return resp
+
     if not VerifyCodeExist(userInfo["phone_local_number"] + userInfo["phone_number"], params["phone_verify_code"]):
         resp["code"] = 2003
         resp["message"] = "Verify error!"
+        return resp
+
+    if userInfo["email_address"] is None:
+        resp["code"] = 2008
+        resp["message"] = "Email unbound!"
         return resp
 
     if not VerifyCodeExist(userInfo["email_address"], params["email_verify_code"]):
@@ -497,7 +507,6 @@ def SendVerifyCode():
     verifyCode = random.randint(100000, 999999)
     local_number = params["phone_local_number"]
 
-    print(receiver)
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
