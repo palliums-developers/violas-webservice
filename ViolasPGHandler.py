@@ -93,15 +93,14 @@ class ViolasPGHandler():
             token_type = data["token_type"],
             amount = data["amount"],
             token_value = data["token_value"],
-            token_name = data["token_name"],
+            token_name = data["token_type"] + data["token_name"],
             application_date = timestamp,
             validity_period = 5,
             expiration_date = timestamp + 60 * 60 * 24 * 5,
             reserve_photo_url = data["reserve_photo_url"],
             account_info_photo_positive_url = data["account_info_photo_positive_url"],
             account_info_photo_back_url = data["account_info_photo_back_url"],
-            approval_status = 0,
-            publish_status = 0
+            approval_status = 0
         )
 
         s.add(info)
@@ -113,6 +112,9 @@ class ViolasPGHandler():
     def GetSSOApprovalStatus(self, address):
         s = self.session()
         result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).first()
+
+        if result is None:
+            return None
 
         info = {}
         info["amount"] = int(result.amount)
@@ -128,16 +130,6 @@ class ViolasPGHandler():
         result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).first()
 
         result.approval_status = status
-        s.commit()
-        s.close()
-
-        return
-
-    def ModifySSOPublishStatus(self, address, status):
-        s = self.session()
-        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).first()
-
-        result.publish_status = 1
         s.commit()
         s.close()
 

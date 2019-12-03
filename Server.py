@@ -417,6 +417,13 @@ def GetTokenApprovalStatus():
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
+
+    if info is None:
+        resp["code"] = 2006
+        resp["message"] = "Token info not exists!"
+
+        return resp
+
     resp["data"] = info
 
     return resp
@@ -452,7 +459,7 @@ def SubmitTokenInfo():
 @app.route("/1.0/violas/sso/token", methods = ["PUT"])
 def TokenPublish():
     params = request.get_json()
-    HViolas.ModifySSOPublishStatus(params["address"], 1)
+    HViolas.ModifySSOApprovalStatus(params["address"], 3)
 
     resp = {}
     resp["code"] = 2000

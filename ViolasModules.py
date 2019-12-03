@@ -31,5 +31,4 @@ class ViolasSSOInfo(Base):
     reserve_photo_url = Column(String(64), nullable = False)
     account_info_photo_positive_url = Column(String(64), nullable = False)
     account_info_photo_back_url = Column(String(64), nullable = False)
-    approval_status = Column(SmallInteger, nullable = False) # 0: not approved; 1: pass; 2: not pass
-    publish_status = Column(SmallInteger, nullable = False)  # 0: not publish; 1: published; 2: minted
+    approval_status = Column(SmallInteger, nullable = False) # 0: not approved; 1: pass; 2: not pass; 3: published; 4: minted
