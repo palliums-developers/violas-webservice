@@ -319,14 +319,14 @@
           {
               "wallet_address":"wallet_address",
               "token_type":"token_type",
-              "amount":"amount",
-              "token_value":"token_value",
+              "amount":100000,
+              "token_value":1,
               "token_name":"token_name",
-              "reserive_photo_url":"reserive_photo_url",
+              "reserve_photo_url":"reserve_photo_url",
               "account_info_photo_positive_url":"account_info_photo_positive_url",
               "account_info_photo_back_url":"account_info_photo_back_url",
-              "phone_verify_code":xxxxxx,
-              "email_verify_code":xxxxxx
+              "phone_verify_code":111111,
+              "email_verify_code":111111
           }
         #+END_SRC
 ***** Response

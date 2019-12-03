@@ -528,7 +528,7 @@ def BindUserInfo():
         resp["message"] = "Verify error!"
     else:
         data = {}
-        data["address"] = address
+        data["wallet_address"] = address
         if receiver.find("@") >= 0:
             data["email_address"] = receiver
         else:

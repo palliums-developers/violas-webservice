@@ -21,7 +21,7 @@ class ViolasSSOInfo(Base):
 
     id = Column(BigInteger, primary_key = True, autoincrement = True)
     wallet_address = Column(String(64), nullable = False)
-    token_type = Column(SmallInteger, nullable = False)
+    token_type = Column(String(16), nullable = False)
     amount = Column(Numeric, nullable = False)
     token_value = Column(Numeric, nullable = False)
     token_name = Column(String(32), nullable = False)

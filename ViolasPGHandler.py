@@ -55,7 +55,7 @@ class ViolasPGHandler():
             result.email_address = data["email_address"]
 
         if "id_photo_positive_url" in data:
-            result.id_phone_positive_url = data["id_photo_positive_url"]
+            result.id_photo_positive_url = data["id_photo_positive_url"]
 
         if "id_photo_back_url" in data:
             result.id_photo_back_url = data["id_photo_back_url"]
@@ -97,7 +97,7 @@ class ViolasPGHandler():
             application_date = timestamp,
             validity_period = 5,
             expiration_date = timestamp + 60 * 60 * 24 * 5,
-            reserive_photo_url = data["reserive_photo_url"],
+            reserve_photo_url = data["reserve_photo_url"],
             account_info_photo_positive_url = data["account_info_photo_positive_url"],
             account_info_photo_back_url = data["account_info_photo_back_url"],
             approval_status = 0,
@@ -115,7 +115,7 @@ class ViolasPGHandler():
         result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).first()
 
         info = {}
-        info["amount"] = result.amount
+        info["amount"] = int(result.amount)
         info["token_name"] = result.token_name
         info["approval_status"] = result.approval_status
 
