@@ -257,6 +257,49 @@
               ]
           }
         #+END_SRC
+**** VBTC交易信息查询
+     用于查询violas链中VBTC转账交易信息
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/vbtc/transaction?receiver_address=xxxxxxxxxx&module_address=xxxxxxxxxxxx&start_version=1=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":{
+                  "version":4999,
+                  "sender_address":"xxxxxxxxxxxxxxxxxxxxx",
+                  "sequence_number":1,
+                  "amount":100000000
+              }
+          }
+        #+END_SRC
+**** VBTC交易信息验证
+     用于验证violas链中VBTC转账交易信息
+***** Request
+      - Method: *POST*
+      - URL: =/1.0/violas/vbtc/transaction=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "version":2222,
+              "sender_address":"xxxxxxxxxxxxxx",
+              "sequence_number":1
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,                // 2009
+              "message":"ok"              // "The transaction information is incorrect."
+          }
+        #+END_SRC
 *** SSO钱包
 **** SSO钱包注册
      用户使用身份证信息注册SSO钱包

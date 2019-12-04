@@ -383,6 +383,36 @@ def CheckMoudleExise():
     resp["data"] = modus
     return resp
 
+@app.route("/1.0/violas/vbtc/transaction")
+def GetVBtcTransactionInfo():
+    receiverAddress = request.args.get("recevier_address")
+    moduleAddress = request.args.get("module_address")
+    startVersion = request.args.get("start_version", type = int)
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    info = {}
+    info["sender_address"] = "xxxxxxxxxxxx"
+    info["sequence_number"] = 1
+    info["amount"] = 10000000
+    info["version"] = 4999
+
+    resp["data"] = info
+
+    return resp
+
+@app.route("/1.0/violas/vbtc/transaction", methods = ["POST"])
+def VerifyVBtcTransactionInfo():
+    params = request.get_json()
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    return resp
+
 @app.route("/1.0/violas/sso/user")
 def GetSSOUserInfo():
     address = request.args.get("address")
