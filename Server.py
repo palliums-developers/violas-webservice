@@ -398,6 +398,7 @@ def GetVBtcTransactionInfo():
     info["sequence_number"] = 1
     info["amount"] = 10000000
     info["version"] = 4999
+    info["btc_address"] = "xxxxxxxxxxxxxxxx"
 
     resp["data"] = info
 

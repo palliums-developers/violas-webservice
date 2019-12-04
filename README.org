@@ -274,7 +274,8 @@
                   "version":4999,
                   "sender_address":"xxxxxxxxxxxxxxxxxxxxx",
                   "sequence_number":1,
-                  "amount":100000000
+                  "amount":100000000,
+                  "btc_address":"xxxxxxxxxxxxxxxxxxxxx"
               }
           }
         #+END_SRC
@@ -289,7 +290,9 @@
           {
               "version":2222,
               "sender_address":"xxxxxxxxxxxxxx",
-              "sequence_number":1
+              "sequence_number":1,
+              "amount":100000000,
+              "btc_address":"xxxxxxxxxxxxxxxxxxxxx"
           }
         #+END_SRC
 ***** Response
