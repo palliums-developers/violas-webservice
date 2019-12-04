@@ -19,7 +19,7 @@ CORS(app, resources = r"/*")
 LIBRA = "testnet"
 VIOLAS_HOST = "52.27.228.84"
 VIOLAS_PORT = 40001
-PHOTO_FOLDER = os.path.abspath(".")
+PHOTO_FOLDER = os.path.abspath("/var/www/violas_wallet/photo")
 
 libraDBInfo = config["LIBRA DB INFO"]
 libraDBUrl = f"{libraDBInfo['DBTYPE']}+{libraDBInfo['DRIVER']}://{libraDBInfo['USERNAME']}:{libraDBInfo['PASSWORD']}@{libraDBInfo['HOSTNAME']}:{libraDBInfo['PORT']}/{libraDBInfo['DATABASE']}"
@@ -524,15 +524,9 @@ def UploadPhoto():
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
-    resp["data"] = path
+    resp["data"] = uuid
 
     return resp
-
-@app.route("/1.0/violas/photo")
-def DownloadPhoto():
-    path = request.args.get("path")
-
-    return send_file(path, attachment_filename = os.path.basename(path))
 
 @app.route("/1.0/violas/verify_code", methods = ["POST"])
 def SendVerifyCode():
