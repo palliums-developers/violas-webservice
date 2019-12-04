@@ -539,7 +539,7 @@ def SendVerifyCode():
     receiver = params["receiver"]
     address = params["address"]
     verifyCode = random.randint(100000, 999999)
-    local_number = params["phone_local_number"]
+    local_number = params.get("phone_local_number")
 
     resp = {}
     resp["code"] = 2000
@@ -579,7 +579,7 @@ def BindUserInfo():
     receiver = params["receiver"]
     verifyCode = params["code"]
     address = params["address"]
-    local_number = params["phone_local_number"]
+    local_number = params.get("phone_local_number")
 
     resp = {}
     resp["code"] = 2000
