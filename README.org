@@ -397,7 +397,8 @@
               "data":{
                   "amount":10000000,
                   "token_name":"token_name",
-                  "approval_status": 0    // 0: 未审批; 1: 审批通过; 2: 审批失败; 3: 已Publish; 4: 铸币成功
+                  "approval_status": 0,    // 0: 未审批; 1: 审批通过; 2: 审批失败; 3: 已Publish; 4: 铸币成功
+                  "module_address":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
               }
           }
         #+END_SRC
