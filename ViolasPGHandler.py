@@ -124,6 +124,7 @@ class ViolasPGHandler():
         info["amount"] = int(result.amount)
         info["token_name"] = result.token_name
         info["approval_status"] = result.approval_status
+        info["module_address"] = result.module_address
 
         s.close()
 
