@@ -70,21 +70,20 @@ class ViolasPGHandler():
 
     def GetSSOUserInfo(self, address):
         s = self.session()
-
-        if s.query(exists().where(ViolasSSOUserInfo.wallet_address == address)).scalar():
-            result = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == address).first()
-            info = {}
-            info["wallet_address"] = result.wallet_address
-            info["name"] = result.name
-            info["country"] = result.country
-            info["id_number"] = result.id_number
-            info["phone_local_number"] = result.phone_local_number
-            info["phone_number"] = result.phone_number
-            info["email_address"] = result.email_address
-            info["id_photo_positive_url"] = result.id_photo_positive_url
-            info["id_photo_back_url"] = result.id_photo_back_url
-        else:
+        result = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == address).first()
+        if result is None:
             return None
+
+        info = {}
+        info["wallet_address"] = result.wallet_address
+        info["name"] = result.name
+        info["country"] = result.country
+        info["id_number"] = result.id_number
+        info["phone_local_number"] = result.phone_local_number
+        info["phone_number"] = result.phone_number
+        info["email_address"] = result.email_address
+        info["id_photo_positive_url"] = result.id_photo_positive_url
+        info["id_photo_back_url"] = result.id_photo_back_url
 
         return info
 
@@ -92,23 +91,25 @@ class ViolasPGHandler():
         s = self.session()
         timestamp = int(time())
 
-        info = ViolasSSOInfo(
-            wallet_address = data["wallet_address"],
-            token_type = data["token_type"],
-            amount = data["amount"],
-            token_value = data["token_value"],
-            token_name = data["token_type"] + data["token_name"],
-            application_date = timestamp,
-            validity_period = 5,
-            expiration_date = timestamp + 60 * 60 * 24 * 5,
-            reserve_photo_url = data["reserve_photo_url"],
-            account_info_photo_positive_url = data["account_info_photo_positive_url"],
-            account_info_photo_back_url = data["account_info_photo_back_url"],
-            approval_status = 0
-        )
+        if not s.query(exists().where(ViolasSSOInfo.wallet_address == data["wallet_address"])).scalar():
+            info = ViolasSSOInfo(
+                wallet_address = data["wallet_address"],
+                token_type = data["token_type"],
+                amount = data["amount"],
+                token_value = data["token_value"],
+                token_name = data["token_name"] + data["token_type"],
+                application_date = timestamp,
+                validity_period = 5,
+                expiration_date = timestamp + 60 * 60 * 24 * 5,
+                reserve_photo_url = data["reserve_photo_url"],
+                account_info_photo_positive_url = data["account_info_photo_positive_url"],
+                account_info_photo_back_url = data["account_info_photo_back_url"],
+                approval_status = 0
+            )
 
-        s.add(info)
-        s.commit()
+            s.add(info)
+            s.commit()
+
         s.close()
 
         return
