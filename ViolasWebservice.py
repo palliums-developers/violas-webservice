@@ -565,10 +565,10 @@ def SendVerifyCode():
     HViolas.AddSSOUser(address)
 
     if receiver.find("@") >= 0:
-        succ = pushh.PushEmailSMSCode(verifyCode, receiver, 3)
+        succ = pushh.PushEmailSMSCode(verifyCode, receiver, 5)
         rds.setex(receiver, 600, str(verifyCode))
     else:
-        succ = pushh.PushPhoneSMSCode(verifyCode, local_number + receiver, 3)
+        succ = pushh.PushPhoneSMSCode(verifyCode, local_number + receiver, 5)
         rds.setex(local_number + receiver, 600, str(verifyCode))
 
     if not succ:

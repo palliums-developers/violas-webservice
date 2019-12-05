@@ -65,6 +65,8 @@ class PushServerHandler:
             paras["mode"] = "bind"
         elif usefulness == 4:
             paras["mode"] = "changePass"
+        elif usefulness == 5:
+            paras["mode"] = "violasBind"
 
         msg["paras"] = paras
 
@@ -91,6 +93,8 @@ class PushServerHandler:
             paras["mode"] = "bind"
         elif usefulness == 4:
             paras["mode"] = "changePass"
+        elif usefulness == 5:
+            paras["mode"] = "violasBind"
 
         msg["paras"] = paras
 
