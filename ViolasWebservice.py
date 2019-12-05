@@ -566,10 +566,10 @@ def SendVerifyCode():
 
     if receiver.find("@") >= 0:
         succ = pushh.PushEmailSMSCode(verifyCode, receiver, 3)
-        rds.setex(receiver, 60, str(verifyCode))
+        rds.setex(receiver, 600, str(verifyCode))
     else:
         succ = pushh.PushPhoneSMSCode(verifyCode, local_number + receiver, 3)
-        rds.setex(local_number + receiver, 60, str(verifyCode))
+        rds.setex(local_number + receiver, 600, str(verifyCode))
 
     if not succ:
         resp["code"] = 2004
