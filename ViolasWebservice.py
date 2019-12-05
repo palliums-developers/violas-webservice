@@ -396,6 +396,7 @@ def GetVBtcTransactionInfo():
     resp["code"] = 2000
     resp["message"] = "ok"
 
+    infos = []
     info = {}
     info["sender_address"] = "f086b6a2348ac502c708ac41d06fe824c91806cabcd5b2b5fa25ae1c50bed3c6"
     info["sequence_number"] = 1
@@ -403,7 +404,8 @@ def GetVBtcTransactionInfo():
     info["version"] = 4999
     info["btc_address"] = "2NGQjMnVhwVVzw1Sq7vjAz9Rf7Z1Fv8LFsV"
 
-    resp["data"] = info
+    infos.append(info)
+    resp["data"] = infos
 
     return resp
 

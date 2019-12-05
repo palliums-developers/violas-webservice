@@ -270,13 +270,16 @@
           {
               "code":2000,
               "message":"ok",
-              "data":{
-                  "version":4999,
-                  "sender_address":"xxxxxxxxxxxxxxxxxxxxx",
-                  "sequence_number":1,
-                  "amount":100000000,
-                  "btc_address":"xxxxxxxxxxxxxxxxxxxxx"
-              }
+              "data":[
+                  {
+                      "version":4999,
+                      "sender_address":"xxxxxxxxxxxxxxxxxxxxx",
+                      "sequence_number":1,
+                      "amount":100000000,
+                      "btc_address":"xxxxxxxxxxxxxxxxxxxxx"
+                  },
+                  ...
+              ]
           }
         #+END_SRC
 **** VBTC交易信息验证
