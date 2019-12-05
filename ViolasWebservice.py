@@ -423,8 +423,11 @@ def GetSSOUserInfo():
 
     info = HViolas.GetSSOUserInfo(address)
 
-    info["id_photo_positive_url"] = PHOTO_URL + info["id_photo_positive_url"]
-    info["id_photo_back_url"] = PHOTO_URL + info["id_photo_back_url"]
+    if info["id_photo_positive_url"] is not None:
+        info["id_photo_positive_url"] = PHOTO_URL + info["id_photo_positive_url"]
+
+    if info["id_photo_back_url"] is not None:
+        info["id_photo_back_url"] = PHOTO_URL + info["id_photo_back_url"]
 
     resp = {}
 
