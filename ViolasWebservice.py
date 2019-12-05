@@ -19,6 +19,8 @@ CORS(app, resources = r"/*")
 LIBRA = "testnet"
 VIOLAS_HOST = "52.27.228.84"
 VIOLAS_PORT = 40001
+
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 PHOTO_FOLDER = os.path.abspath("/var/www/violas_wallet/photo")
 PHOTO_URL = "http://52.27.228.84:4000/1.0/violas/photo/"
 
@@ -515,19 +517,29 @@ def TokenPublish():
 
     return resp
 
+def AllowedType(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route("/1.0/violas/photo", methods = ["POST"])
 def UploadPhoto():
     photo = request.files["photo"]
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    if not AllowedType(photo.filename):
+        resp["code"] = 2009
+        resp["message"] = "Image type not allowed!"
+
+        return resp
+
     ext = secure_filename(photo.filename).rsplit(".", 1)[1]
     nowTime = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    randomNum = random.randint(100, 999)
+    randomNum = random.randint(1000, 9999)
     uuid = str(nowTime) + str(randomNum) + "." + ext
     path = os.path.join(PHOTO_FOLDER, uuid)
     photo.save(path)
 
-    resp = {}
-    resp["code"] = 2000
-    resp["message"] = "ok"
     resp["data"] = uuid
 
     return resp
