@@ -421,7 +421,16 @@ def VerifyVBtcTransactionInfo():
 def GetSSOUserInfo():
     address = request.args.get("address")
 
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
     info = HViolas.GetSSOUserInfo(address)
+
+    if info is None:
+        resp["code"] = 2005
+        resp["message"] = "Address info not exists!"
+        return resp
 
     if info["id_photo_positive_url"] is not None:
         info["id_photo_positive_url"] = PHOTO_URL + info["id_photo_positive_url"]
@@ -429,15 +438,7 @@ def GetSSOUserInfo():
     if info["id_photo_back_url"] is not None:
         info["id_photo_back_url"] = PHOTO_URL + info["id_photo_back_url"]
 
-    resp = {}
-
-    if info is None:
-        resp["code"] = 2005
-        resp["message"] = "Address info not exists!"
-    else:
-        resp["code"] = 2000
-        resp["message"] = "ok"
-        resp["data"] = info
+    resp["data"] = info
 
     return resp
 
