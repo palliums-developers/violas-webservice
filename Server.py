@@ -20,6 +20,7 @@ LIBRA = "testnet"
 VIOLAS_HOST = "52.27.228.84"
 VIOLAS_PORT = 40001
 PHOTO_FOLDER = os.path.abspath("/var/www/violas_wallet/photo")
+PHOTO_URL = "http://52.27.228.84:4000/1.0/violas/photo/"
 
 libraDBInfo = config["LIBRA DB INFO"]
 libraDBUrl = f"{libraDBInfo['DBTYPE']}+{libraDBInfo['DRIVER']}://{libraDBInfo['USERNAME']}:{libraDBInfo['PASSWORD']}@{libraDBInfo['HOSTNAME']}:{libraDBInfo['PORT']}/{libraDBInfo['DATABASE']}"
@@ -419,6 +420,9 @@ def GetSSOUserInfo():
     address = request.args.get("address")
 
     info = HViolas.GetSSOUserInfo(address)
+
+    info["id_photo_positive_url"] = PHOTO_URL + info["id_photo_positive_url"]
+    info["id_photo_back_url"] = PHOTO_URL + info["id_photo_back_url"]
 
     resp = {}
 

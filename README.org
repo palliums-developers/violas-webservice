@@ -426,7 +426,7 @@
           }
         #+END_SRC
 **** 提交照片文件
-     用户提交照片文件，访问图片路径拼接： =http://xxx.xxx.xxx.xxx:xxxxx/1.0/violas/sso/photo/ + filename=
+     用户提交照片文件，访问图片路径拼接： =http://xxx.xxx.xxx.xxx:xxxxx/1.0/violas/photo/ + filename=
 ***** Request
       - Method: *POST*
       - URL: =/1.0/violas/photo=
