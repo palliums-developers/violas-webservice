@@ -1,9 +1,10 @@
 from time import time
-from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo
+from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo, ViolasGovernorInfo
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import exists
+from sqlalchemy.sql.expression import false
 
 class ViolasPGHandler():
     def __init__(self, dbUrl):
@@ -131,25 +132,187 @@ class ViolasPGHandler():
 
         return info
 
-    def ModifySSOApprovalStatus(self, address, status):
+    def SetTokenPublished(self, address):
         s = self.session()
         result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).first()
 
-        result.approval_status = status
+        result.approval_status = 3
         s.commit()
         s.close()
 
         return
 
-    def GetPublishedSSO(self):
+    def GetUnapprovalSSO(self, offset, limit):
         s = self.session()
-        ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.publish_status == 1).all()
+        ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.publish_status == 0).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
+
+        infos = []
+        for i in result:
+            userInfo = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == i.wallet_address).first()
+
+            info = {}
+            info["wallet_address"] = userInfo.wallet_address
+            info["name"] = userInfo.name
+            info["country"] = userInfo.country
+            info["id_number"] = userInfo.id_number
+            info["phone_local_number"] = userInfo.phone_local_number
+            info["phone_number"] = userInfo.phone_number
+            info["email_address"] = userInfo.email_address
+            info["id_photo_positive_url"] = userInfo.id_photo_positive_url
+            info["id_photo_back_url"] = userInfo.id_photo_back_url
+            info["token_type"] = i.token_type
+            info["amount"] = i.amount
+            info["token_value"] = i.token_value
+            info["token_name"] = i.token_name
+            info["application_date"] = i.application_date
+            info["validity_period"] = i.validity_period
+            info["expiration_date"] = i.expiration_date
+            info["reserve_photo_url"] = i.reserve_photo_url
+            info["account_info_photo_positive_url"] = i.account_info_photo_positive_url
+            info["account_info_photo_back_url"] = i.account_info_photo_back_url
+
+            infos.append(info)
+
+        s.close()
+        return infos
+
+    def SetMintInfo(self, data):
+        s = self.session()
+        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == data["wallet_address"]).first()
+        if result is None:
+            return False
+
+        result.approval_status = data["approval_status"]
+        if "module_address" in data:
+            result.moudle.address = data["module_address"]
+
+        s.commit()
+        s.close()
+
+        return True
+
+    def GetPublishedSSOInfo(self, offset, limit):
+        s = self.session()
+        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.approval_status == 3).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
 
         infos = []
         for i in result:
             info = {}
             info["wallet_address"] = i.wallet_address
+            info["module_address"] = i.module_address
             info["amount"] = i.amount
+
+            infos.append(info)
+
+        s.close()
+        return infos
+
+    def SetTokenMinted(self, data):
+        s = self.session()
+        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == data["wallet_address"]).first()
+        if result is None:
+            return False
+
+        result.approval_status = 4
+
+        s.commit()
+        s.close()
+
+        return True
+
+    def GetGovernorInfo(self, offset, limit):
+        s = self.session()
+        govInfos = s.query(ViolasGovernorInfo).order_by(ViolasGovernorInfo.id).offset(offset).limit(limit).all()
+
+        infos = []
+        for i in govInfos:
+            info = {}
+            info["toxid"] = i.toxid
+            info["name"] = i.name
+            info["public_key"] = i.public_key
+            info["wallet_address"] = i.violas_address
+            info["vstake_address"] = i.vstake_address
+            info["multisig_address"] = i.multisig_address
+            info["is_chairman"] = i.is_chairman
+
+            infos.append(info)
+
+        s.close()
+        return infos
+
+    def AddGovernorInfo(self, data):
+        s = self.session()
+
+        if data["is_chairman"] == 0:
+            isChairman = False,
+        else:
+            isChairman = True
+
+        if not s.query(exists().where(ViolasGovernorInfo.wallet_address == data["wallet_address"])).scalar():
+            info = ViolasGovernorInfo(
+                wallet_address = data["wallet_address"],
+                toxid = data["toxid"],
+                name = data["name"],
+                public_key = data["public_key"],
+                vstake_address = data["vstake_address"],
+                multisig_address = data["multisig_address"],
+                is_chairman = isChairman,
+                is_handle = False
+            )
+
+            s.add(info)
+            s.commit()
+
+        s.close()
+
+        return
+
+    def ModifyGovernorInfo(self, data):
+        s = self.session()
+
+        result =  s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.wallet_address == data["wallet_address"]).first()
+        if result is None:
+            return False
+
+        if "toxid" in data:
+            result.toxid = data["toxid"]
+        if "name" in data:
+            result.name = data["name"]
+        if "public_key" in data:
+            result.public_key = data["public_key"]
+        if "vstake_address" in data:
+            result.vstake_address = data["vstake_address"]
+        if "multisig_address" in data:
+            result.multisig_address = data["multisig_address"]
+        if "is_chairman" in data:
+            if data["is_chairman"] == 0:
+                result.is_chairman = False
+            else:
+                result.is_chairman = True
+        if "btc_txid" in data:
+            result.btc_txid = data["btc_txid"]
+        if "is_handle" in data:
+            if data["is_handle"] == 0:
+                result.is_handle = False
+            else:
+                result.is_handle = True
+
+        return True
+
+    def GetInvestmentedGovernorInfo(self, offset, limit):
+        s = self.session()
+        result = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.is_handle == false).filter(ViolasGovernorInfo.btc_txid.isnot(None)).order_by(ViolasGovernorInfo.id).offset(offset).limit(limit).all()
+
+        infos = []
+        for i in result:
+            info = {}
+            info["toxid"] = i.toxid
+            info["name"] = i.name
+            info["public_key"] = i.public_key
+            info["wallet_address"] = i.violas_address
+            info["vstake_address"] = i.vstake_address
+            info["multisig_address"] = i.multisig_address
+            info["btc_txid"] = i.btc_txid
 
             infos.append(info)
 

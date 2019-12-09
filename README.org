@@ -488,6 +488,255 @@
               "message":"ok"
           }
         #+END_SRC
+**** 获取未审批SSO信息
+     州长钱包获取待审批的SSO信息
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/sso/token/unapproval?offset=0&limit=10=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":[
+                  {
+                      "wallet_address":"xxxxxxxxxxxxxx",
+                      "name":"xxxxx",
+                      "country":"xxx",
+                      "id_number":"xxxxxxxxxxx",
+                      "phone_local_number":"+xx",
+                      "phone_number":"xxxxxxxxxxxxxx",
+                      "email_address":"xxxxxxxxxxxx",
+                      "id_photo_positive_url":"xxxxxxxxxxxxxxx",
+                      "id_photo_back_url":"xxxxxxxxxxxxxxx",
+                      "token_type":"xxxxx",
+                      "amount":100000000,
+                      "token_value":10,
+                      "token_name":"xxxxxx",
+                      "application_date":12323324234,
+                      "validity_period":5,
+                      "expiration_date":12312415412,
+                      "reserve_photo_url":"xxxxxxxxxxxxxxxx",
+                      "account_info_photo_positive_url":"xxxxxxxxxxxxxxxx",
+                      "account_info_photo_back_url":"xxxxxxxxxxxxxxxxx"
+                  },
+                  ...
+              ]
+          }
+        #+END_SRC
+**** 提交SSO审批结果
+     州长钱包提交Token审核结果与module地址
+***** Request
+      - Method: *PUT*
+      - URL: =/1.0/violas/sso/token/unapproval=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "approval_status":1,        // 审核结果，1：通过；2：未通过
+              "module_address":"xxxxxxxxxxxxxxxxxxxx"
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
+**** 获取Published SSO
+     州长钱包获取已经Publish的sso token信息
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/sso/token/published?offset=0&limit=10=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+      #+BEGIN_SRC js
+        {
+            "code":2000,
+            "message":"ok",
+            "data":[
+                {
+                    "wallet_address":"xxxxxxxxxxxxxx",
+                    "module_address":"xxxxxxxxxxxxxx",
+                    "amount":10000000
+                },
+                ...
+            ]
+        }
+      #+END_SRC
+**** 设置token铸币状态
+     州长钱包向sso token地址转账后设置状态为已铸币
+***** Request
+      - Method: *PUT*
+      - URL: =/1.0/violas/sso/token/minted=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "wallet_address":"xxxxxxxxxxxxxxxxxx"
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
 *** 州长钱包
-**** 获取待审批文件
-**** 提交审核结果
+**** 州长注册
+     提交州长信息进行注册
+***** Request
+      - Method: *POST*
+      - URL: =/1.0/violas/governor=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "toxid":"xxx",            // 进行tox通信所使用的toxid
+              "name":"xxx",             // 州长或懂事长自己起的名字
+              "public_key":"xxx",           // BTC的公钥
+              "wallet_address":"xxx",       // 平台币地址
+              "is_chairman":0,       // 是否是董事长: 0 不是, 1 是
+              "multisig_address":"xxx",     // 多签地址
+              "vstake_address":"xxx"       // vstake地址
+          }
+
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
+**** 修改州长信息
+     修改州长信息
+***** Request
+      - Method: *PUT*
+      - URL: =/1.0/violas/governor=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "toxid":"xxx",            // 进行tox通信所使用的toxid
+              "name":"xxx",             // 州长或懂事长自己起的名字
+              "public_key":"xxx",           // BTC的公钥
+              "wallet_address":"xxx",       // 平台币地址
+              "is_chairman":0,       // 是否是董事长: 0 不是, 1 是
+              "multisig_address":"xxx",     // 多签地址
+              "vstake_address":"xxx"       // vstake地址
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
+**** 获取州长信息列表
+     获取所有州长信息
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/governor?offset=0&limit=10=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":[
+                  {
+                      "toxid":"xxx",            // 进行tox通信所使用的toxid
+                      "name":"xxx",             // 州长或懂事长自己起的名字
+                      "public_key":"xxx",           // BTC的公钥
+                      "wallet_address":"xxx",       // 平台币地址
+                      "multisig_address":"xxx",     // 多签地址
+                      "vstake_address":"xxx",       // vstake地址
+                      "is_chairman":0               // 是否是董事长，0：否；1：是
+                  },
+                  ...
+              ]
+          }
+        #+END_SRC
+**** 增加投资信息
+     提交州长向董事长转账100BTC的转账信息
+***** Request
+      - Method: *POST*
+      - URL: =/1.0/violas/governor/investment=
+      - Headers: Content-Type:application/json
+      - Body:
+      #+BEGIN_SRC js
+        {
+            "wallet_address":"xxx",       // 平台币地址
+            "btc_txid":"xxxxxxxxxxxxxx"   // BTC转账交易id
+        }
+      #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
+**** 获取投资信息
+     董事长获取未处理的州长BTC转账信息
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/governor/investment?offset=0&limit=10=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":[
+                  {
+                      "wallet_address":"xxxxxxxxxxxx",
+                      "name":"xxxxxxx",
+                      "toxid":"xxxxxxxx",
+                      "vstake_address":"xxxxxxxxxxxxx",
+                      "btc_txid":"xxxxxxxxxxxxxxxxxxxx",
+                      "public_key":"xxxxxxxxxxxxxxxx",
+                      "multisig_address":"xxxxxxxxxxxxxxxxxx"
+                  }
+              ]
+          }
+        #+END_SRC
+**** 修改处理状态
+     董事长修改投资信息处理状态
+***** Request
+      - Method: *PUT*
+      - URL: =/1.0/violas/governor/investment=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "wallet_address":"xxxxxxxxxxxxxxx",
+              "is_handle":0               // 是否已处理，0：未处理；1：已处理
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC

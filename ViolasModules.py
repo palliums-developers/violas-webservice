@@ -1,5 +1,5 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, SmallInteger, Integer, String, Numeric, BigInteger
+from sqlalchemy import Column, SmallInteger, Integer, String, Numeric, BigInteger, Boolean
 
 Base = declarative_base()
 
@@ -34,3 +34,17 @@ class ViolasSSOInfo(Base):
     account_info_photo_back_url = Column(String(64), nullable = False)
     module_address = Column(String(64), nullable = True)
     approval_status = Column(SmallInteger, nullable = False) # 0: not approved; 1: pass; 2: not pass; 3: published; 4: minted
+
+class ViolasGovernorInfo(Base):
+    __tablename__ = "governor_info"
+
+    id = Column(BigInteger, primary_key = True, autoincrement = True)
+    wallet_address = Column(String(64), nullable = False)
+    toxid = Column(String(76), nullable = False)
+    name = Column(String(32), nullable = False)
+    public_key = Column(String(64), nullable = False)
+    vstake_address = Column(String(64), nullable = False)
+    multisig_address = Column(String(34), nullable = False)
+    is_chairman = Column(Boolean, nullable = False)
+    btc_txid = Column(String(64), nullable = True)
+    is_handle = Column(Boolean, nullable = False)

@@ -396,15 +396,20 @@ def GetVBtcTransactionInfo():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    infos = []
-    info = {}
-    info["sender_address"] = "f086b6a2348ac502c708ac41d06fe824c91806cabcd5b2b5fa25ae1c50bed3c6"
-    info["sequence_number"] = 1
-    info["amount"] = 10000000
-    info["version"] = 4999
-    info["btc_address"] = "2NGQjMnVhwVVzw1Sq7vjAz9Rf7Z1Fv8LFsV"
+    cli = MakeViolasClient()
+    results = cli.get_transactions(start_version, 10, True)
 
-    infos.append(info)
+    infos = []
+    for i in results:
+        info = {}
+        info["sender_address"] = i.raw_txn.type.sender # "f086b6a2348ac502c708ac41d06fe824c91806cabcd5b2b5fa25ae1c50bed3c6"
+        info["sequence_number"] = i.raw_txn.sequence_number
+        info["amount"] = i.raw_txn.type.amount
+        info["version"] = i.version
+        info["btc_address"] = i.events[0].event.data
+
+        infos.append(info)
+
     resp["data"] = infos
 
     return resp
@@ -416,6 +421,24 @@ def VerifyVBtcTransactionInfo():
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
+
+    cli = MakeViolasClient()
+    result = cli.get_transaction(params.version, True)
+
+    if result.raw_txn.type.sender != params["sender_address"]:
+        resp["code"] = 2009
+        resp["message"] = "The transaction information is incorrect."
+        return resp
+
+    if result.raw_txn.type.amount != params["amount"]:
+        resp["code"] = 2009
+        resp["message"] = "The transaction information is incorrect."
+        return resp
+
+    if result.events[0].event.data != params["btc_address"]:
+        resp["code"] = 2009
+        resp["message"] = "The transaction information is incorrect."
+        return resp
 
     return resp
 
@@ -515,7 +538,7 @@ def SubmitTokenInfo():
 @app.route("/1.0/violas/sso/token", methods = ["PUT"])
 def TokenPublish():
     params = request.get_json()
-    HViolas.ModifySSOApprovalStatus(params["address"], 3)
+    HViolas.SetTokenPublished(params["address"])
 
     resp = {}
     resp["code"] = 2000
@@ -623,17 +646,137 @@ def BindUserInfo():
 
     return resp
 
+@app.route("/1.0/violas/sso/token/unapproval")
+def GetUnapprovalTokenInfo():
+    offset = request.args.get("offset", 0, int)
+    limit = request.args.get("limit", 10, int)
+
+    infos = HViolas.GetUnapprovalSSO(offset, limit)
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+    resp["data"] = infos
+
+    return resp
+
+@app.route("/1.0/violas/sso/token/unapproval", methods = ["PUT"])
+def ModifyApprovalStatus():
+    params = request.get_json()
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    if not HViolas.SetMintInfo(params):
+        resp["code"] = 2010
+        resp["message"] = "Address info not exists"
+
+    return resp
+
+@app.route("/1.0/violas/sso/token/published")
+def GetPublishedTokenInfo():
+    offset = request.args.get("offset", 0, int)
+    limit = request.args.get("limit", 10, int)
+
+    infos = HViolas.GetPublishedSSOInfo(offset, limit)
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+    resp["data"] = infos
+
+    return resp
+
+@app.route("/1.0/violas/sso/token/minted", methods = ["PUT"])
+def SetTokenMinted():
+    params = request.get_json()
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    if not HViolas.SetTokenMinted(params):
+        resp["code"] = 2005
+        resp["message"] = "Address info not exists!"
+
+    return resp
+
 @app.route("/1.0/violas/governor")
 def GetGovernorInfo():
+    offset = request.args.get("offset", 0, int)
+    limit = request.args.get("limit", 10, int)
+
+    infos = HViolas.GetGovernorInfo(offset, limit)
+
     resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+    resp["data"] = infos
+
     return resp
 
 @app.route("/1.0/violas/governor", methods = ["POST"])
 def AddGovernorInfo():
+    params = request.get_json()
+
+    HViolas.AddGovernorInfo(params)
     resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
     return resp
 
 @app.route("/1.0/violas/governor", methods = ["PUT"])
 def ModifyGovernorInfo():
+    params = request.get_json()
+
     resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    if not HViolas.ModifyGovernorInfo(params):
+        resp["code"] = 2005
+        resp["message"] = "Address info not exists!"
+
+    return resp
+
+@app.route("/1.0/violas/governor/investment")
+def GetGovernorInvestmentInfo():
+    offset = request.args.get("offset", 0, int)
+    limit = request.args.get("limit", 10, int)
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+    resp["data"] = HViolas.GetInvestmentedGovernorInfo(offset, limit)
+
+    return resp
+
+@app.route("/1.0/violas/governor/investment", methods = ["POST"])
+def AddInvestmentInfo():
+    params = request.get_json()
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    if not HViolas.ModifyGovernorInfo(params):
+        resp["code"] = 2005
+        resp["message"] = "Address info not exists!"
+
+    return resp
+
+@app.route("/1.0/violas/governor/investment", methods = ["PUT"])
+def MakeInvestmentHandled():
+    params = request.get_json()
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    if not HViolas.ModifyGovernorInfo(params):
+        resp["code"] = 2005
+        resp["message"] = "Address info not exists!"
+
     return resp
