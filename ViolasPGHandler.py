@@ -18,14 +18,7 @@ class ViolasPGHandler():
 
         if not s.query(exists().where(ViolasSSOUserInfo.wallet_address == address)).scalar():
             info = ViolasSSOUserInfo(
-                wallet_address = address # data["wallet_address"],
-                # name = data["name"],
-                # country = data["country"],
-                # id_number = data["id_number"],
-                # phone_number = data["phone_number"],
-                # email_address = data["email_address"],
-                # id_photo_positive_url = data["id_photo_positive_url"],
-                # id_photo_back_url = data["id_photo_back_url"]
+                wallet_address = address
             )
 
             s.add(info)

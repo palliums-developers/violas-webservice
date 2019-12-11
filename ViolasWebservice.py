@@ -5,6 +5,7 @@ from werkzeug.utils import secure_filename
 from libra import Client, AccountError, TransactionTimeoutError
 from libra.transaction import SignedTransaction
 from redis import Redis
+import requests
 
 from ViolasPGHandler import ViolasPGHandler
 from PushServerHandler import PushServerHandler
@@ -37,6 +38,10 @@ pushh = PushServerHandler(pushInfo["HOST"], int(pushInfo["PORT"]))
 
 cachingInfo = config["CACHING SERVER"]
 rds = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["DB"], cachingInfo["PASSWORD"])
+
+EXPLORER_HOST = "http://52.27.228.84:4001"
+GET_TRANSACTION_HISTORY = ""
+TRANSACTION_ABOUT_VBTC = "/violas/transaction/vbtc"
 
 def MakeLibraClient():
     return Client(LIBRA)
@@ -396,30 +401,22 @@ def GetVBtcTransactionInfo():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    # cli = MakeViolasClient()
-    # results = cli.get_transactions(start_version, 10, True)
+    reqURL = f"{EXPLORER_HOST}{TRANSACTION_ABOUT_VBTC}?recevier_address={receiverAddress}&module_address={moduleAddress}&start_version={startVersion}"
+    print(reqURL)
 
-    infos = []
-    info = {}
-    info["sender_address"] = "f086b6a2348ac502c708ac41d06fe824c91806cabcd5b2b5fa25ae1c50bed3c6"
-    info["sequence_number"] = 1
-    info["amount"] = 10000000
-    info["version"] = 4999
-    info["btc_address"] = "2NGQjMnVhwVVzw1Sq7vjAz9Rf7Z1Fv8LFsV"
-    infos.append(info)
+    response = requests.get(reqURL)
+    print(str(response.content, "utf8"))
 
     # infos = []
-    # for i in results:
-    #     info = {}
-    #     info["sender_address"] = i.raw_txn.type.sender # "f086b6a2348ac502c708ac41d06fe824c91806cabcd5b2b5fa25ae1c50bed3c6"
-    #     info["sequence_number"] = i.raw_txn.sequence_number
-    #     info["amount"] = i.raw_txn.type.amount
-    #     info["version"] = i.version
-    #     info["btc_address"] = i.events[0].event.data
+    # info = {}
+    # info["sender_address"] = "f086b6a2348ac502c708ac41d06fe824c91806cabcd5b2b5fa25ae1c50bed3c6"
+    # info["sequence_number"] = 1
+    # info["amount"] = 10000000
+    # info["version"] = 4999
+    # info["btc_address"] = "2NGQjMnVhwVVzw1Sq7vjAz9Rf7Z1Fv8LFsV"
+    # infos.append(info)
 
-    #     infos.append(info)
-
-    resp["data"] = infos
+    resp["data"] = str(response.content, "utf8")
 
     return resp
 
@@ -431,23 +428,10 @@ def VerifyVBtcTransactionInfo():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    # cli = MakeViolasClient()
-    # result = cli.get_transaction(params.version, True)
-
-    # if result.raw_txn.type.sender != params["sender_address"]:
-    #     resp["code"] = 2009
-    #     resp["message"] = "The transaction information is incorrect."
-    #     return resp
-
-    # if result.raw_txn.type.amount != params["amount"]:
-    #     resp["code"] = 2009
-    #     resp["message"] = "The transaction information is incorrect."
-    #     return resp
-
-    # if result.events[0].event.data != params["btc_address"]:
-    #     resp["code"] = 2009
-    #     resp["message"] = "The transaction information is incorrect."
-    #     return resp
+    reqURL = f"{EXPLORER_HOST}{TRANSACTION_ABOUT_VBTC}?recevier_address={receiverAddress}&module_address={moduleAddress}&start_version={startVersion}"
+    print(reqURL)
+    response = requests.post(reqURL, data = params)
+    print(str(response.content, "utf8"))
 
     return resp
 
