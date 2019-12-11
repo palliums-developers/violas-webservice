@@ -1,11 +1,10 @@
-import os, random, logging, configparser, datetime
+import os, random, logging, configparser, datetime, requests, json
 from flask import Flask, request, send_file
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from libra import Client, AccountError, TransactionTimeoutError
 from libra.transaction import SignedTransaction
 from redis import Redis
-import requests
 
 from ViolasPGHandler import ViolasPGHandler
 from PushServerHandler import PushServerHandler
@@ -393,7 +392,7 @@ def CheckMoudleExise():
 
 @app.route("/1.0/violas/vbtc/transaction")
 def GetVBtcTransactionInfo():
-    receiverAddress = request.args.get("recevier_address")
+    receiverAddress = request.args.get("receiver_address")
     moduleAddress = request.args.get("module_address")
     startVersion = request.args.get("start_version", type = int)
 
@@ -401,22 +400,11 @@ def GetVBtcTransactionInfo():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    reqURL = f"{EXPLORER_HOST}{TRANSACTION_ABOUT_VBTC}?recevier_address={receiverAddress}&module_address={moduleAddress}&start_version={startVersion}"
-    print(reqURL)
+    reqURL = f"{EXPLORER_HOST}{TRANSACTION_ABOUT_VBTC}?receiver_address={receiverAddress}&module_address={moduleAddress}&start_version={startVersion}"
 
     response = requests.get(reqURL)
-    print(str(response.content, "utf8"))
-
-    # infos = []
-    # info = {}
-    # info["sender_address"] = "f086b6a2348ac502c708ac41d06fe824c91806cabcd5b2b5fa25ae1c50bed3c6"
-    # info["sequence_number"] = 1
-    # info["amount"] = 10000000
-    # info["version"] = 4999
-    # info["btc_address"] = "2NGQjMnVhwVVzw1Sq7vjAz9Rf7Z1Fv8LFsV"
-    # infos.append(info)
-
-    resp["data"] = str(response.content, "utf8")
+    result = json.loads(response.text)
+    resp["data"] = result["data"]
 
     return resp
 
@@ -424,16 +412,11 @@ def GetVBtcTransactionInfo():
 def VerifyVBtcTransactionInfo():
     params = request.get_json()
 
-    resp = {}
-    resp["code"] = 2000
-    resp["message"] = "ok"
+    reqURL = f"{EXPLORER_HOST}{TRANSACTION_ABOUT_VBTC}"
+    response = requests.post(reqURL, json = params)
+    result = json.loads(response.text)
 
-    reqURL = f"{EXPLORER_HOST}{TRANSACTION_ABOUT_VBTC}?recevier_address={receiverAddress}&module_address={moduleAddress}&start_version={startVersion}"
-    print(reqURL)
-    response = requests.post(reqURL, data = params)
-    print(str(response.content, "utf8"))
-
-    return resp
+    return result
 
 @app.route("/1.0/violas/sso/user")
 def GetSSOUserInfo():
