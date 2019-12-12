@@ -9,7 +9,7 @@ from redis import Redis
 from ViolasPGHandler import ViolasPGHandler
 from PushServerHandler import PushServerHandler
 
-logging.basicConfig(filename = "log.out", level = logging.DEBUG)
+logging.basicConfig(filename = "ViolasWebservice.log", level = logging.DEBUG)
 config = configparser.ConfigParser()
 config.read("./config.ini")
 
