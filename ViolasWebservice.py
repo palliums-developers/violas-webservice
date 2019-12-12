@@ -762,7 +762,7 @@ def MakeInvestmentHandled():
 def GetTransactionsAboutGovernor():
     address = request.args.get("address")
     limit = request.args.get("limit", default = 10, type = int)
-    start_version = request.args.get("strat_version", default = 0, type = int)
+    start_version = request.args.get("start_version", default = 0, type = int)
 
     reqURL = f"{EXPLORER_HOST}{TRANSACTION_ABOUT_GOVERNOR}?address={address}&limit={limit}&start_version={start_version}"
     response = requests.get(reqURL)
