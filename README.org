@@ -740,3 +740,43 @@
               "message":"ok"
           }
         #+END_SRC
+**** 获取交易记录
+     获取州长相关的交易记录
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/governor/transactions?address=xxxxxxxxxxxxxxxxxxxxxxxxx&limit=10&start_version=0=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":[
+                  {
+                      "amount": 10000000,
+                      "data": null,
+                      "etype": null,
+                      "event_root_hash": "6d80965022ce1b4129e404a0f5134811e8d0a56685fa092936684d3a43873824",
+                      "expiration_time": 1576131136,
+                      "gas_unit_price": 0,
+                      "gas_used": 0,
+                      "max_gas_amount": 140000,
+                      "module": "LibraAccount",
+                      "module_address": "0000000000000000000000000000000000000000000000000000000000000000",
+                      "public_key": "938d431a4bf9ccefedb3808bd6544867634c7ee65a6b46e26a094058672312fe",
+                      "receiver": "88c755d110d0b50fb6a48c81d8cddb573623c9b3d9279ef6c22eb7115d547678",
+                      "sender": "000000000000000000000000000000000000000000000000000000000a550c18",
+                      "sequence_number": 1068,
+                      "signature": "d227ef45f2db800f8ce23569b174cc7b3c1085af13ee832d57ac558fed1e98645026cd7f41048c3e986fee5d96528f82209d77f086b334a38de8bf67a52ba80d",
+                      "state_root_hash": "6a54c9fc8142a66ef08c99a7c0ae89d8c6ae0a6db8843bd8086c0579e4beddb3",
+                      "status": 4001,
+                      "transaction_hash": "cf780b53964f5dfa22a5861035dc20666daede13587b35a0177c6304c8286c11",
+                      "transaction_type": "mint",
+                      "version": 67092
+                  },
+                  ...
+              ]
+          }
+        #+END_SRC
