@@ -41,6 +41,7 @@ rds = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["DB"], caching
 EXPLORER_HOST = "http://52.27.228.84:4001"
 GET_TRANSACTION_HISTORY = ""
 TRANSACTION_ABOUT_VBTC = "/violas/transaction/vbtc"
+TRANSACTION_ABOUT_GOVERNOR = "/violas/transaction/governor"
 
 def MakeLibraClient():
     return Client(LIBRA)
@@ -754,5 +755,22 @@ def MakeInvestmentHandled():
     if not HViolas.ModifyGovernorInfo(params):
         resp["code"] = 2005
         resp["message"] = "Address info not exists!"
+
+    return resp
+
+@app.route("/1.0/violas/governor/transactions")
+def GetTransactionsAboutGovernor():
+    address = request.args.get("address")
+    limit = request.args.get("limit", default = 10, type = int)
+    start_version = request.args.get("strat_version", default = 0, type = int)
+
+    reqURL = f"{EXPLORER_HOST}{TRANSACTION_ABOUT_GOVERNOR}?address={address}&limit={limit}&start_version={start_version}"
+    response = requests.get(reqURL)
+    result = json.loads(response.text)
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+    resp["data"] = result["data"]
 
     return resp
