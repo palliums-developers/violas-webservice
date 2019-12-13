@@ -166,7 +166,7 @@
 **** 获取violas交易记录
 ***** Request
       - Method: *GET*
-      - URL: =/1.0/violas/transaction?addr=addr&limit=5&offset=0=
+      - URL: =/1.0/violas/transaction?addr=addr&limit=5&offset=0[&modu=module_address]=
       - Headers: None
       - Body: None
 ***** Response
