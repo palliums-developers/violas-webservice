@@ -39,7 +39,7 @@ cachingInfo = config["CACHING SERVER"]
 rds = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["DB"], cachingInfo["PASSWORD"])
 
 EXPLORER_HOST = "http://52.27.228.84:4001"
-GET_TRANSACTION_HISTORY = ""
+TRANSACTIONS_FOR_WALLET = "/violas/transaction/wallet"
 TRANSACTION_ABOUT_VBTC = "/violas/transaction/vbtc"
 TRANSACTION_ABOUT_GOVERNOR = "/violas/transaction/governor"
 
@@ -260,74 +260,18 @@ def GetLibraTransactionInfo():
 @app.route("/1.0/violas/transaction")
 def GetViolasTransactionInfo():
     address = request.args.get("addr")
-    limit = request.args.get("limit", 5, int)
+    limit = request.args.get("limit", 10, int)
     offset = request.args.get("offset", 0, int)
 
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    cli = MakeViolasClient()
-    try:
-        seqNum = cli.get_sequence_number(address)
-    except AccountError:
-        resp["data"] = []
+    reqURL = f"{EXPLORER_HOST}{TRANSACTIONS_FOR_WALLET}?address={address}&limit={limit}&offset={offset}"
+    response = requests.get(reqURL)
+    result = json.loads(response.text)
 
-        return resp
-
-    if offset > seqNum:
-        resp["data"] = []
-
-        return resp
-
-    transactions = []
-
-    for i in range(offset, seqNum):
-        if (i - offset) >= limit:
-            break
-
-        try:
-            tran = cli.get_account_transaction(address, i)
-            print(tran)
-        except AccountError:
-            resp["data"] = []
-            return resp
-
-        print(tran.raw_txn.type)
-        print(tran.raw_txn.type.type)
-
-        if tran.raw_txn.type.type == "violas_init":
-            info = {}
-            info["type"] = 1
-            info["version"] = tran.get_version()
-            info["sequence_number"] = tran.get_sender_sequence()
-            info["expiration_time"] = tran.get_expiration_time()
-            info["gas"] = tran.get_gas_unit_price()
-            info["sender"] = tran.raw_txn.type.sender
-            info["receiver"] = tran.raw_txn.type.receiver
-            info["sender_module"] = tran.raw_txn.type.sender_module_address
-            info["receiver_module"] = ""
-            info["amount"] = 0
-
-            transactions.append(info)
-        elif tran.raw_txn.type.type == "violas_peer_to_peer_transfer":
-            info = {}
-            info["type"] = 2
-            info["version"] = tran.get_version()
-            info["sequence_number"] = tran.get_sender_sequence()
-            info["expiration_time"] = tran.get_expiration_time()
-            info["gas"] = tran.get_gas_unit_price()
-            info["sender"] = tran.raw_txn.type.sender
-            info["receiver"] = tran.raw_txn.type.receiver
-            info["sender_module"] = tran.raw_txn.type.sender_module_address
-            info["receiver_module"] = tran.raw_txn.type.receiver_module_address
-            info["amount"] = tran.raw_txn.type.amount
-
-            transactions.append(info)
-
-    resp["data"] = transactions
-
-    return resp
+    return result
 
 @app.route("/1.0/violas/currency")
 def GetCurrency():
