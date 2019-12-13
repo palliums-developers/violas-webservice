@@ -223,7 +223,7 @@ class ViolasPGHandler():
             info["toxid"] = i.toxid
             info["name"] = i.name
             info["public_key"] = i.public_key
-            info["wallet_address"] = i.violas_address
+            info["wallet_address"] = i.wallet_address
             info["vstake_address"] = i.vstake_address
             info["multisig_address"] = i.multisig_address
             info["is_chairman"] = i.is_chairman
@@ -302,7 +302,7 @@ class ViolasPGHandler():
             info["toxid"] = i.toxid
             info["name"] = i.name
             info["public_key"] = i.public_key
-            info["wallet_address"] = i.violas_address
+            info["wallet_address"] = i.wallet_address
             info["vstake_address"] = i.vstake_address
             info["multisig_address"] = i.multisig_address
             info["btc_txid"] = i.btc_txid
