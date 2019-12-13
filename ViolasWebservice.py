@@ -412,6 +412,7 @@ def GetVBtcTransactionInfo():
 @app.route("/1.0/violas/vbtc/transaction", methods = ["POST"])
 def VerifyVBtcTransactionInfo():
     params = request.get_json()
+    logging.debug(f"Get params: {params}")
 
     reqURL = f"{EXPLORER_HOST}{TRANSACTION_ABOUT_VBTC}"
     response = requests.post(reqURL, json = params)
