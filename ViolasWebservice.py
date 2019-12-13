@@ -260,14 +260,12 @@ def GetLibraTransactionInfo():
 @app.route("/1.0/violas/transaction")
 def GetViolasTransactionInfo():
     address = request.args.get("addr")
+    module = request.args.get("modu", "0000000000000000000000000000000000000000000000000000000000000000")
     limit = request.args.get("limit", 10, int)
     offset = request.args.get("offset", 0, int)
 
-    resp = {}
-    resp["code"] = 2000
-    resp["message"] = "ok"
+    reqURL = f"{EXPLORER_HOST}{TRANSACTIONS_FOR_WALLET}?address={address}&module={module}&limit={limit}&offset={offset}"
 
-    reqURL = f"{EXPLORER_HOST}{TRANSACTIONS_FOR_WALLET}?address={address}&limit={limit}&offset={offset}"
     response = requests.get(reqURL)
     result = json.loads(response.text)
 
