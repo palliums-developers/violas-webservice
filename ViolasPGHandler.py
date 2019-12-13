@@ -237,7 +237,7 @@ class ViolasPGHandler():
         s = self.session()
 
         if data["is_chairman"] == 0:
-            isChairman = False,
+            isChairman = False
         else:
             isChairman = True
 
