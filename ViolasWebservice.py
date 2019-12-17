@@ -2,7 +2,7 @@ import os, random, logging, configparser, datetime, requests, json
 from flask import Flask, request, send_file
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
-from libra import Client, AccountError, TransactionTimeoutError
+from libra import Client, AccountError, TransactionTimeoutError, LibraNetError, TransactionIllegalError
 from libra.transaction import SignedTransaction
 from redis import Redis
 
@@ -178,6 +178,9 @@ def MakeLibraTransaction():
     except TransactionTimeoutError as e:
         resp["code"] = 2002
         resp["message"] = "Error: Waiting for background response timeout!"
+    except TransactionIllegalError as e:
+        resp["code"] = 2011
+        resp["message"] = f"Error: {e.error_msg}"
 
     return resp
 
@@ -205,6 +208,9 @@ def MakeViolasTransaction():
     except TransactionTimeoutError as e:
         resp["code"] = 2002
         resp["message"] = "Error: Waiting for background response timeout!"
+    except TransactionIllegalError as e:
+        resp["code"] = 2011
+        resp["message"] = f"Error: {e.error_msg}"
 
     return resp
 
