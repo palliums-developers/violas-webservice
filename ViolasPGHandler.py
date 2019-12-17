@@ -290,6 +290,8 @@ class ViolasPGHandler():
             else:
                 result.is_handle = True
 
+        s.commit()
+        s.close()
         return True
 
     def GetInvestmentedGovernorInfo(self, offset, limit):
