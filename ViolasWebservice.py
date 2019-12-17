@@ -46,7 +46,7 @@ def MakeLibraClient():
     return Client(LIBRA_HOST)
 
 def MakeViolasClient():
-    return Client(VIOLAS_HOST, "/tmp/consensus_peers.config(5).toml", "/tmp/faucet_keys(1)")
+    return Client(VIOLAS_HOST, "/tmp/consensus_peers.config.toml", "/tmp/faucet_keys")
 
 @app.route("/1.0/libra/balance")
 def GetLibraBalance():
