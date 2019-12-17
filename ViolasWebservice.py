@@ -16,9 +16,8 @@ config.read("./config.ini")
 app = Flask(__name__)
 CORS(app, resources = r"/*")
 
-LIBRA = "testnet"
-VIOLAS_HOST = "52.27.228.84"
-VIOLAS_PORT = 40001
+LIBRA_HOST = "testnet"
+VIOLAS_HOST = "violas_testnet"
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 PHOTO_FOLDER = os.path.abspath("/var/www/violas_wallet/photo")
@@ -44,10 +43,10 @@ TRANSACTION_ABOUT_VBTC = "/violas/transaction/vbtc"
 TRANSACTION_ABOUT_GOVERNOR = "/violas/transaction/governor"
 
 def MakeLibraClient():
-    return Client(LIBRA)
+    return Client(LIBRA_HOST)
 
 def MakeViolasClient():
-    return Client.new(VIOLAS_HOST, VIOLAS_PORT, "/tmp/consensus_peers.config.toml")
+    return Client(VIOLAS_HOST, "/tmp/consensus_peers.config(5).toml", "/tmp/faucet_keys(1)")
 
 @app.route("/1.0/libra/balance")
 def GetLibraBalance():
