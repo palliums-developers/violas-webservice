@@ -324,7 +324,12 @@ def CheckMoudleExise():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    info = cli.violas_get_info(addr)
+    try:
+        info = cli.violas_get_info(addr)
+    except AccountError:
+        resp["data"] = []
+        return resp
+
     modus = []
     for key in info.keys():
         modus.append(key)
