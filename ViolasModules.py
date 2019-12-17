@@ -44,7 +44,7 @@ class ViolasGovernorInfo(Base):
     name = Column(String(32), nullable = False)
     public_key = Column(String(64), nullable = False)
     vstake_address = Column(String(64), nullable = False)
-    multisig_address = Column(String(34), nullable = False)
+    multisig_address = Column(String(35), nullable = False)
     is_chairman = Column(Boolean, nullable = False)
     btc_txid = Column(String(64), nullable = True)
     is_handle = Column(Boolean, nullable = False)
