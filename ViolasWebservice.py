@@ -180,7 +180,7 @@ def MakeLibraTransaction():
         resp["message"] = "Error: Waiting for background response timeout!"
     except TransactionIllegalError as e:
         resp["code"] = 2011
-        resp["message"] = f"Error: {e.message}"
+        resp["message"] = f"Error: {e}"
 
     return resp
 
@@ -210,7 +210,7 @@ def MakeViolasTransaction():
         resp["message"] = "Error: Waiting for background response timeout!"
     except TransactionIllegalError as e:
         resp["code"] = 2011
-        resp["message"] = f"Error: {e.message}"
+        resp["message"] = f"Error: {e}"
 
     return resp
 
