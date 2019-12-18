@@ -68,6 +68,9 @@ def GetLibraBalance():
         info["address"] = address
         info["balance"] = 0
         resp["data"] = info
+    except LibraNetError:
+        resp["code"] = 2012
+        resp["message"] = "Error: Node connection failed."
 
     return resp
 
@@ -92,6 +95,10 @@ def GetViolasBalance():
         info["balance"] = 0
         resp["data"] = info
         return resp
+    except LibraNetError:
+        resp["code"] = 2012
+        resp["message"] = "Error: Node connection failed."
+        return resp
 
     if len(modules) != 0:
         modulesBalance = []
@@ -102,6 +109,10 @@ def GetViolasBalance():
             except AccountError:
                 resp["code"] = 2000
                 resp["message"] = "Account Error."
+                return resp
+            except LibraNetError:
+                resp["code"] = 2012
+                resp["message"] = "Error: Node connection failed."
                 return resp
 
             print(result)
@@ -127,11 +138,12 @@ def GetLibraSequenceNumbert():
     cli = MakeLibraClient()
     try:
         seqNum = cli.get_sequence_number(address)
+        resp["data"] = seqNum
     except AccountError:
         resp["data"] = 0
-        return resp
-
-    resp["data"] = seqNum
+    except LibraNetError:
+        resp["code"] = 2012
+        resp["message"] = "Error: Node connection failed."
 
     return resp
 
@@ -146,11 +158,12 @@ def GetViolasSequenceNumbert():
     cli = MakeViolasClient()
     try:
         seqNum = cli.get_sequence_number(address)
+        resp["data"] = seqNum
     except AccountError:
         resp["data"] = 0
-        return resp
-
-    resp["data"] = seqNum
+    except LibraNetError:
+        resp["code"] = 2012
+        resp["message"] = "Error: Node connection failed."
 
     return resp
 
@@ -175,12 +188,15 @@ def MakeLibraTransaction():
 
     try:
         cli.submit_signed_txn(signedtxn, True)
-    except TransactionTimeoutError as e:
+    except TransactionTimeoutError:
         resp["code"] = 2002
-        resp["message"] = "Error: Waiting for background response timeout!"
-    except TransactionIllegalError as e:
+        resp["message"] = "Error: Submit transaction failed!"
+    except TransactionIllegalError:
         resp["code"] = 2011
-        resp["message"] = f"Error: Submit transaction failed, {e}."
+        resp["message"] = "Error: Illegal transaction."
+    except LibraNetError:
+        resp["code"] = 2012
+        resp["message"] = "Error: Node connection failed."
 
     return resp
 
@@ -205,12 +221,15 @@ def MakeViolasTransaction():
 
     try:
         cli.submit_signed_txn(signedtxn, True)
-    except TransactionTimeoutError as e:
+    except TransactionTimeoutError:
         resp["code"] = 2002
-        resp["message"] = "Error: Waiting for background response timeout!"
-    except TransactionIllegalError as e:
+        resp["message"] = "Error: Submit transaction failed!"
+    except TransactionIllegalError:
         resp["code"] = 2011
-        resp["message"] = f"Error: Submit transaction failed, {e}."
+        resp["message"] = "Error: Illegal transaction."
+    except LibraNetError:
+        resp["code"] = 2012
+        resp["message"] = "Error: Node connection failed."
 
     return resp
 
@@ -282,11 +301,7 @@ def GetCurrency():
     resp["code"] = 2000
     resp["message"] = "ok"
     currencies = []
-    info = {}
-    info["name"] = "Xcoin"
-    info["description"] = "desc of Xcoin"
-    info["address"] = "05599ef248e215849cc599f563b4883fc8aff31f1e43dff1e3ebe4de1370e054"
-    currencies.append(info)
+
     info1 = {}
     info1["name"] = "ABCUSD"
     info1["description"] = "desc"
