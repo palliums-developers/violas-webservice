@@ -296,7 +296,7 @@ class ViolasPGHandler():
 
     def GetInvestmentedGovernorInfo(self, offset, limit):
         s = self.session()
-        result = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.is_handle == false).filter(ViolasGovernorInfo.btc_txid.isnot(None)).order_by(ViolasGovernorInfo.id).offset(offset).limit(limit).all()
+        result = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.is_handle == False).filter(ViolasGovernorInfo.btc_txid.isnot(None)).order_by(ViolasGovernorInfo.id).offset(offset).limit(limit).all()
 
         infos = []
         for i in result:
