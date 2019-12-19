@@ -321,9 +321,9 @@ class ViolasPGHandler():
         currencies = []
         for i in ssoInfos:
             currency = {}
-            currency["name"] = token_name
-            currency["address"] = module_address
-            currency["description"] = token_name
+            currency["name"] = i.token_name
+            currency["address"] = i.module_address
+            currency["description"] = i.token_name
 
             currencies.append(currency)
 
