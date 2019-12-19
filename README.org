@@ -184,7 +184,7 @@
                       "sender": "9db71b006cb300c1682e3a1ab375552344fa808b2acd4f53340470a5267bf082",
                       "sender_module": "05599ef248e215849cc599f563b4883fc8aff31f1e43dff1e3ebe4de1370e054",
                       "sequence_number": 0,
-                      "type": 1,          // publish transaction
+                      "type": 1,          // 0. vtoken p2p transaction; 1. module publish transaction; 2. module p2p transaction
                       "version": 240,
                       "gas":1000
                   },
@@ -195,7 +195,7 @@
                       "receiver_module": "05599ef248e215849cc599f563b4883fc8aff31f1e43dff1e3ebe4de1370e054",
                       "sender": "9db71b006cb300c1682e3a1ab375552344fa808b2acd4f53340470a5267bf082",
                       "sender_module": "05599ef248e215849cc599f563b4883fc8aff31f1e43dff1e3ebe4de1370e054",
-                      "sequence_number": 2, // p2p transaction
+                      "sequence_number": 2,
                       "type": 2,
                       "version": 272,
                       "gas":1000
