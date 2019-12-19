@@ -313,3 +313,19 @@ class ViolasPGHandler():
 
         s.close()
         return infos
+
+    def GetCurrencies(self):
+        s = self.session()
+        ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.approval_status == 4).order_by(ViolasSSOInfo.id).all()
+
+        currencies = []
+        for i in ssoInfos:
+            currency = {}
+            currency["name"] = token_name
+            currency["address"] = module_address
+            currency["description"] = token_name
+
+            currencies.append(currency)
+
+        s.close()
+        return currencies

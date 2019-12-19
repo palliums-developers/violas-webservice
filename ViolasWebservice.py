@@ -300,7 +300,8 @@ def GetCurrency():
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
-    currencies = []
+
+    currencies = HViolas.GetCurrencies()
 
     info1 = {}
     info1["name"] = "ABCUSD"
