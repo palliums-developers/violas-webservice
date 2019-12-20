@@ -137,7 +137,7 @@ class ViolasPGHandler():
 
     def GetUnapprovalSSO(self, offset, limit):
         s = self.session()
-        ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.publish_status == 0).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
+        ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.approval_status == 0).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
 
         infos = []
         for i in result:
