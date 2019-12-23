@@ -596,8 +596,9 @@ def BindUserInfo():
 def GetUnapprovalTokenInfo():
     offset = request.args.get("offset", 0, int)
     limit = request.args.get("limit", 10, int)
+    address = request.args.get("address")
 
-    infos = HViolas.GetUnapprovalSSO(offset, limit)
+    infos = HViolas.GetUnapprovalSSO(address, offset, limit)
 
     resp = {}
     resp["code"] = 2000

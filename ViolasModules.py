@@ -34,6 +34,7 @@ class ViolasSSOInfo(Base):
     account_info_photo_back_url = Column(String(64), nullable = False)
     module_address = Column(String(64), nullable = True)
     approval_status = Column(SmallInteger, nullable = False) # 0: not approved; 1: pass; 2: not pass; 3: published; 4: minted
+    governor_address = Column(String(64), nullable = False)
 
 class ViolasGovernorInfo(Base):
     __tablename__ = "governor_info"

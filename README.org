@@ -376,7 +376,8 @@
               "account_info_photo_positive_url":"account_info_photo_positive_url",
               "account_info_photo_back_url":"account_info_photo_back_url",
               "phone_verify_code":111111,
-              "email_verify_code":111111
+              "email_verify_code":111111,
+              "governor_address":"governor_address"
           }
         #+END_SRC
 ***** Response
@@ -492,7 +493,7 @@
      州长钱包获取待审批的SSO信息
 ***** Request
       - Method: *GET*
-      - URL: =/1.0/violas/sso/token/unapproval?offset=0&limit=10=
+      - URL: =/1.0/violas/sso/token/unapproval?address=xxxxxxxxxxxxxxxx&offset=0&limit=10=
       - Headers: None
       - Body: None
 ***** Response

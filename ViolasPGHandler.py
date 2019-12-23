@@ -98,7 +98,8 @@ class ViolasPGHandler():
                 reserve_photo_url = data["reserve_photo_url"],
                 account_info_photo_positive_url = data["account_info_photo_positive_url"],
                 account_info_photo_back_url = data["account_info_photo_back_url"],
-                approval_status = 0
+                approval_status = 0,
+                governor_address = data["governor_address"]
             )
 
             s.add(info)
@@ -135,9 +136,9 @@ class ViolasPGHandler():
 
         return
 
-    def GetUnapprovalSSO(self, offset, limit):
+    def GetUnapprovalSSO(self, address, offset, limit):
         s = self.session()
-        ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.approval_status == 0).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
+        ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.approval_status == 0).filter(ViolasSSOInfo.governor_address == address).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
 
         infos = []
         for i in result:
