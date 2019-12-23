@@ -185,9 +185,9 @@ class ViolasPGHandler():
 
         return True
 
-    def GetPublishedSSOInfo(self, offset, limit):
+    def GetPublishedSSOInfo(self, address, offset, limit):
         s = self.session()
-        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.approval_status == 3).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
+        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.approval_status == 3).filter(ViolasSSOInfo.governor_address == address).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
 
         infos = []
         for i in result:

@@ -553,7 +553,7 @@
      州长钱包获取已经Publish的sso token信息
 ***** Request
       - Method: *GET*
-      - URL: =/1.0/violas/sso/token/published?offset=0&limit=10=
+      - URL: =/1.0/violas/sso/token/published?address=address&offset=0&limit=10=
       - Headers: None
       - Body: None
 ***** Response

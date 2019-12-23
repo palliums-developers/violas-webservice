@@ -625,8 +625,9 @@ def ModifyApprovalStatus():
 def GetPublishedTokenInfo():
     offset = request.args.get("offset", 0, int)
     limit = request.args.get("limit", 10, int)
+    address = request.args.get("address")
 
-    infos = HViolas.GetPublishedSSOInfo(offset, limit)
+    infos = HViolas.GetPublishedSSOInfo(address, offset, limit)
 
     resp = {}
     resp["code"] = 2000
