@@ -111,7 +111,7 @@ class ViolasPGHandler():
 
     def GetSSOApprovalStatus(self, address):
         s = self.session()
-        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).first()
+        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).order_by(ViolasSSOInfo.id).first()
 
         if result is None:
             return None
