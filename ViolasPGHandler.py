@@ -85,26 +85,24 @@ class ViolasPGHandler():
         s = self.session()
         timestamp = int(time())
 
-        if not s.query(exists().where(ViolasSSOInfo.wallet_address == data["wallet_address"])).scalar():
-            info = ViolasSSOInfo(
-                wallet_address = data["wallet_address"],
-                token_type = data["token_type"],
-                amount = data["amount"],
-                token_value = data["token_value"],
-                token_name = data["token_name"] + data["token_type"],
-                application_date = timestamp,
-                validity_period = 5,
-                expiration_date = timestamp + 60 * 60 * 24 * 5,
-                reserve_photo_url = data["reserve_photo_url"],
-                account_info_photo_positive_url = data["account_info_photo_positive_url"],
-                account_info_photo_back_url = data["account_info_photo_back_url"],
-                approval_status = 0,
-                governor_address = data["governor_address"]
-            )
+        info = ViolasSSOInfo(
+            wallet_address = data["wallet_address"],
+            token_type = data["token_type"],
+            amount = data["amount"],
+            token_value = data["token_value"],
+            token_name = data["token_name"] + data["token_type"],
+            application_date = timestamp,
+            validity_period = 5,
+            expiration_date = timestamp + 60 * 60 * 24 * 5,
+            reserve_photo_url = data["reserve_photo_url"],
+            account_info_photo_positive_url = data["account_info_photo_positive_url"],
+            account_info_photo_back_url = data["account_info_photo_back_url"],
+            approval_status = 0,
+            governor_address = data["governor_address"]
+        )
 
-            s.add(info)
-            s.commit()
-
+        s.add(info)
+        s.commit()
         s.close()
 
         return
