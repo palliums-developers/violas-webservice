@@ -664,6 +664,17 @@ def GetGovernorInfo():
 
     return resp
 
+@app.route("/1.0/violas/governor/<address>")
+def GetGovernorInfo(address):
+    info = HViolas.GetGovernorInfoAboutAddress(address)
+
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+    resp["data"] = info
+
+    return resp
+
 @app.route("/1.0/violas/governor", methods = ["POST"])
 def AddGovernorInfo():
     params = request.get_json()

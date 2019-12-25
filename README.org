@@ -610,7 +610,8 @@
               "wallet_address":"xxx",       // 平台币地址
               "is_chairman":0,       // 是否是董事长: 0 不是, 1 是
               "multisig_address":"xxx",     // 多签地址
-              "vstake_address":"xxx"       // vstake地址
+              "vstake_address":"xxx",       // vstake地址
+              "subaccount_count":0          // 子账户个数
           }
 
         #+END_SRC
@@ -637,7 +638,8 @@
               "wallet_address":"xxx",       // 平台币地址
               "is_chairman":0,       // 是否是董事长: 0 不是, 1 是
               "multisig_address":"xxx",     // 多签地址
-              "vstake_address":"xxx"       // vstake地址
+              "vstake_address":"xxx",       // vstake地址
+              "subaccount_count":0          // 子账户个数
           }
         #+END_SRC
 ***** Response
@@ -669,10 +671,36 @@
                       "wallet_address":"xxx",       // 平台币地址
                       "multisig_address":"xxx",     // 多签地址
                       "vstake_address":"xxx",       // vstake地址
-                      "is_chairman":0               // 是否是董事长，0：否；1：是
+                      "is_chairman":0,               // 是否是董事长，0：否；1：是
+                      "subaccount_count":0          // 子账户个数
                   },
                   ...
               ]
+          }
+        #+END_SRC
+**** 获取州长信息
+     使用钱包地址获取某州长信息
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/governor/<wallet_address>=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":{
+                  "toxid":"xxx",            // 进行tox通信所使用的toxid
+                  "name":"xxx",             // 州长或懂事长自己起的名字
+                  "public_key":"xxx",           // BTC的公钥
+                  "wallet_address":"xxx",       // 平台币地址
+                  "multisig_address":"xxx",     // 多签地址
+                  "vstake_address":"xxx",       // vstake地址
+                  "is_chairman":0,               // 是否是董事长，0：否；1：是
+                  "subaccount_count":0          // 子账户个数
+              }
           }
         #+END_SRC
 **** 增加投资信息

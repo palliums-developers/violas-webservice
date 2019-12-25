@@ -233,6 +233,22 @@ class ViolasPGHandler():
         s.close()
         return infos
 
+    def GetGovernorInfoAboutAddress(self, address):
+        s = self.session()
+        govInfos = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.wallet_address == address).first()
+
+        info = {}
+        info["toxid"] = i.toxid
+        info["name"] = i.name
+        info["public_key"] = i.public_key
+        info["wallet_address"] = i.wallet_address
+        info["vstake_address"] = i.vstake_address
+        info["multisig_address"] = i.multisig_address
+        info["is_chairman"] = i.is_chairman
+        info["subaccount_count"] = i.subaccount_count
+
+        return infos
+
     def AddGovernorInfo(self, data):
         s = self.session()
 
