@@ -592,7 +592,7 @@ def BindUserInfo():
 
     return resp
 
-@app.route("/1.0/violas/sso/token/unapproval")
+@app.route("/1.0/violas/sso/token/approval")
 def GetUnapprovalTokenInfo():
     offset = request.args.get("offset", 0, int)
     limit = request.args.get("limit", 10, int)
@@ -607,7 +607,7 @@ def GetUnapprovalTokenInfo():
 
     return resp
 
-@app.route("/1.0/violas/sso/token/unapproval", methods = ["PUT"])
+@app.route("/1.0/violas/sso/token/approval", methods = ["PUT"])
 def ModifyApprovalStatus():
     params = request.get_json()
 
@@ -618,21 +618,6 @@ def ModifyApprovalStatus():
     if not HViolas.SetMintInfo(params):
         resp["code"] = 2010
         resp["message"] = "Address info not exists"
-
-    return resp
-
-@app.route("/1.0/violas/sso/token/published")
-def GetPublishedTokenInfo():
-    offset = request.args.get("offset", 0, int)
-    limit = request.args.get("limit", 10, int)
-    address = request.args.get("address")
-
-    infos = HViolas.GetPublishedSSOInfo(address, offset, limit)
-
-    resp = {}
-    resp["code"] = 2000
-    resp["message"] = "ok"
-    resp["data"] = infos
 
     return resp
 

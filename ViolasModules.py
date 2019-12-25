@@ -44,9 +44,10 @@ class ViolasGovernorInfo(Base):
     toxid = Column(String(76), nullable = False)
     name = Column(String(32), nullable = False)
     public_key = Column(String(64), nullable = False)
-    vstake_address = Column(String(64), nullable = False)
+    vstake_address = Column(String(64), nullable = True)
     multisig_address = Column(String(35), nullable = False)
     is_chairman = Column(Boolean, nullable = False)
     btc_txid = Column(String(64), nullable = True)
-    is_handle = Column(Boolean, nullable = False)
+    is_handle = Column(SmallInteger, nullable = False) # 0: not approved; 1: pass; 2: not pass; 3: published; 4: minted
     subaccount_count = Column(SmallInteger, nullable = False)
+    application_date = Column(Integer, nullable = True)

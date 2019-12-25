@@ -136,7 +136,7 @@ class ViolasPGHandler():
 
     def GetUnapprovalSSO(self, address, offset, limit):
         s = self.session()
-        ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.approval_status == 0).filter(ViolasSSOInfo.governor_address == address).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
+        ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.governor_address == address).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
 
         infos = []
         for i in result:
@@ -182,22 +182,6 @@ class ViolasPGHandler():
         s.close()
 
         return True
-
-    def GetPublishedSSOInfo(self, address, offset, limit):
-        s = self.session()
-        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.approval_status == 3).filter(ViolasSSOInfo.governor_address == address).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
-
-        infos = []
-        for i in result:
-            info = {}
-            info["wallet_address"] = i.wallet_address
-            info["module_address"] = i.module_address
-            info["amount"] = i.amount
-
-            infos.append(info)
-
-        s.close()
-        return infos
 
     def SetTokenMinted(self, data):
         s = self.session()
@@ -266,7 +250,7 @@ class ViolasPGHandler():
                 vstake_address = data["vstake_address"],
                 multisig_address = data["multisig_address"],
                 is_chairman = isChairman,
-                is_handle = False,
+                is_handle = 0,
                 subaccount_count = data["subaccount_count"]
             )
 
@@ -301,12 +285,9 @@ class ViolasPGHandler():
                 result.is_chairman = True
         if "btc_txid" in data:
             result.btc_txid = data["btc_txid"]
+            result.application_data = int(time())
         if "is_handle" in data:
-            if data["is_handle"] == 0:
-                result.is_handle = False
-            else:
-                result.is_handle = True
-
+            result.is_handle = data["is_handle"]
         if "subaccount_count" in data:
             result.subaccount_count = data["subaccount_count"]
 
@@ -316,7 +297,7 @@ class ViolasPGHandler():
 
     def GetInvestmentedGovernorInfo(self, offset, limit):
         s = self.session()
-        result = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.is_handle == False).filter(ViolasGovernorInfo.btc_txid.isnot(None)).order_by(ViolasGovernorInfo.id).offset(offset).limit(limit).all()
+        result = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.btc_txid.isnot(None)).order_by(ViolasGovernorInfo.id).offset(offset).limit(limit).all()
 
         infos = []
         for i in result:
