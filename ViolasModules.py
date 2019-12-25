@@ -49,3 +49,4 @@ class ViolasGovernorInfo(Base):
     is_chairman = Column(Boolean, nullable = False)
     btc_txid = Column(String(64), nullable = True)
     is_handle = Column(Boolean, nullable = False)
+    subaccount_count = Column(SmallInteger, nullable = False)

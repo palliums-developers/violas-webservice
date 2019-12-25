@@ -226,6 +226,7 @@ class ViolasPGHandler():
             info["vstake_address"] = i.vstake_address
             info["multisig_address"] = i.multisig_address
             info["is_chairman"] = i.is_chairman
+            info["subaccount_count"] = i.subaccount_count
 
             infos.append(info)
 
@@ -249,7 +250,8 @@ class ViolasPGHandler():
                 vstake_address = data["vstake_address"],
                 multisig_address = data["multisig_address"],
                 is_chairman = isChairman,
-                is_handle = False
+                is_handle = False,
+                subaccount_count = data["subaccount_count"]
             )
 
             s.add(info)
@@ -288,6 +290,9 @@ class ViolasPGHandler():
                 result.is_handle = False
             else:
                 result.is_handle = True
+
+        if "subaccount_count" in data:
+            result.subaccount_count = data["subaccount_count"]
 
         s.commit()
         s.close()
