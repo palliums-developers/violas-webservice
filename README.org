@@ -295,7 +295,9 @@
               "sender_address":"xxxxxxxxxxxxxx",
               "sequence_number":1,
               "amount":100000000,
-              "btc_address":"xxxxxxxxxxxxxxxxxxxxx"
+              "btc_address":"v2b:btc_address:xxxxxxxxxxxxxxxxxxxxx",
+              "moudle":"xxxxxxxxxxxxxxxxxxx",
+              "receiver":"xxxxxxxxxxxxxxxxxxxxxxx"
           }
         #+END_SRC
 ***** Response
@@ -758,13 +760,11 @@
                   {
                       "amount": 10000000,
                       "data": null,
-                      "etype": null,
                       "event_root_hash": "6d80965022ce1b4129e404a0f5134811e8d0a56685fa092936684d3a43873824",
                       "expiration_time": 1576131136,
                       "gas_unit_price": 0,
                       "gas_used": 0,
                       "max_gas_amount": 140000,
-                      "module": "LibraAccount",
                       "module_address": "0000000000000000000000000000000000000000000000000000000000000000",
                       "public_key": "938d431a4bf9ccefedb3808bd6544867634c7ee65a6b46e26a094058672312fe",
                       "receiver": "88c755d110d0b50fb6a48c81d8cddb573623c9b3d9279ef6c22eb7115d547678",
