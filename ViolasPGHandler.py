@@ -262,7 +262,7 @@ class ViolasPGHandler():
     def ModifyGovernorInfo(self, data):
         s = self.session()
 
-        result =  s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.toxid == data["toxid"]).first()
+        result =  s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.wallet_address == data["wallet_address"]).first()
         if result is None:
             return False
 
