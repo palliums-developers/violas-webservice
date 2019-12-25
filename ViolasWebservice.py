@@ -665,7 +665,7 @@ def GetGovernorInfo():
     return resp
 
 @app.route("/1.0/violas/governor/<address>")
-def GetGovernorInfo(address):
+def GetGovernorInfoAboutAddress(address):
     info = HViolas.GetGovernorInfoAboutAddress(address)
 
     resp = {}
