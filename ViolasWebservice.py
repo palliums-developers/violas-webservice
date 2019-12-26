@@ -687,13 +687,10 @@ def ModifyGovernorInfo():
 
 @app.route("/1.0/violas/governor/investment")
 def GetGovernorInvestmentInfo():
-    offset = request.args.get("offset", 0, int)
-    limit = request.args.get("limit", 10, int)
-
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
-    resp["data"] = HViolas.GetInvestmentedGovernorInfo(offset, limit)
+    resp["data"] = HViolas.GetInvestmentedGovernorInfo()
 
     return resp
 

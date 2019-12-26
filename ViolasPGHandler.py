@@ -295,9 +295,9 @@ class ViolasPGHandler():
         s.close()
         return True
 
-    def GetInvestmentedGovernorInfo(self, offset, limit):
+    def GetInvestmentedGovernorInfo(self):
         s = self.session()
-        result = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.btc_txid.isnot(None)).order_by(ViolasGovernorInfo.id).offset(offset).limit(limit).all()
+        result = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.btc_txid.isnot(None)).order_by(ViolasGovernorInfo.id).all()
 
         infos = []
         for i in result:
@@ -309,6 +309,8 @@ class ViolasPGHandler():
             info["vstake_address"] = i.vstake_address
             info["multisig_address"] = i.multisig_address
             info["btc_txid"] = i.btc_txid
+            info["application_date"] = i.application_date
+            info["is_handle"] = i.is_handle
 
             infos.append(info)
 

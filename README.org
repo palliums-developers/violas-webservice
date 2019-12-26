@@ -625,7 +625,7 @@
      董事长获取未处理的州长BTC转账信息
 ***** Request
       - Method: *GET*
-      - URL: =/1.0/violas/governor/investment?offset=0&limit=10=
+      - URL: =/1.0/violas/governor/investment=
       - Headers: None
       - Body: None
 ***** Response
@@ -643,6 +643,7 @@
                       "btc_txid":"xxxxxxxxxxxxxxxxxxxx",
                       "public_key":"xxxxxxxxxxxxxxxx",
                       "multisig_address":"xxxxxxxxxxxxxxxxxx",
+                      "is_handle":0,
                       "application_date":123445678
                   }
               ]
