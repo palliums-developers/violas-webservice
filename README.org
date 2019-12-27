@@ -741,7 +741,8 @@
                       "expiration_date":12312415412,
                       "reserve_photo_url":"xxxxxxxxxxxxxxxx",
                       "account_info_photo_positive_url":"xxxxxxxxxxxxxxxx",
-                      "account_info_photo_back_url":"xxxxxxxxxxxxxxxxx"
+                      "account_info_photo_back_url":"xxxxxxxxxxxxxxxxx",
+                      "approval_status":0
                   },
                   ...
               ]

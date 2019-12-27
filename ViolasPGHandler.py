@@ -162,6 +162,7 @@ class ViolasPGHandler():
             info["reserve_photo_url"] = i.reserve_photo_url
             info["account_info_photo_positive_url"] = i.account_info_photo_positive_url
             info["account_info_photo_back_url"] = i.account_info_photo_back_url
+            info["approval_status"] = i.approval_status
 
             infos.append(info)
 
