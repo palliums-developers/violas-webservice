@@ -758,7 +758,8 @@
         #+BEGIN_SRC js
           {
               "approval_status":1,        // 审核结果，1：通过；2：未通过
-              "module_address":"xxxxxxxxxxxxxxxxxxxx"
+              "module_address":"xxxxxxxxxxxxxxxxxxxx",
+              "wallet_address":"xxxxxxxxxxxxxxxxxxxx"
           }
         #+END_SRC
 ***** Response
