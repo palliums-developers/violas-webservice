@@ -139,7 +139,7 @@ class ViolasPGHandler():
         ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.governor_address == address).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
 
         infos = []
-        for i in result:
+        for i in ssoInfos:
             userInfo = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == i.wallet_address).first()
 
             info = {}
