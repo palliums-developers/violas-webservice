@@ -153,8 +153,8 @@ class ViolasPGHandler():
             info["id_photo_positive_url"] = userInfo.id_photo_positive_url
             info["id_photo_back_url"] = userInfo.id_photo_back_url
             info["token_type"] = i.token_type
-            info["amount"] = i.amount
-            info["token_value"] = i.token_value
+            info["amount"] = int(i.amount)
+            info["token_value"] = int(i.token_value)
             info["token_name"] = i.token_name
             info["application_date"] = i.application_date
             info["validity_period"] = i.validity_period
