@@ -610,6 +610,7 @@ def GetUnapprovalTokenInfo():
 @app.route("/1.0/violas/sso/token/approval", methods = ["PUT"])
 def ModifyApprovalStatus():
     params = request.get_json()
+    logging.debug(f"Get params: {params}")
 
     resp = {}
     resp["code"] = 2000
