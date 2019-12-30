@@ -288,7 +288,7 @@ class ViolasPGHandler():
                 result.is_chairman = True
         if "btc_txid" in data:
             result.btc_txid = data["btc_txid"]
-            result.application_data = int(time())
+            result.application_date = int(time())
         if "is_handle" in data:
             result.is_handle = data["is_handle"]
         if "subaccount_count" in data:
