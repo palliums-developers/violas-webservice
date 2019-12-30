@@ -179,7 +179,7 @@ class ViolasPGHandler():
         result.approval_status = data["approval_status"]
         if "module_address" in data:
             logging.debug(f"module_address: {data['module_address']}")
-            result.moudle_address = data["module_address"]
+            result.module_address = data["module_address"]
 
         s.commit()
         s.close()
