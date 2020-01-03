@@ -335,3 +335,261 @@ class ViolasPGHandler():
 
         s.close()
         return currencies
+
+    # explorer db handle function
+    def GetRecentTransaction(self, limit, offset):
+        s = self.session()
+        query = s.query(ViolasTransaction).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+
+        infoList = []
+        for i in query:
+            info = {}
+            info["version"] = i.id - 1
+            info["type"] = i.transaction_type
+            info["sender"] = i.sender
+            info["gas"] = int(i.gas_unit_price)
+            info["expiration_time"] = i.expiration_time
+            info["receiver"] = i.receiver
+            info["amount"] = int(i.amount)
+            info["status"] = i.status
+            info["module_address"] = i.module
+
+            infoList.append(info)
+
+        s.close()
+        return infoList
+
+    def GetRecentTransactionAboutModule(self, limit, offset, module):
+        s = self.session()
+        result = s.query(ViolasTransaction).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+
+        infoList = []
+        for i in result:
+            info = {}
+            info["version"] = i.id - 1
+            info["type"] = i.transaction_type
+            info["sender"] = i.sender
+            info["gas"] = int(i.gas_unit_price)
+            info["expiration_time"] = i.expiration_time
+            info["receiver"] = i.receiver
+            info["amount"] = int(i.amount)
+            info["status"] = i.status
+            info["module_address"] = i.module
+
+            infoList.append(info)
+
+        s.close()
+        return infoList
+
+    def GetAddressInfo(self, address):
+        s = self.session()
+        result = s.query(ViolasAddressInfo).filter(ViolasAddressInfo.address == address).first()
+
+        info = {}
+        info["address"] = result.address
+        info["balance"] = int(result.balance)
+        info["sequence_number"] = result.sequence_number
+        info["address_type"] = result.address_type
+
+        s.close()
+        return info
+
+    def GetTransactionsByAddress(self, address, limit, offset):
+        s = self.session()
+        query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+
+        infoList = []
+        for i in query:
+            info = {}
+            info["version"] = i.id - 1
+            info["type"] = i.transaction_type
+            info["sender"] = i.sender
+            info["gas"] = int(i.gas_unit_price)
+            info["expiration_time"] = i.expiration_time
+            info["receiver"] = i.receiver
+            info["amount"] = int(i.amount)
+            info["status"] = i.status
+            info["module_address"] = i.module
+
+            infoList.append(info)
+
+        s.close()
+        return infoList
+
+    def GetTransactionsByAddressAboutModule(self, address, limit, offset, module):
+        s = self.session()
+        query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+
+        infoList = []
+        for i in query:
+            info = {}
+            info["version"] = i.id - 1
+            info["type"] = i.transaction_type
+            info["sender"] = i.sender
+            info["gas"] = int(i.gas_unit_price)
+            info["expiration_time"] = i.expiration_time
+            info["receiver"] = i.receiver
+            info["amount"] = int(i.amount)
+            info["status"] = i.status
+            info["module_address"] = i.module
+
+            infoList.append(info)
+
+        s.close()
+        return infoList
+
+    def GetTransactionByVersion(self, version):
+        s = self.session()
+        result = s.query(ViolasTransaction).filter(ViolasTransaction.id == (version + 1)).first()
+
+        info = {}
+        info["version"] = result.id - 1
+        info["sequence_number"] = result.sequence_number
+        info["sender"] = result.sender
+        info["receiver"] = result.receiver
+        info["module_address"] = result.module
+        info["amount"] = int(result.amount)
+        info["gas_unit_price"] = int(result.gas_unit_price)
+        info["max_gas_amount"] = int(result.max_gas_amount)
+        info["expiration_time"] = result.expiration_time
+        info["public_key"] = result.public_key
+        info["signature"] = result.signature
+        info["status"] = result.status
+        info["data"] = result.data
+
+        s.close()
+        return info
+
+    def GetTransactionCount(self):
+        s = self.session()
+        result = s.query(ViolasTransaction).count()
+        s.close()
+
+        return result
+
+    def VerifyTransactionAboutVBtc(self, data):
+        s = self.session()
+        result = s.query(ViolasTransaction).filter(ViolasTransaction.id == data["version"] + 1).first()
+        s.close()
+
+        if result is None:
+            return False
+
+        if result.sender != data["sender_address"]:
+            return False
+
+        if result.sequence_number != data["sequence_number"]:
+            return False
+
+        if int(result.amount) != data["amount"]:
+            return False
+
+        try:
+            res = result.data.rsplit(":", 1)
+            if res[0] != "v2b:btc_address":
+                return False
+
+            if res[1] != data["btc_address"]:
+                return False
+
+        except:
+            return False
+
+        if result.module != data["module"]:
+            return False
+
+        if result.receiver != data["receiver"]:
+            return False
+
+        return True
+
+    def GetTransactionsAboutVBtc(self, address, module, start_version):
+        s = self.session()
+        result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.module == module).filter(ViolasTransaction.id >= (start_version + 1)).order_by(ViolasTransaction.id).limit(10).all()
+
+        infoList = []
+        for i in result:
+            info = {}
+            info["sender_address"] = i.sender
+            info["sequence_number"] = i.sequence_number
+            info["amount"] = int(i.amount)
+            info["version"] = i.id - 1
+            if i.data is None:
+                continue
+            try:
+                res = i.data.rsplit(":", 1)
+                if res[0] != "v2b:btc_address":
+                    continue
+
+                info["btc_address"] = res[1]
+            except:
+                continue
+
+            infoList.append(info)
+
+        s.close()
+        return infoList
+
+    def GetTransactionsAboutGovernor(self, address, start_version, limit):
+        s = self.session()
+        query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.id > (start_version + 1)).order_by(ViolasTransaction.id).limit(limit).all()
+
+        infoList = []
+        for i in query:
+            info = {}
+            info["version"] = i.id - 1
+            info["sender"] = i.sender
+            info["sequence_number"] = i.sequence_number
+            info["max_gas_amount"] = int(i.max_gas_amount)
+            info["gas_unit_price"] = int(i.gas_unit_price)
+            info["expiration_time"] = i.expiration_time
+            info["transaction_type"] = i.transaction_type
+            info["receiver"] = i.receiver
+            info["amount"] = int(i.amount)
+            info["module_address"] = i.module
+            info["data"] = i.data
+            info["public_key"] = i.public_key
+            info["signature"] = i.signature
+            info["transaction_hash"] = i.transaction_hash
+            info["state_root_hash"] = i.state_root_hash
+            info["event_root_hash"] = i.event_root_hash
+            info["gas_used"] = int(i.gas_used)
+            info["status"] = i.status
+
+            infoList.append(info)
+
+        s.close()
+        return infoList
+
+    def GetTransactionsForWallet(self, address, module, offset, limit):
+        s = self.session()
+        if module == "0000000000000000000000000000000000000000000000000000000000000000":
+            query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+        else:
+            query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+
+        infoList = []
+        for i in query:
+            info = {}
+
+            if i.transaction_type == "peer_to_peer_transfer":
+                info["type"] = 0
+            elif i.transaction_type == "violas_init":
+                info["type"] = 1
+            else:
+                info["type"] = 2
+
+            info["version"] = i.id - 1
+            info["sender"] = i.sender
+            info["sequence_number"] = i.sequence_number
+            info["gas"] = int(i.gas_unit_price)
+            info["expiration_time"] = i.expiration_time
+            info["receiver"] = i.receiver
+            info["amount"] = int(i.amount)
+            info["sender_module"] = i.module
+            info["receiver_module"] = i.module
+
+            infoList.append(info)
+
+        s.close()
+        return infoList

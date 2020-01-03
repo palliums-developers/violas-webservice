@@ -1,12 +1,15 @@
-import os, random, logging, configparser, datetime, requests, json
+import os, random, logging, configparser, datetime, json
 from flask import Flask, request, send_file
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+
 from libra import Client, AccountError, TransactionTimeoutError, LibraNetError, TransactionIllegalError
 from libra.transaction import SignedTransaction
+
 from redis import Redis
 
 from ViolasPGHandler import ViolasPGHandler
+from LibraPGHandler import LibraPGHandler
 from PushServerHandler import PushServerHandler
 
 logging.basicConfig(filename = "ViolasWebservice.log", level = logging.DEBUG)
@@ -25,7 +28,7 @@ PHOTO_URL = "http://52.27.228.84:4000/1.0/violas/photo/"
 
 libraDBInfo = config["LIBRA DB INFO"]
 libraDBUrl = f"{libraDBInfo['DBTYPE']}+{libraDBInfo['DRIVER']}://{libraDBInfo['USERNAME']}:{libraDBInfo['PASSWORD']}@{libraDBInfo['HOSTNAME']}:{libraDBInfo['PORT']}/{libraDBInfo['DATABASE']}"
-# HLibra = LibraPGHandler(libraDBUrl)
+HLibra = LibraPGHandler(libraDBUrl)
 
 violasDBInfo = config["VIOLAS DB INFO"]
 violasDBUrl = f"{violasDBInfo['DBTYPE']}+{violasDBInfo['DRIVER']}://{violasDBInfo['USERNAME']}:{violasDBInfo['PASSWORD']}@{violasDBInfo['HOSTNAME']}:{violasDBInfo['PORT']}/{violasDBInfo['DATABASE']}"
@@ -36,11 +39,6 @@ pushh = PushServerHandler(pushInfo["HOST"], int(pushInfo["PORT"]))
 
 cachingInfo = config["CACHING SERVER"]
 rds = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["DB"], cachingInfo["PASSWORD"])
-
-EXPLORER_HOST = "http://52.27.228.84:4001"
-TRANSACTIONS_FOR_WALLET = "/violas/transaction/wallet"
-TRANSACTION_ABOUT_VBTC = "/violas/transaction/vbtc"
-TRANSACTION_ABOUT_GOVERNOR = "/violas/transaction/governor"
 
 def MakeLibraClient():
     return Client(LIBRA_HOST)
@@ -288,12 +286,14 @@ def GetViolasTransactionInfo():
     limit = request.args.get("limit", 10, int)
     offset = request.args.get("offset", 0, int)
 
-    reqURL = f"{EXPLORER_HOST}{TRANSACTIONS_FOR_WALLET}?address={address}&module={module}&limit={limit}&offset={offset}"
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
 
-    response = requests.get(reqURL)
-    result = json.loads(response.text)
+    datas = HViolas.GetTransactionsForWallet(address, module, offset, limit)
+    resp["data"] = datas
 
-    return result
+    return resp
 
 @app.route("/1.0/violas/currency")
 def GetCurrency():
@@ -369,10 +369,8 @@ def GetVBtcTransactionInfo():
     resp["code"] = 2000
     resp["message"] = "ok"
 
-    reqURL = f"{EXPLORER_HOST}{TRANSACTION_ABOUT_VBTC}?receiver_address={receiverAddress}&module_address={moduleAddress}&start_version={startVersion}"
+    datas = HViolas.GetTransactionsAboutVBtc(receiverAddress, moduleAddress, startVersion)
 
-    response = requests.get(reqURL)
-    result = json.loads(response.text)
     resp["data"] = result["data"]
 
     return resp
@@ -382,11 +380,15 @@ def VerifyVBtcTransactionInfo():
     params = request.get_json()
     logging.debug(f"Get params: {params}")
 
-    reqURL = f"{EXPLORER_HOST}{TRANSACTION_ABOUT_VBTC}"
-    response = requests.post(reqURL, json = params)
-    result = json.loads(response.text)
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
 
-    return result
+    if not HViolas.VerifyTransactionAboutVBtc(params):
+        resp["code"] = 2009
+        resp["message"] = "The transaction information is incorrect."
+
+    return resp
 
 @app.route("/1.0/violas/sso/user")
 def GetSSOUserInfo():
@@ -729,13 +731,124 @@ def GetTransactionsAboutGovernor():
     limit = request.args.get("limit", default = 10, type = int)
     start_version = request.args.get("start_version", default = 0, type = int)
 
-    reqURL = f"{EXPLORER_HOST}{TRANSACTION_ABOUT_GOVERNOR}?address={address}&limit={limit}&start_version={start_version}"
-    response = requests.get(reqURL)
-    result = json.loads(response.text)
-
     resp = {}
     resp["code"] = 2000
     resp["message"] = "ok"
-    resp["data"] = result["data"]
+    datas = HViolas.GetTransactionsAboutGovernor(address, start_version, limit)
+    resp["data"] = datas
 
     return resp
+
+# explorer API
+
+@app.route("/explorer/libra/recent")
+def LibraGetRecentTx():
+    limit = request.args.get("limit", 10, type = int)
+    offset = request.args.get("offset", 0, type = int)
+
+    result = HLibra.GetRecentTransaction(limit, offset)
+
+    data = {}
+    data["code"] = 2000
+    data["message"] = "ok"
+    data["data"] = result
+
+    return data
+
+@app.route("/explorer/libra/address/<address>")
+def LibraGetAddressInfo(address):
+    data = {}
+    data["code"] = 2000
+    data["message"] = "ok"
+    addrTrans = HLibra.GetTransactionsByAddress(address, 50, 0)
+    data["data"] = addrTrans
+
+    return data
+
+@app.route("/explorer/libra/version/<int:version>")
+def LibraGetTransactionsByVersion(version):
+    transInfo = HLibra.GetTransactionByVersion(version)
+
+    data = {}
+    data["code"] = 2000
+    data["message"] = "ok"
+    data["data"] = transInfo
+
+    return data
+
+@app.route("/explorer/violas/recent")
+def ViolasGetRecentTx():
+    limit = request.args.get("limit", 10, type = int)
+    offset = request.args.get("offset", 0, type = int)
+
+    result = HViolas.GetRecentTransaction(limit, offset)
+
+    data = {}
+    data["code"] = 2000
+    data["message"] = "ok"
+    data["data"] = result
+
+    return data
+
+@app.route("/explorer/violas/recent/<module>")
+def ViolasGetRecentTxAboutToken(module):
+    limit = request.args.get("limit", 30, type = int)
+    offset = request.args.get("offset", 0, type = int)
+
+    result = HViolas.GetRecentTransactionAboutModule(limit, offset, module)
+
+    data = {}
+    data["code"] = 2000
+    data["message"] = "ok"
+    data["data"] = result
+
+    return data
+
+@app.route("/explorer/violas/address/<address>")
+def ViolasGetAddressInfo(address):
+    module = request.args.get("module")
+    limit = request.args.get("limit", 30, type = int)
+    offset = request.args.get("offset", 0, type = int)
+
+    data = {}
+    data["code"] = 2000
+    data["message"] = "ok"
+
+    if module is None:
+        addrTrans = HViolas.GetTransactionsByAddress(address, limit, offset)
+    else:
+        addrTrans = HViolas.GetTransactionsByAddressAboutModule(address, limit, offset, module)
+
+    data["data"] = addrTrans
+
+    return data
+
+@app.route("/explorer/violas/address/<address>")
+def ViolasGetAddressInfoAboutToken(address):
+    module = request.args.get("module")
+    limit = request.args.get("limit", 30, type = int)
+    offset = request.args.get("offset", 0, type = int)
+
+    addrInfo = HViolas.GetAddressInfo(address)
+    addrTrans = HViolas.GetTransactionsByAddressAboutModule(address, limit, offset, module)
+
+    data = {}
+    data["code"] = 2000
+    data["message"] = "ok"
+    info = {}
+    info["balance"] = addrInfo["balance"]
+    info["transactions"] = addrTrans
+    data["data"] = info
+
+    return data
+
+@app.route("/explorer/violas/version/<int:version>")
+def ViolasGetTransactionsByVersion(version):
+    transInfo = HViolas.GetTransactionByVersion(version)
+
+    data = {}
+    data["code"] = 2000
+    data["message"] = "ok"
+    data["data"] = transInfo
+
+    return data

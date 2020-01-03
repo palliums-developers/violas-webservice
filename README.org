@@ -790,3 +790,231 @@
               "message":"ok"
           }
         #+END_SRC
+
+*** Libra浏览器
+**** 获取最新交易
+     用于获取libra钱包资产信息
+***** Request
+      - Method: *GET*
+      - URL: =/explorer/libra/recent?limit=10&offset=0=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":[
+                  {
+                      "amount": 100,
+                      "expiration_time": 1576752010,
+                      "gas": 0,
+                      "receiver": "4ce68dd6e81b400a4edf4146307b10e5030a372414fd49b1accecc0767753070",
+                      "sender": "07e92f79c67fdd6b80ed9103636a49511363de8c873bc709966fffb2e3fcd095",
+                      "status": 4001,
+                      "type": "xxxxx",
+                      "version": 6620
+                  },
+                  {
+                      "amount": 100,
+                      "expiration_time": 1576752010,
+                      "gas": 0,
+                      "receiver": "4ce68dd6e81b400a4edf4146307b10e5030a372414fd49b1accecc0767753070",
+                      "sender": "07e92f79c67fdd6b80ed9103636a49511363de8c873bc709966fffb2e3fcd095",
+                      "status": 4001,
+                      "type": "xxxxxx",
+                      "version": 6621
+                  },
+                  ...
+              ]
+          }
+        #+END_SRC
+**** 获取交易信息
+     获取某特定Version交易的信息
+***** Request
+      - Method: *GET*
+      - URL: =/explorer/libra/version/<version>=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":{
+                  "amount": 400,
+                  "expiration_time": 1576137933,
+                  "gas_unit_price": 0,
+                  "max_gas_amount": 140000,
+                  "public_key": "43ae94bcf18b60848105373e47794ccd018c8ecdd363d4aa1c1ade20463d8719",
+                  "receiver": "2629bbd938e5680cf04b57b2624ca90993d5616f454432f897d1abac43ec26f6",
+                  "sender": "07e92f79c67fdd6b80ed9103636a49511363de8c873bc709966fffb2e3fcd095",
+                  "sequence_number": 635,
+                  "signature": "48670acc2eabb0131ca0b082f8364baf10bbd4ba1d61e062ca696e46b6b8a247c12caedbc9cdb56edb68a059ec44de9d226801f51b286b94d2ca96ba62c8e304",
+                  "status": 4001,
+                  "version": 67594,
+                  "type":"xxxxxxxxx"
+              }
+          }
+        #+END_SRC
+**** 获取地址信息
+     获取某特定address的信息
+***** Request
+      - Method: *GET*
+      - URL: =/explorer/libra/address/<address>=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":[
+                  {
+                      "amount": 100,
+                      "expiration_time": 1576752010,
+                      "gas": 0,
+                      "receiver": "4ce68dd6e81b400a4edf4146307b10e5030a372414fd49b1accecc0767753070",
+                      "sender": "07e92f79c67fdd6b80ed9103636a49511363de8c873bc709966fffb2e3fcd095",
+                      "status": 4001,
+                      "type": "xxxxxxx",
+                      "version": 6621
+                  },
+                  ...
+              ]
+
+          }
+        #+END_SRC
+*** Violas浏览器
+**** 获取最新交易
+     用于获取Violas最新的交易信息
+***** Request
+      - Method: *GET*
+      - URL: =/explorer/violas/recent?limit=10&offset=0=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":[
+                  {
+                      "amount": 100,
+                      "expiration_time": 1576752010,
+                      "gas": 0,
+                      "module_address": "0000000000000000000000000000000000000000000000000000000000000000",
+                      "receiver": "4ce68dd6e81b400a4edf4146307b10e5030a372414fd49b1accecc0767753070",
+                      "sender": "07e92f79c67fdd6b80ed9103636a49511363de8c873bc709966fffb2e3fcd095",
+                      "status": 4001,
+                      "type": "xxxxx",
+                      "version": 6620
+                  },
+                  {
+                      "amount": 100,
+                      "expiration_time": 1576752010,
+                      "gas": 0,
+                      "module_address": "b9e3266ca9f28103ca7c9bb9e5eb6d0d8c1a9d774a11b384798a3c4784d5411e",
+                      "receiver": "4ce68dd6e81b400a4edf4146307b10e5030a372414fd49b1accecc0767753070",
+                      "sender": "07e92f79c67fdd6b80ed9103636a49511363de8c873bc709966fffb2e3fcd095",
+                      "status": 4001,
+                      "type": "xxxxxx",
+                      "version": 6621
+                  },
+                  ...
+              ]
+          }
+        #+END_SRC
+**** 获取某稳定币的最新交易
+     用于获取Violas中某个稳定币最新的交易信息
+***** Request
+      - Method: *GET*
+      - URL: =/explorer/violas/recent/<module_address>?limit=10&offset=0=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":[
+                  {
+                      "amount": 100,
+                      "expiration_time": 1576752010,
+                      "gas": 0,
+                      "module_address": "b9e3266ca9f28103ca7c9bb9e5eb6d0d8c1a9d774a11b384798a3c4784d5411e",
+                      "receiver": "4ce68dd6e81b400a4edf4146307b10e5030a372414fd49b1accecc0767753070",
+                      "sender": "07e92f79c67fdd6b80ed9103636a49511363de8c873bc709966fffb2e3fcd095",
+                      "status": 4001,
+                      "type": "xxxxxx",
+                      "version": 6621
+                  },
+                  ...
+              ]
+          }
+        #+END_SRC
+**** 获取交易信息
+     获取某特定Version交易的信息
+***** Request
+      - Method: *GET*
+      - URL: =/explorer/violas/version/<version>=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":{
+                  "amount": 400,
+                  "data": "{\"type\": \"fb_ex\", \"ver\": 28860, \"fee\": 0, \"state\": 1}",
+                  "expiration_time": 1576137933,
+                  "gas_unit_price": 0,
+                  "max_gas_amount": 140000,
+                  "module_address": "07e92f79c67fdd6b80ed9103636a49511363de8c873bc709966fffb2e3fcd095",
+                  "public_key": "43ae94bcf18b60848105373e47794ccd018c8ecdd363d4aa1c1ade20463d8719",
+                  "receiver": "2629bbd938e5680cf04b57b2624ca90993d5616f454432f897d1abac43ec26f6",
+                  "sender": "07e92f79c67fdd6b80ed9103636a49511363de8c873bc709966fffb2e3fcd095",
+                  "sequence_number": 635,
+                  "signature": "48670acc2eabb0131ca0b082f8364baf10bbd4ba1d61e062ca696e46b6b8a247c12caedbc9cdb56edb68a059ec44de9d226801f51b286b94d2ca96ba62c8e304",
+                  "status": 4001,
+                  "version": 67594,
+                  "type":"xxxxxxxxx"
+              }
+          }
+        #+END_SRC
+**** 获取地址信息
+     获取某特定address的信息
+***** Request
+      - Method: *GET*
+      - URL: =/explorer/violas/address/<address>?module=xxxxxxx=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data": [
+                  {
+                      "amount": 100,
+                      "expiration_time": 1576752010,
+                      "gas": 0,
+                      "module_address": "b9e3266ca9f28103ca7c9bb9e5eb6d0d8c1a9d774a11b384798a3c4784d5411e",
+                      "receiver": "4ce68dd6e81b400a4edf4146307b10e5030a372414fd49b1accecc0767753070",
+                      "sender": "07e92f79c67fdd6b80ed9103636a49511363de8c873bc709966fffb2e3fcd095",
+                      "status": 4001,
+                      "type": "xxxxxxx",
+                      "version": 6621
+                  },
+                  ...
+              ]
+          }
+        #+END_SRC
