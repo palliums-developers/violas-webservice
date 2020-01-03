@@ -444,6 +444,7 @@ class ViolasPGHandler():
 
         info = {}
         info["version"] = result.id - 1
+        info["type"] = result.transaction_type
         info["sequence_number"] = result.sequence_number
         info["sender"] = result.sender
         info["receiver"] = result.receiver
