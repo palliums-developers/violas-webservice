@@ -2,7 +2,7 @@ from time import time
 from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo, ViolasGovernorInfo, ViolasTransaction, ViolasAddressInfo
 import logging
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import false
