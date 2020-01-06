@@ -371,7 +371,7 @@ def GetVBtcTransactionInfo():
 
     datas = HViolas.GetTransactionsAboutVBtc(receiverAddress, moduleAddress, startVersion)
 
-    resp["data"] = datas["data"]
+    resp["data"] = datas
 
     return resp
 
