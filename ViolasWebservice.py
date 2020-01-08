@@ -743,7 +743,7 @@ def GetTransactionsAboutGovernor():
 
 @app.route("/explorer/libra/recent")
 def LibraGetRecentTx():
-    limit = request.args.get("limit", 10, type = int)
+    limit = request.args.get("limit", 30, type = int)
     offset = request.args.get("offset", 0, type = int)
 
     result = HLibra.GetRecentTransaction(limit, offset)
@@ -757,13 +757,37 @@ def LibraGetRecentTx():
 
 @app.route("/explorer/libra/address/<address>")
 def LibraGetAddressInfo(address):
-    data = {}
-    data["code"] = 2000
-    data["message"] = "ok"
-    addrTrans = HLibra.GetTransactionsByAddress(address, 50, 0)
-    data["data"] = addrTrans
+    limit = request.args.get("limit", 10, type = int)
+    offset = request.args.get("offset", 0, type = int)
 
-    return data
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    addressInfo = HLibra.GetAddressInfo(address)
+
+    cli = MakeLibraClient()
+    finish = 0
+    while finish < 3:
+        try:
+            result = cli.get_balance(address)
+            addressInfo["balance"] = result
+            finish = 3
+        except AccountError:
+            addressInfo["balance"] = 0
+            finish = 3
+        except LibraNetError:
+            finish += 1
+
+    addressTransactions = HLibra.GetTransactionsByAddress(address, limit, offset)
+
+    data = {}
+    data["status"] = addressInfo
+    data["transactions"] = addressTransactions
+
+    resp["data"] = data
+
+    return resp
 
 @app.route("/explorer/libra/version/<int:version>")
 def LibraGetTransactionsByVersion(version):
@@ -778,7 +802,7 @@ def LibraGetTransactionsByVersion(version):
 
 @app.route("/explorer/violas/recent")
 def ViolasGetRecentTx():
-    limit = request.args.get("limit", 10, type = int)
+    limit = request.args.get("limit", 30, type = int)
     offset = request.args.get("offset", 0, type = int)
 
     result = HViolas.GetRecentTransaction(limit, offset)
@@ -807,40 +831,40 @@ def ViolasGetRecentTxAboutToken(module):
 @app.route("/explorer/violas/address/<address>")
 def ViolasGetAddressInfo(address):
     module = request.args.get("module")
-    limit = request.args.get("limit", 30, type = int)
     offset = request.args.get("offset", 0, type = int)
+    limit = request.args.get("limit", 10, type = int)
 
-    data = {}
-    data["code"] = 2000
-    data["message"] = "ok"
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    addressInfo = HViolas.GetAddressInfo(address)
+
+    cli = MakeViolasClient()
+    account_state = cli.get_account_state(bytes.fromhex(address))
+    info = account_state.violas_get_info()
+
+    module_balance = []
+    for key in info.keys():
+        item = {}
+        item["module"] = key
+        item["balance"] = account_state.violas_get_balance(bytes.fromhex(key))
+
+    addressInfo["balance"] = account_state.get_balance()
+    addressInfo["module_balande"] = module_balance
 
     if module is None:
-        addrTrans = HViolas.GetTransactionsByAddress(address, limit, offset)
+        addressTransactions = HViolas.GetTransactionsByAddress(address, limit, offset)
     else:
-        addrTrans = HViolas.GetTransactionsByAddressAboutModule(address, limit, offset, module)
-
-    data["data"] = addrTrans
-
-    return data
-
-@app.route("/explorer/violas/address/<address>")
-def ViolasGetAddressInfoAboutToken(address):
-    module = request.args.get("module")
-    limit = request.args.get("limit", 30, type = int)
-    offset = request.args.get("offset", 0, type = int)
-
-    addrInfo = HViolas.GetAddressInfo(address)
-    addrTrans = HViolas.GetTransactionsByAddressAboutModule(address, limit, offset, module)
+        addressTransactions = HViolas.GetTransactionsByAddressAboutModule(address, limit, offset, module)
 
     data = {}
-    data["code"] = 2000
-    data["message"] = "ok"
-    info = {}
-    info["balance"] = addrInfo["balance"]
-    info["transactions"] = addrTrans
-    data["data"] = info
+    data["status"] = addressInfo
+    data["transactions"] = addressTransactions
 
-    return data
+    resp["data"] = data
+
+    return resp
 
 @app.route("/explorer/violas/version/<int:version>")
 def ViolasGetTransactionsByVersion(version):

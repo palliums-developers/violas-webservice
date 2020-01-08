@@ -383,13 +383,20 @@ class ViolasPGHandler():
 
     def GetAddressInfo(self, address):
         s = self.session()
-        result = s.query(ViolasAddressInfo).filter(ViolasAddressInfo.address == address).first()
+        result = s.query(LibraAddressInfo).filter(LibraAddressInfo.address == address).first()
 
         info = {}
-        info["address"] = result.address
-        info["balance"] = int(result.balance)
-        info["sequence_number"] = result.sequence_number
-        info["address_type"] = result.address_type
+        if result is not None:
+            info["type"] = result.type
+            info["first_seen"] = result.first_seen
+            info["sent_amount"] = result.sent_amount
+            info["received_amount"] = result.received_amount
+            info["sent_tx_count"] = result.sent_tx_count
+            info["received_tx_count"] = result.received_tx_count
+            info["sent_minted_tx_count"] = result.sent_minted_tx_count
+            info["received_minted_tx_count"] = result.received_minted_tx_count
+            info["sent_failed_tx_count"] = result.sent_failed_tx_count
+            info["received_failed_tx_count"] = result.received_failed_tx_count
 
         s.close()
         return info

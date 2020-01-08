@@ -26,8 +26,15 @@ class LibraTransaction(Base):
 class LibraAddressInfo(Base):
     __tablename__ = "address_info"
 
-    id = Column(Integer, primary_key = True, autoincrement = True)
+    id = Column(BigInteger, primary_key = True, autoincrement = True)
     address = Column(String(64), nullable = False)
-    address_type = Column(SmallInteger, nullable = False) # 0: Minter, 1: Normal
-    balance = Column(Numeric, nullable = False)
-    sequence_number = Column(Integer, nullable = False)
+    type = Column(SmallInteger, nullable = False) # 0: Minter, 1: Faucet, 2: Normal
+    first_seen = Column(BigInteger, nullable = False)
+    sent_amount = Column(Numeric, nullable = False)
+    received_amount = Column(Numeric, nullable = False)
+    sent_tx_count = Column(BigInteger, nullable = False)
+    received_tx_count = Column(BigInteger, nullable = False)
+    sent_minted_tx_count = Column(BigInteger, nullable = False)
+    received_minted_tx_count = Column(BigInteger, nullable = False)
+    sent_failed_tx_count = Column(BigInteger, nullable = False)
+    received_failed_tx_count = Column(BigInteger, nullable = False)
