@@ -383,7 +383,7 @@ class ViolasPGHandler():
 
     def GetAddressInfo(self, address):
         s = self.session()
-        result = s.query(LibraAddressInfo).filter(LibraAddressInfo.address == address).first()
+        result = s.query(ViolasAddressInfo).filter(ViolasAddressInfo.address == address).first()
 
         info = {}
         if result is not None:
