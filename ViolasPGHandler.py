@@ -389,8 +389,8 @@ class ViolasPGHandler():
         if result is not None:
             info["type"] = result.type
             info["first_seen"] = result.first_seen
-            info["sent_amount"] = result.sent_amount
-            info["received_amount"] = result.received_amount
+            info["sent_amount"] = int(result.sent_amount)
+            info["received_amount"] = int(result.received_amount)
             info["sent_tx_count"] = result.sent_tx_count
             info["received_tx_count"] = result.received_tx_count
             info["sent_minted_tx_count"] = result.sent_minted_tx_count
