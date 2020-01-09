@@ -863,29 +863,44 @@
      获取某特定address的信息
 ***** Request
       - Method: *GET*
-      - URL: =/explorer/libra/address/<address>=
+      - URL: =/explorer/libra/address/<address>?offset=0&limit=10=
       - Headers: None
       - Body: None
 ***** Response
       - Body:
         #+BEGIN_SRC js
           {
-              "code":2000,
-              "message":"ok",
-              "data":[
-                  {
-                      "amount": 100,
-                      "expiration_time": 1576752010,
-                      "gas": 0,
-                      "receiver": "4ce68dd6e81b400a4edf4146307b10e5030a372414fd49b1accecc0767753070",
-                      "sender": "07e92f79c67fdd6b80ed9103636a49511363de8c873bc709966fffb2e3fcd095",
-                      "status": 4001,
-                      "type": "xxxxxxx",
-                      "version": 6621
+              "code": 2000,
+              "data": {
+                  "status": {
+                      "balance": 1002100000000,
+                      "first_seen": 4058,
+                      "received_amount": 203019500123,
+                      "received_failed_tx_count": 25,
+                      "received_minted_tx_count": 1,
+                      "received_tx_count": 562,
+                      "sent_amount": 26000000,
+                      "sent_failed_tx_count": 26,
+                      "sent_minted_tx_count": 0,
+                      "sent_tx_count": 431,
+                      "type": 1
                   },
-                  ...
-              ]
-
+                  "transactions": [
+                      {
+                          "amount": 1000000,
+                          "expiration_time": 1578476995,
+                          "gas": 0,
+                          "module_address": "b9e3266ca9f28103ca7c9bb9e5eb6d0d8c1a9d774a11b384798a3c4784d5411e",
+                          "receiver": "07e92f79c67fdd6b80ed9103636a49511363de8c873bc709966fffb2e3fcd095",
+                          "sender": "9db71b006cb300c1682e3a1ab375552344fa808b2acd4f53340470a5267bf082",
+                          "status": 4001,
+                          "type": "violas_peer_to_peer_transfer_with_data",
+                          "version": 708979
+                      },
+                      ...
+                  ]
+              },
+              "message": "ok"
           }
         #+END_SRC
 *** Violas浏览器
@@ -993,28 +1008,50 @@
      获取某特定address的信息
 ***** Request
       - Method: *GET*
-      - URL: =/explorer/violas/address/<address>?module=xxxxxxx=
+      - URL: =/explorer/violas/address/<address>?module=xxxxxxx&offset=0&limit=10=
       - Headers: None
       - Body: None
 ***** Response
       - Body:
         #+BEGIN_SRC js
           {
-              "code":2000,
-              "message":"ok",
-              "data": [
-                  {
-                      "amount": 100,
-                      "expiration_time": 1576752010,
-                      "gas": 0,
-                      "module_address": "b9e3266ca9f28103ca7c9bb9e5eb6d0d8c1a9d774a11b384798a3c4784d5411e",
-                      "receiver": "4ce68dd6e81b400a4edf4146307b10e5030a372414fd49b1accecc0767753070",
-                      "sender": "07e92f79c67fdd6b80ed9103636a49511363de8c873bc709966fffb2e3fcd095",
-                      "status": 4001,
-                      "type": "xxxxxxx",
-                      "version": 6621
+              "code": 2000,
+              "data": {
+                  "status": {
+                      "balance": 1002100000000,
+                      "first_seen": 4058,
+                      "module_balande": [
+                          {
+                              "balance": 1000000,
+                              "module": "15d3e4bea615b78c3782553df712a4f86d85280f11939e0b35756422575fc622"
+                          },
+                          ...
+                      ],
+                      "received_amount": 203019500123,
+                      "received_failed_tx_count": 25,
+                      "received_minted_tx_count": 1,
+                      "received_tx_count": 562,
+                      "sent_amount": 26000000,
+                      "sent_failed_tx_count": 26,
+                      "sent_minted_tx_count": 0,
+                      "sent_tx_count": 431,
+                      "type": 1
                   },
-                  ...
-              ]
+                  "transactions": [
+                      {
+                          "amount": 1000000,
+                          "expiration_time": 1578476995,
+                          "gas": 0,
+                          "module_address": "b9e3266ca9f28103ca7c9bb9e5eb6d0d8c1a9d774a11b384798a3c4784d5411e",
+                          "receiver": "07e92f79c67fdd6b80ed9103636a49511363de8c873bc709966fffb2e3fcd095",
+                          "sender": "9db71b006cb300c1682e3a1ab375552344fa808b2acd4f53340470a5267bf082",
+                          "status": 4001,
+                          "type": "violas_peer_to_peer_transfer_with_data",
+                          "version": 708979
+                      },
+                      ...
+                  ]
+              },
+              "message": "ok"
           }
         #+END_SRC
