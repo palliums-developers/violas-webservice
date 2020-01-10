@@ -846,7 +846,7 @@ def ViolasGetAddressInfo(address):
 
     module_balance = []
     for key in info.keys():
-        logging.debug(f"module address: {key}")
+        logging.debug(f"module address: {info}")
 
         item = {}
         item["module"] = key
