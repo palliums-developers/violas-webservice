@@ -846,6 +846,8 @@ def ViolasGetAddressInfo(address):
 
     module_balance = []
     for key in info.keys():
+        logging.debug(f"module address: {key}")
+
         item = {}
         item["module"] = key
         item["balance"] = account_state.violas_get_balance(bytes.fromhex(key))
