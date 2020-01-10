@@ -303,37 +303,6 @@ def GetCurrency():
 
     currencies = HViolas.GetCurrencies()
 
-    info1 = {}
-    info1["name"] = "ABCUSD"
-    info1["description"] = "desc"
-    info1["address"] = "b9e3266ca9f28103ca7c9bb9e5eb6d0d8c1a9d774a11b384798a3c4784d5411e"
-    currencies.append(info1)
-    info2 = {}
-    info2["name"] = "HIJUSD"
-    info2["description"] = "desc"
-    info2["address"] = "75bea7a9c432fe0d94f13c6d73543ea8758940e9b622b70dbbafec5ffbf74782"
-    currencies.append(info2)
-    info3 = {}
-    info3["name"] = "XYZUSD"
-    info3["description"] = "desc"
-    info3["address"] = "f013ea4acf944fa6edafe01fae10713d13928ca5dff9e809dbcce8b12c2c45f1"
-    currencies.append(info3)
-    info4 = {}
-    info4["name"] = "BCDCAD"
-    info4["description"] = "desc"
-    info4["address"] = "ad8e9520399689822b55bc783f03951c00fa2ae9eb997d477a2ff0bdc702a568"
-    currencies.append(info4)
-    info5 = {}
-    info5["name"] = "CDESGD"
-    info5["description"] = "desc"
-    info5["address"] = "15d3e4bea615b78c3782553df712a4f86d85280f11939e0b35756422575fc622"
-    currencies.append(info5)
-    info6 = {}
-    info6["name"] = "DEFHKD"
-    info6["description"] = "desc"
-    info6["address"] = "e90e4f077bef23b32a6694a18a1fa34244532400869e4e8c87ce66d0b6c004bd"
-    currencies.append(info6)
-
     resp["data"] = currencies
     return resp
 
