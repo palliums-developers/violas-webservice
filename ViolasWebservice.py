@@ -448,9 +448,12 @@ def SubmitTokenInfo():
         resp["message"] = "Verify error!"
         return resp
 
-    HViolas.AddSSOInfo(params)
-
-    return resp
+    if HViolas.AddSSOInfo(params):
+        return resp
+    else:
+        resp["code"] = 2013
+        resp["message"] = "Token name duplicate!"
+        return resp
 
 @app.route("/1.0/violas/sso/token", methods = ["PUT"])
 def TokenPublish():

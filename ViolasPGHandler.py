@@ -88,6 +88,10 @@ class ViolasPGHandler():
         s = self.session()
         timestamp = int(time())
 
+        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.token_name == (data["token_name"] + data["token_type"])).one()
+        if result is not None:
+            return False
+
         info = ViolasSSOInfo(
             wallet_address = data["wallet_address"],
             token_type = data["token_type"],
@@ -108,7 +112,7 @@ class ViolasPGHandler():
         s.commit()
         s.close()
 
-        return
+        return True
 
     def GetSSOApprovalStatus(self, address):
         s = self.session()
@@ -576,7 +580,7 @@ class ViolasPGHandler():
         if module == "0000000000000000000000000000000000000000000000000000000000000000":
             query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
         else:
-            query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            query = s.query(ViolasTransaction, ViolasSSOInfo.token_name).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).filter(ViolasTransaction.module == ViolasSSOInfo.module_address).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
 
         infoList = []
         for i in query:
@@ -592,6 +596,7 @@ class ViolasPGHandler():
             info["amount"] = int(i.amount)
             info["sender_module"] = i.module
             info["receiver_module"] = i.module
+            info["module_name"] = i.token_name
 
             infoList.append(info)
 
