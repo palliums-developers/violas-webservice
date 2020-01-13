@@ -88,7 +88,7 @@ class ViolasPGHandler():
         s = self.session()
         timestamp = int(time())
 
-        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.token_name == (data["token_name"] + data["token_type"])).one()
+        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.token_name == (data["token_name"] + data["token_type"])).first()
         if result is not None:
             return False
 
@@ -582,7 +582,6 @@ class ViolasPGHandler():
         if module == "0000000000000000000000000000000000000000000000000000000000000000":
             query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
             for i in query:
-                logging.debug(f"Get Result: {i}")
                 info = {}
 
                 info["type"] = TransferType[i.transaction_type]
