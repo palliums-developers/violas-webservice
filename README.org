@@ -187,7 +187,8 @@
                       "sequence_number": 0,
                       "type": 1,
                       "version": 240,
-                      "gas":1000
+                      "gas":1000,
+                      "module_name":"xxxxx"
                   },
                   {
                       "amount": 1500000,
@@ -199,7 +200,8 @@
                       "sequence_number": 2,
                       "type": 2,
                       "version": 272,
-                      "gas":1000
+                      "gas":1000,
+                      "module_name":"xxxxx"
                   },
                   ...
               ]
@@ -490,6 +492,28 @@
           {
               "code":2000,
               "message":"ok"
+          }
+        #+END_SRC
+**** 获取州长列表
+     获取可以委托发行的州长列表
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/sso/governors=
+      - Headers: None
+      - Bode: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code": 2000,
+              "data": [
+                  {
+                      "name": "governor_new",
+                      "wallet_address": "6468ec05fe60656961b6dba24031ea6c553ba60e04b9fd2b9bbb514b6bbd9e25"
+                  },
+                  ...
+              ],
+              "message": "ok"
           }
         #+END_SRC
 *** 州长钱包
