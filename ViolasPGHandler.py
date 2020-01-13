@@ -600,7 +600,6 @@ class ViolasPGHandler():
         else:
             query = s.query(ViolasTransaction, ViolasSSOInfo.token_name).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).filter(ViolasTransaction.module == ViolasSSOInfo.module_address).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
             for i in query:
-                logging.debug(f"Get Result: {i}")
                 info = {}
 
                 info["type"] = TransferType[i.transaction_type]
@@ -617,5 +616,5 @@ class ViolasPGHandler():
 
                 infoList.append(info)
 
-                s.close()
-                return infoList
+        s.close()
+        return infoList
