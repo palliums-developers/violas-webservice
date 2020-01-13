@@ -1,0 +1,15 @@
+TransferType = {}
+TransferType["write_set"] = 0
+TransferType["mint"] = 1
+TransferType["peer_to_peer_transfer"] = 2
+TransferType["create_account"] = 3
+TransferType["rotate_authentication_key"] = 4
+TransferType["violas_withdrawal"] = 5
+TransferType["violas_order"] = 6
+TransferType["violas_mint"] = 7
+TransferType["violas_owner_init"] = 8
+TransferType["violas_init"] = 9
+TransferType["violas_pick"] = 10
+TransferType["violas_module"] = 11
+TransferType["violas_peer_to_peer_transfer"] = 12
+TransferType["violas_peer_to_peer_transfer_with_data"] = 13

@@ -580,13 +580,7 @@ class ViolasPGHandler():
         for i in query:
             info = {}
 
-            if i.transaction_type == "peer_to_peer_transfer":
-                info["type"] = 0
-            elif i.transaction_type == "violas_init":
-                info["type"] = 1
-            else:
-                info["type"] = 2
-
+            info["type"] = TransferType[i.transaction_type]
             info["version"] = i.id - 1
             info["sender"] = i.sender
             info["sequence_number"] = i.sequence_number

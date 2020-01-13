@@ -164,6 +164,7 @@
           }
         #+END_SRC
 **** 获取violas交易记录
+     根据钱包地址与module地址查询交易记录，[[交易类型]]见附录。
 ***** Request
       - Method: *GET*
       - URL: =/1.0/violas/transaction?addr=addr&limit=5&offset=0[&modu=module_address]=
@@ -184,7 +185,7 @@
                       "sender": "9db71b006cb300c1682e3a1ab375552344fa808b2acd4f53340470a5267bf082",
                       "sender_module": "05599ef248e215849cc599f563b4883fc8aff31f1e43dff1e3ebe4de1370e054",
                       "sequence_number": 0,
-                      "type": 1,          // 0. vtoken p2p transaction; 1. module publish transaction; 2. module p2p transaction
+                      "type": 1,
                       "version": 240,
                       "gas":1000
                   },
@@ -1055,3 +1056,21 @@
               "message": "ok"
           }
         #+END_SRC
+** 附录：
+*** 交易类型
+    | 类型 | 交易名称                               |
+    |------+----------------------------------------|
+    |    0 | write_set                              |
+    |    1 | mint                                   |
+    |    2 | peer_to_peer_transfer                  |
+    |    3 | create_account                         |
+    |    4 | rotate_authentication_key              |
+    |    5 | violas_withdrawal                      |
+    |    6 | violas_order                           |
+    |    7 | violas_mint                            |
+    |    8 | violas_owner_init                      |
+    |    9 | violas_init                            |
+    |   10 | violas_pick                            |
+    |   11 | violas_module                          |
+    |   12 | violas_peer_to_peer_transfer           |
+    |   13 | violas_peer_to_peer_transfer_with_data |
