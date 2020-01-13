@@ -7,6 +7,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import false
 
+from TransferType import TransferType
+
 class ViolasPGHandler():
     def __init__(self, dbUrl):
         self.engine = create_engine(dbUrl)
