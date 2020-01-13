@@ -621,7 +621,7 @@ class ViolasPGHandler():
 
     def GetGovernorInfoForSSO(self):
         s = self.session()
-        govInfos = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.is_handle is false).filter(ViolasGovernorInfo.is_handle == 4).order_by(ViolasGovernorInfo.id).all()
+        govInfos = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.is_handle == 4).order_by(ViolasGovernorInfo.id).all()
 
         infos = []
         for i in govInfos:
