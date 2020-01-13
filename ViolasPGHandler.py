@@ -577,28 +577,46 @@ class ViolasPGHandler():
 
     def GetTransactionsForWallet(self, address, module, offset, limit):
         s = self.session()
+        infoList = []
+
         if module == "0000000000000000000000000000000000000000000000000000000000000000":
             query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            for i in query:
+                logging.debug(f"Get Result: {i}")
+                info = {}
+
+                info["type"] = TransferType[i.transaction_type]
+                info["version"] = i.id - 1
+                info["sender"] = i.sender
+                info["sequence_number"] = i.sequence_number
+                info["gas"] = int(i.gas_unit_price)
+                info["expiration_time"] = i.expiration_time
+                info["receiver"] = i.receiver
+                info["amount"] = int(i.amount)
+                info["sender_module"] = i.module
+                info["receiver_module"] = i.module
+                info["module_name"] = ""
+
+                infoList.append(info)
         else:
             query = s.query(ViolasTransaction, ViolasSSOInfo.token_name).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).filter(ViolasTransaction.module == ViolasSSOInfo.module_address).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            for i in query:
+                logging.debug(f"Get Result: {i}")
+                info = {}
 
-        infoList = []
-        for i in query:
-            info = {}
+                info["type"] = TransferType[i.transaction_type]
+                info["version"] = i.id - 1
+                info["sender"] = i.sender
+                info["sequence_number"] = i.sequence_number
+                info["gas"] = int(i.gas_unit_price)
+                info["expiration_time"] = i.expiration_time
+                info["receiver"] = i.receiver
+                info["amount"] = int(i.amount)
+                info["sender_module"] = i.module
+                info["receiver_module"] = i.module
+                info["module_name"] = i.token_name
 
-            info["type"] = TransferType[i.transaction_type]
-            info["version"] = i.id - 1
-            info["sender"] = i.sender
-            info["sequence_number"] = i.sequence_number
-            info["gas"] = int(i.gas_unit_price)
-            info["expiration_time"] = i.expiration_time
-            info["receiver"] = i.receiver
-            info["amount"] = int(i.amount)
-            info["sender_module"] = i.module
-            info["receiver_module"] = i.module
-            info["module_name"] = i.token_name
+                infoList.append(info)
 
-            infoList.append(info)
-
-        s.close()
-        return infoList
+                s.close()
+                return infoList
