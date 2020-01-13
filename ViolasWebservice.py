@@ -610,6 +610,17 @@ def SetTokenMinted():
 
     return resp
 
+@app.route("/1.0/violas/sso/governors")
+def GetGovernors():
+    resp = {}
+    resp["code"] = 2000
+    resp["message"] = "ok"
+
+    infos = HViolas.GetGovernorInfoForSSO()
+    resp["data"] = infos
+
+    return resp
+
 @app.route("/1.0/violas/governor")
 def GetGovernorInfo():
     offset = request.args.get("offset", 0, int)

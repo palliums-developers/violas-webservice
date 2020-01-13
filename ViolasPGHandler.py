@@ -618,3 +618,18 @@ class ViolasPGHandler():
 
         s.close()
         return infoList
+
+    def GetGovernorInfoForSSO(self):
+        s = self.session()
+        govInfos = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.is_handle.is(false)).filter(ViolasGovernorInfo.is_handle == 4).order_by(ViolasGovernorInfo.id).offset(offset).limit(limit).all()
+
+        infos = []
+        for i in govInfos:
+            info = {}
+            info["name"] = i.name
+            info["wallet_address"] = i.wallet_address
+
+            infos.append(info)
+
+        s.close()
+        return infos
