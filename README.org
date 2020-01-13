@@ -164,7 +164,7 @@
           }
         #+END_SRC
 **** 获取violas交易记录
-     根据钱包地址与module地址查询交易记录，[[交易类型]]见附录。
+     根据钱包地址与module地址查询交易记录，[[https://github.com/palliums-developers/violas-webservice#%E4%BA%A4%E6%98%93%E7%B1%BB%E5%9E%8B][交易类型]]见附录。
 ***** Request
       - Method: *GET*
       - URL: =/1.0/violas/transaction?addr=addr&limit=5&offset=0[&modu=module_address]=
