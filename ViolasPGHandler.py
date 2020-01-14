@@ -579,42 +579,34 @@ class ViolasPGHandler():
         s = self.session()
         infoList = []
 
+        result = s.query(ViolasSSOInfo.module_address, ViolasSSOInfo.token_name).all()
+        moduleMap = {}
+        moduleMap["0000000000000000000000000000000000000000000000000000000000000000"] = "vtoken"
+
+        for i in result:
+            moduleMap[i.module_address] = i.token_name
+
         if module == "0000000000000000000000000000000000000000000000000000000000000000":
             query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-            for i in query:
-                info = {}
-
-                info["type"] = TransferType[i.transaction_type]
-                info["version"] = i.id - 1
-                info["sender"] = i.sender
-                info["sequence_number"] = i.sequence_number
-                info["gas"] = int(i.gas_unit_price)
-                info["expiration_time"] = i.expiration_time
-                info["receiver"] = i.receiver
-                info["amount"] = int(i.amount)
-                info["sender_module"] = i.module
-                info["receiver_module"] = i.module
-                info["module_name"] = "vtoken"
-
-                infoList.append(info)
         else:
-            query = s.query(ViolasTransaction, ViolasSSOInfo.token_name).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).filter(ViolasTransaction.module == ViolasSSOInfo.module_address).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-            for i in query:
-                info = {}
+            query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
 
-                info["type"] = TransferType[i.ViolasTransaction.transaction_type]
-                info["version"] = i.ViolasTransaction.id - 1
-                info["sender"] = i.ViolasTransaction.sender
-                info["sequence_number"] = i.ViolasTransaction.sequence_number
-                info["gas"] = int(i.ViolasTransaction.gas_unit_price)
-                info["expiration_time"] = i.ViolasTransaction.expiration_time
-                info["receiver"] = i.ViolasTransaction.receiver
-                info["amount"] = int(i.ViolasTransaction.amount)
-                info["sender_module"] = i.ViolasTransaction.module
-                info["receiver_module"] = i.ViolasTransaction.module
-                info["module_name"] = i.token_name
+        for i in query:
+            info = {}
 
-                infoList.append(info)
+            info["type"] = TransferType[i.transaction_type]
+            info["version"] = i.id - 1
+            info["sender"] = i.sender
+            info["sequence_number"] = i.sequence_number
+            info["gas"] = int(i.gas_unit_price)
+            info["expiration_time"] = i.expiration_time
+            info["receiver"] = i.receiver
+            info["amount"] = int(i.amount)
+            info["sender_module"] = i.module
+            info["receiver_module"] = i.module
+            info["module_name"] = moduleMap[i.module]
+
+            infoList.append(info)
 
         s.close()
         return infoList
