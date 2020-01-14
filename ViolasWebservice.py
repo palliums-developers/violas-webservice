@@ -822,6 +822,9 @@ def ViolasGetAddressInfo(address):
     resp["message"] = "ok"
 
     addressInfo = HViolas.GetAddressInfo(address)
+    if addressInfo is None:
+        resp["data"] = {}
+        return resp
 
     cli = MakeViolasClient()
     account_state = cli.get_account_state(bytes.fromhex(address))

@@ -390,6 +390,8 @@ class ViolasPGHandler():
     def GetAddressInfo(self, address):
         s = self.session()
         result = s.query(ViolasAddressInfo).filter(ViolasAddressInfo.address == address).first()
+        if result is None:
+            return None
 
         info = {}
         if result is not None:
