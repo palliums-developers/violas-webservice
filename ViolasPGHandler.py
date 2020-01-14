@@ -594,7 +594,7 @@ class ViolasPGHandler():
                 info["amount"] = int(i.amount)
                 info["sender_module"] = i.module
                 info["receiver_module"] = i.module
-                info["module_name"] = ""
+                info["module_name"] = "VToken"
 
                 infoList.append(info)
         else:
@@ -602,7 +602,7 @@ class ViolasPGHandler():
             for i in query:
                 info = {}
 
-                info["type"] = TransferType[i.transaction_type]
+                info["type"] = TransferType[i.ViolasTransaction.transaction_type]
                 info["version"] = i.id - 1
                 info["sender"] = i.sender
                 info["sequence_number"] = i.sequence_number
