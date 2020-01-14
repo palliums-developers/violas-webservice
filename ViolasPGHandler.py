@@ -612,7 +612,7 @@ class ViolasPGHandler():
                 info["amount"] = int(i.ViolasTransaction.amount)
                 info["sender_module"] = i.ViolasTransaction.module
                 info["receiver_module"] = i.ViolasTransaction.module
-                info["module_name"] = i.ViolasSSOInfo.token_name
+                info["module_name"] = i.token_name
 
                 infoList.append(info)
 
