@@ -594,7 +594,7 @@ class ViolasPGHandler():
                 info["amount"] = int(i.amount)
                 info["sender_module"] = i.module
                 info["receiver_module"] = i.module
-                info["module_name"] = "VToken"
+                info["module_name"] = "vtoken"
 
                 infoList.append(info)
         else:
