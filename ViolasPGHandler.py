@@ -603,16 +603,16 @@ class ViolasPGHandler():
                 info = {}
 
                 info["type"] = TransferType[i.ViolasTransaction.transaction_type]
-                info["version"] = i.id - 1
-                info["sender"] = i.sender
-                info["sequence_number"] = i.sequence_number
-                info["gas"] = int(i.gas_unit_price)
-                info["expiration_time"] = i.expiration_time
-                info["receiver"] = i.receiver
-                info["amount"] = int(i.amount)
-                info["sender_module"] = i.module
-                info["receiver_module"] = i.module
-                info["module_name"] = i.token_name
+                info["version"] = i.ViolasTransaction.id - 1
+                info["sender"] = i.ViolasTransaction.sender
+                info["sequence_number"] = i.ViolasTransaction.sequence_number
+                info["gas"] = int(i.ViolasTransaction.gas_unit_price)
+                info["expiration_time"] = i.ViolasTransaction.expiration_time
+                info["receiver"] = i.ViolasTransaction.receiver
+                info["amount"] = int(i.ViolasTransaction.amount)
+                info["sender_module"] = i.ViolasTransaction.module
+                info["receiver_module"] = i.ViolasTransaction.module
+                info["module_name"] = i.ViolasSSOInfo.token_name
 
                 infoList.append(info)
 
