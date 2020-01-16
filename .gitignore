@@ -1,7 +1,4 @@
-bin/
-include/
-lib/
-lib64
-pyvenv.cfg
-/__pycache__/*.pyc
-libra/
+/libra
+/violas
+Pipfile
+Pipfile.lock
