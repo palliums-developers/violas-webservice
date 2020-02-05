@@ -180,7 +180,6 @@ def GetViolasTransactionInfo():
     offset = request.args.get("offset", 0, int)
 
     datas = HViolas.GetTransactionsForWallet(address, module, offset, limit)
-    resp["data"] = datas
 
     return MakeResp(ErrorCode.ERR_OK, datas)
 
@@ -188,7 +187,6 @@ def GetViolasTransactionInfo():
 def GetCurrency():
     currencies = HViolas.GetCurrencies()
 
-    resp["data"] = currencies
     return MakeResp(ErrorCode.ERR_OK, currencies)
 
 @app.route("/1.0/violas/module")
@@ -365,8 +363,7 @@ def BindUserInfo():
         match = VerifyCodeExist(local_number + receiver, verifyCode)
 
     if not match:
-        resp["code"] = 2003
-        resp["message"] = "Verify error!"
+        return MakeResp(ErrorCode.ERR_VERIFICATION_CODE)
     else:
         data = {}
         data["wallet_address"] = address
