@@ -169,7 +169,7 @@ def GetLibraTransactionInfo():
     offset = request.args.get("offset", 0, int)
 
     datas = HLibra.GetTransactionsForWallet(address, offset, limit)
-`
+
     return MakeResp(ErrorCode.ERR_OK, datas)
 
 @app.route("/1.0/violas/transaction")
