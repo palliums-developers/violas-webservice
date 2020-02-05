@@ -20,7 +20,7 @@ CORS(app, resources = r"/*")
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 PHOTO_FOLDER = os.path.abspath("/var/www/violas_wallet/photo")
-PHOTO_URL = "http://52.27.228.84:4000/1.0/violas/photo/"
+PHOTO_URL = f"{config['IMAGE SERVER']['HOST']}/1.0/violas/photo/"
 
 libraDBInfo = config["LIBRA DB INFO"]
 libraDBUrl = f"{libraDBInfo['DBTYPE']}+{libraDBInfo['DRIVER']}://{libraDBInfo['USERNAME']}:{libraDBInfo['PASSWORD']}@{libraDBInfo['HOSTNAME']}:{libraDBInfo['PORT']}/{libraDBInfo['DATABASE']}"
@@ -41,7 +41,7 @@ def MakeLibraClient():
 
 def MakeViolasClient():
     # return Client("violas_testnet")
-    return Client.new(config["NODE INFO"]["VIOLAS_HOST"], config["NODE INFO"]["VIOLAS_PORT"])
+    return Client.new(config["NODE INFO"]["VIOLAS_HOST"], int(config["NODE INFO"]["VIOLAS_PORT"]))
 
 def MakeResp(code, data = None, exception = None):
     resp = {}
