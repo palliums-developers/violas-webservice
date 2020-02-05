@@ -28,7 +28,7 @@ ErrorMsg = {
     ErrorCode.ERR_PHONE_NUMBER_UNBOUND: "Phone number unbound.",
     ErrorCode.ERR_EMAIL_UNBOUND: "Email unbound.",
     ErrorCode.ERR_IMAGE_FORMAT: "Image format is not allowed.",
-    ErrorCode.ERR_VBTC_TRANSACTION_INFO: "The transaction information is incorrect."
+    ErrorCode.ERR_VBTC_TRANSACTION_INFO: "The transaction information is incorrect.",
     ErrorCode.ERR_TOKEN_NAME_DUPLICATE: "Token name duplicate.",
     ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST: "Governor info does not exist.",
 
