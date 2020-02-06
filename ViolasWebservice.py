@@ -138,7 +138,7 @@ def MakeLibraTransaction():
     try:
         cli.submit_signed_transaction(signedtxn, True)
     except ViolasError as e:
-        if e.code() == 6011:
+        if e.code == 6011:
             return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
         else:
             return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
@@ -155,7 +155,7 @@ def MakeViolasTransaction():
     try:
         cli.submit_signed_transaction(signedtxn, True)
     except ViolasError as e:
-        if e.code() == 6011:
+        if e.code == 6011:
             return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
         else:
             return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
