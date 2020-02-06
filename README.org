@@ -1098,3 +1098,19 @@
     |   11 | violas_module                          |
     |   12 | violas_peer_to_peer_transfer           |
     |   13 | violas_peer_to_peer_transfer_with_data |
+    |   14 | add_validator                          |
+    |   15 | block_prologue                         |
+    |   16 | peer_to_peer_transfer_with_metadata    |
+    |   17 | placeholder_script                     |
+    |   18 | register_validator                     |
+    |   19 | remove_validator                       |
+    |   20 | rotate_consensus_pubkey                |
+    |   21 | make_owner_order                       |
+    |   22 | cancel_owner_order                     |
+    |   23 | take_owner_order                       |
+    |   24 | owner_bulletin                         |
+    |   25 | owner_update_first_bulletin            |
+    |   26 | record                                 |
+    |   27 | mint_with_data                         |
+    |   28 | block_metadata                         |
+    |   29 | unknown                                |
