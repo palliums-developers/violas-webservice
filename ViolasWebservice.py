@@ -48,7 +48,7 @@ def MakeResp(code, data = None, exception = None):
 
     resp["code"] = code
     if exception is not None:
-        resp["message"] = e.msg()
+        resp["message"] = f"Node runtime error: {exception.msg}"
     else:
         resp["message"] = ErrorMsg[code]
 
