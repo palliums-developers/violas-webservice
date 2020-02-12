@@ -32,7 +32,7 @@ ErrorMsg = {
     ErrorCode.ERR_VBTC_TRANSACTION_INFO: "The transaction information is incorrect.",
     ErrorCode.ERR_TOKEN_NAME_DUPLICATE: "Token name duplicate.",
     ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST: "Governor info does not exist.",
-    ErrorCode.ERR_DATABASE_CONNECT: "Database query failed."
+    ErrorCode.ERR_DATABASE_CONNECT: "Database connect error.",
 
     ErrorCode.ERR_GRPC_CONNECT: "Grpc call failed.",
 
