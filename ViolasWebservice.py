@@ -168,7 +168,9 @@ def GetLibraTransactionInfo():
     limit = request.args.get("limit", 5, int)
     offset = request.args.get("offset", 0, int)
 
-    datas = HLibra.GetTransactionsForWallet(address, offset, limit)
+    succ, datas = HLibra.GetTransactionsForWallet(address, offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, datas)
 
@@ -179,13 +181,17 @@ def GetViolasTransactionInfo():
     limit = request.args.get("limit", 10, int)
     offset = request.args.get("offset", 0, int)
 
-    datas = HViolas.GetTransactionsForWallet(address, module, offset, limit)
+    succ, datas = HViolas.GetTransactionsForWallet(address, module, offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, datas)
 
 @app.route("/1.0/violas/currency")
 def GetCurrency():
-    currencies = HViolas.GetCurrencies()
+    succ, currencies = HViolas.GetCurrencies()
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, currencies)
 
@@ -224,7 +230,11 @@ def VerifyVBtcTransactionInfo():
     params = request.get_json()
     logging.debug(f"Get params: {params}")
 
-    if not HViolas.VerifyTransactionAboutVBtc(params):
+    succ, result = HViolas.VerifyTransactionAboutVBtc(params)
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    if not result:
         return MakeResp(ErrorCode.ERR_VBTC_TRANSACTION_INFO)
 
     return MakeResp(ErrorCode.ERR_OK)
@@ -233,7 +243,9 @@ def VerifyVBtcTransactionInfo():
 def GetSSOUserInfo():
     address = request.args.get("address")
 
-    info = HViolas.GetSSOUserInfo(address)
+    succ, info = HViolas.GetSSOUserInfo(address)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     if info is None:
         return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
@@ -249,15 +261,21 @@ def GetSSOUserInfo():
 @app.route("/1.0/violas/sso/user", methods = ["POST"])
 def SSOUserRegister():
     params = request.get_json()
-    HViolas.AddSSOUser(params["wallet_address"])
-    HViolas.UpdateSSOUserInfo(params)
+    if not HViolas.AddSSOUser(params["wallet_address"]):
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not HViolas.UpdateSSOUserInfo(params):
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.0/violas/sso/token")
 def GetTokenApprovalStatus():
     address = request.args.get("address")
-    info = HViolas.GetSSOApprovalStatus(address)
+    succ, info = HViolas.GetSSOApprovalStatus(address)
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     if info is None:
         return MakeResp(ErrorCode.ERR_TOKEN_INFO_DOES_NOT_EXIST)
@@ -268,7 +286,10 @@ def GetTokenApprovalStatus():
 def SubmitTokenInfo():
     params = request.get_json()
 
-    userInfo = HViolas.GetSSOUserInfo(params["wallet_address"])
+    succ, userInfo = HViolas.GetSSOUserInfo(params["wallet_address"])
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
     if userInfo is None:
         return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
 
@@ -284,7 +305,11 @@ def SubmitTokenInfo():
     if not VerifyCodeExist(userInfo["email_address"], params["email_verify_code"]):
         return MakeResp(ErrorCode.ERR_VERIFICATION_CODE)
 
-    if HViolas.AddSSOInfo(params):
+    succ, result = HViolas.AddSSOInfo(params):
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if result:
         return MakeResp(ErrorCode.ERR_OK)
     else:
         return MakeResp(ErrorCode.ERR_TOKEN_NAME_DUPLICATE)
@@ -292,7 +317,8 @@ def SubmitTokenInfo():
 @app.route("/1.0/violas/sso/token", methods = ["PUT"])
 def TokenPublish():
     params = request.get_json()
-    HViolas.SetTokenPublished(params["address"])
+    if not HViolas.SetTokenPublished(params["address"]):
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK)
 
@@ -323,7 +349,8 @@ def SendVerifyCode():
     verifyCode = random.randint(100000, 999999)
     local_number = params.get("phone_local_number")
 
-    HViolas.AddSSOUser(address)
+    if not HViolas.AddSSOUser(address):
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     if receiver.find("@") >= 0:
         succ = pushh.PushEmailSMSCode(verifyCode, receiver, 5)
@@ -373,7 +400,8 @@ def BindUserInfo():
             data["phone_local_number"] = local_number
             data["phone_number"] = receiver
 
-        HViolas.UpdateSSOUserInfo(data)
+        if not HViolas.UpdateSSOUserInfo(data):
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK)
 
@@ -383,7 +411,9 @@ def GetUnapprovalTokenInfo():
     limit = request.args.get("limit", 10, int)
     address = request.args.get("address")
 
-    infos = HViolas.GetUnapprovalSSO(address, offset, limit)
+    succ, infos = HViolas.GetUnapprovalSSO(address, offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, infos)
 
@@ -392,7 +422,11 @@ def ModifyApprovalStatus():
     params = request.get_json()
     logging.debug(f"Get params: {params}")
 
-    if not HViolas.SetMintInfo(params):
+    succ, result = HViolas.SetMintInfo(params)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
         return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
 
     return MakeResp(ErrorCode.ERR_OK)
@@ -401,14 +435,20 @@ def ModifyApprovalStatus():
 def SetTokenMinted():
     params = request.get_json()
 
-    if not HViolas.SetTokenMinted(params):
+    succ, result = HViolas.SetTokenMinted(params)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
         return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
 
     return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.0/violas/sso/governors")
 def GetGovernors():
-    infos = HViolas.GetGovernorInfoForSSO()
+    succ, infos = HViolas.GetGovernorInfoForSSO()
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, infos)
 
@@ -417,13 +457,17 @@ def GetGovernorInfo():
     offset = request.args.get("offset", 0, int)
     limit = request.args.get("limit", 10, int)
 
-    infos = HViolas.GetGovernorInfo(offset, limit)
+    succ, infos = HViolas.GetGovernorInfo(offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, infos)
 
 @app.route("/1.0/violas/governor/<address>")
 def GetGovernorInfoAboutAddress(address):
-    info = HViolas.GetGovernorInfoAboutAddress(address)
+    succ, info = HViolas.GetGovernorInfoAboutAddress(address)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, info)
 
@@ -431,7 +475,8 @@ def GetGovernorInfoAboutAddress(address):
 def AddGovernorInfo():
     params = request.get_json()
 
-    HViolas.AddGovernorInfo(params)
+    if not HViolas.AddGovernorInfo(params):
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK)
 
@@ -439,14 +484,21 @@ def AddGovernorInfo():
 def ModifyGovernorInfo():
     params = request.get_json()
 
-    if not HViolas.ModifyGovernorInfo(params):
+    succ, result = HViolas.ModifyGovernorInfo(params)
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
         return MakeResp(ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST)
 
     return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.0/violas/governor/investment")
 def GetGovernorInvestmentInfo():
-    info = HViolas.GetInvestmentedGovernorInfo()
+    succ, info = HViolas.GetInvestmentedGovernorInfo()
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, info)
 
@@ -454,7 +506,12 @@ def GetGovernorInvestmentInfo():
 def AddInvestmentInfo():
     params = request.get_json()
 
-    if not HViolas.ModifyGovernorInfo(params):
+    succ, result = HViolas.ModifyGovernorInfo(params)
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
         return MakeResp(ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST)
 
     return MakeResp(ErrorCode.ERR_OK)
@@ -463,7 +520,12 @@ def AddInvestmentInfo():
 def MakeInvestmentHandled():
     params = request.get_json()
 
-    if not HViolas.ModifyGovernorInfo(params):
+    succ, result = HViolas.ModifyGovernorInfo(params)
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
         return MakeResp(ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST)
 
     return MakeResp(ErrorCode.ERR_OK)
@@ -474,7 +536,9 @@ def GetTransactionsAboutGovernor():
     limit = request.args.get("limit", default = 10, type = int)
     start_version = request.args.get("start_version", default = 0, type = int)
 
-    datas = HViolas.GetTransactionsAboutGovernor(address, start_version, limit)
+    succ, datas = HViolas.GetTransactionsAboutGovernor(address, start_version, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, datas)
 
@@ -485,7 +549,9 @@ def LibraGetRecentTx():
     limit = request.args.get("limit", 30, type = int)
     offset = request.args.get("offset", 0, type = int)
 
-    datas = HLibra.GetRecentTransaction(limit, offset)
+    succ, datas = HLibra.GetRecentTransaction(limit, offset)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, datas)
 
@@ -494,7 +560,9 @@ def LibraGetAddressInfo(address):
     limit = request.args.get("limit", 10, type = int)
     offset = request.args.get("offset", 0, type = int)
 
-    addressInfo = HLibra.GetAddressInfo(address)
+    succ, addressInfo = HLibra.GetAddressInfo(address)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     cli = MakeLibraClient()
     finish = 0
@@ -506,7 +574,9 @@ def LibraGetAddressInfo(address):
         except ViolasError as e:
             finish += 1
 
-    addressTransactions = HLibra.GetTransactionsByAddress(address, limit, offset)
+    succ, addressTransactions = HLibra.GetTransactionsByAddress(address, limit, offset)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     data = {}
     data["status"] = addressInfo
@@ -516,7 +586,9 @@ def LibraGetAddressInfo(address):
 
 @app.route("/explorer/libra/version/<int:version>")
 def LibraGetTransactionsByVersion(version):
-    transInfo = HLibra.GetTransactionByVersion(version)
+    succ, transInfo = HLibra.GetTransactionByVersion(version)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, transInfo)
 
@@ -525,7 +597,9 @@ def ViolasGetRecentTx():
     limit = request.args.get("limit", 30, type = int)
     offset = request.args.get("offset", 0, type = int)
 
-    data = HViolas.GetRecentTransaction(limit, offset)
+    succ, data = HViolas.GetRecentTransaction(limit, offset)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
@@ -534,7 +608,9 @@ def ViolasGetRecentTxAboutToken(module):
     limit = request.args.get("limit", 30, type = int)
     offset = request.args.get("offset", 0, type = int)
 
-    data = HViolas.GetRecentTransactionAboutModule(limit, offset, module)
+    succ, data = HViolas.GetRecentTransactionAboutModule(limit, offset, module)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
@@ -544,7 +620,11 @@ def ViolasGetAddressInfo(address):
     offset = request.args.get("offset", 0, type = int)
     limit = request.args.get("limit", 10, type = int)
 
-    addressInfo = HViolas.GetAddressInfo(address)
+    succ, addressInfo = HViolas.GetAddressInfo(address)
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
     if addressInfo is None:
         return MakeResp(ErrorCode.ERR_OK, {})
 
@@ -563,9 +643,13 @@ def ViolasGetAddressInfo(address):
     addressInfo["module_balande"] = module_balance
 
     if module is None:
-        addressTransactions = HViolas.GetTransactionsByAddress(address, limit, offset)
+        succ, addressTransactions = HViolas.GetTransactionsByAddress(address, limit, offset)
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
     else:
-        addressTransactions = HViolas.GetTransactionsByAddressAboutModule(address, limit, offset, module)
+        succ, addressTransactions = HViolas.GetTransactionsByAddressAboutModule(address, limit, offset, module)
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     data = {}
     data["status"] = addressInfo
@@ -575,6 +659,8 @@ def ViolasGetAddressInfo(address):
 
 @app.route("/explorer/violas/version/<int:version>")
 def ViolasGetTransactionsByVersion(version):
-    transInfo = HViolas.GetTransactionByVersion(version)
+    succ, transInfo = HViolas.GetTransactionByVersion(version)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, transInfo)

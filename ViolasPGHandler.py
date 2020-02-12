@@ -1,4 +1,4 @@
-from time import time
+from time import time, sleep
 from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo, ViolasGovernorInfo, ViolasTransaction, ViolasAddressInfo
 import logging
 
@@ -6,6 +6,7 @@ from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import false
+from sqlalchemy.exc import OperationalError
 
 from TransferType import TransferType
 
@@ -16,25 +17,66 @@ class ViolasPGHandler():
 
         return
 
+    def Commit(self, session):
+        for i in range(5):
+            try:
+                session.commit()
+                session.close()
+                return True
+            except OperationalError:
+                session.close()
+                logging.debug(f"ERROR: Database commit failed! Retry after {i} second.")
+                sleep(i)
+                session = self.session()
+                continue
+
+        session.close()
+        return False
+
+    def Query(self, session, table):
+        for i in range(5):
+            try:
+                return session, session.query(table)
+            except OperationalError:
+                session.close()
+                logging.debug(f"ERROR: Database query failed! Retry after {i} second.")
+                sleep(i)
+                session = self.session()
+                continue
+
+        return session, False
+
     def AddSSOUser(self, address):
         s = self.session()
 
-        if not s.query(exists().where(ViolasSSOUserInfo.wallet_address == address)).scalar():
-            info = ViolasSSOUserInfo(
-                wallet_address = address
-            )
+        for i in range(5):
+            try:
+                if not s.query(exists().where(ViolasSSOUserInfo.wallet_address == address)).scalar():
+                    info = ViolasSSOUserInfo(wallet_address = address)
 
-            s.add(info)
-            s.commit()
+                    s.add(info)
+
+                return self.Commit(s)
+
+            except OperationalError:
+                s.close()
+                logging.error(f"ERROR: Database query failed! Retry after {i} second.")
+                sleep(i)
+                s = self.session()
+                continue
 
         s.close()
-
-        return
+        return False
 
     def UpdateSSOUserInfo(self, data):
         s = self.session()
 
-        result = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == data["wallet_address"]).first()
+        s, query = self.Query(s, ViolasSSOUserInfo)
+        if query:
+            result = query.filter(ViolasSSOUserInfo.wallet_address == data["wallet_address"]).first()
+        else:
+            s.close()
+            return False
 
         if "name" in data:
             result.name = data["name"]
@@ -60,16 +102,21 @@ class ViolasPGHandler():
         if "id_photo_back_url" in data:
             result.id_photo_back_url = data["id_photo_back_url"]
 
-        s.commit()
-        s.close()
-
-        return
+        return self.Commit(s)
 
     def GetSSOUserInfo(self, address):
         s = self.session()
-        result = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == address).first()
+
+        s, query = self.Query(s, ViolasSSOUserInfo)
+        if query:
+            result = query.filter(ViolasSSOUserInfo.wallet_address == address).first()
+        else:
+            s.close()
+            return False, None
+
         if result is None:
-            return None
+            s.close()
+            return True, None
 
         info = {}
         info["wallet_address"] = result.wallet_address
@@ -82,15 +129,23 @@ class ViolasPGHandler():
         info["id_photo_positive_url"] = result.id_photo_positive_url
         info["id_photo_back_url"] = result.id_photo_back_url
 
-        return info
+        s.close()
+        return True, info
 
     def AddSSOInfo(self, data):
         s = self.session()
         timestamp = int(time())
 
-        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.token_name == (data["token_name"] + data["token_type"])).first()
+        s, query = self.Query(s, ViolasSSOInfo)
+        if query:
+            result = query.filter(ViolasSSOInfo.token_name == (data["token_name"] + data["token_type"])).first()
+        else:
+            s.close()
+            return False, False
+
         if result is not None:
-            return False
+            s.close()
+            return True, False
 
         info = ViolasSSOInfo(
             wallet_address = data["wallet_address"],
@@ -109,17 +164,24 @@ class ViolasPGHandler():
         )
 
         s.add(info)
-        s.commit()
-        s.close()
+        if not self.Commit(s):
+            return False, True
 
-        return True
+        return True, True
 
     def GetSSOApprovalStatus(self, address):
         s = self.session()
-        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).order_by(ViolasSSOInfo.id.desc()).first()
+
+        s, query = self.Query(s, ViolasSSOInfo)
+        if query:
+            result = query.filter(ViolasSSOInfo.wallet_address == address).order_by(ViolasSSOInfo.id.desc()).first()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         if result is None:
-            return None
+            return True, None
 
         info = {}
         info["amount"] = int(result.amount)
@@ -127,23 +189,29 @@ class ViolasPGHandler():
         info["approval_status"] = result.approval_status
         info["module_address"] = result.module_address
 
-        s.close()
-
-        return info
+        return True, info
 
     def SetTokenPublished(self, address):
         s = self.session()
-        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).first()
+
+        s, query = self.Query(s, ViolasSSOInfo)
+        if query:
+            result = query.filter(ViolasSSOInfo.wallet_address == address).first()
+        else:
+            s.close()
+            return False
 
         result.approval_status = 3
-        s.commit()
-        s.close()
-
-        return
+        return self.Commit(s)
 
     def GetUnapprovalSSO(self, address, offset, limit):
         s = self.session()
-        ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.governor_address == address).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
+        s, query = self.Query(s, ViolasSSOInfo)
+        if query:
+            ssoInfos = query.filter(ViolasSSOInfo.governor_address == address).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
+        else:
+            s.close()
+            return False, None
 
         infos = []
         for i in ssoInfos:
@@ -174,40 +242,63 @@ class ViolasPGHandler():
             infos.append(info)
 
         s.close()
-        return infos
+        return True, infos
 
     def SetMintInfo(self, data):
         s = self.session()
-        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == data["wallet_address"]).first()
+
+        s, query = self.Query(s, ViolasSSOInfo)
+        if query:
+            result = query.filter(ViolasSSOInfo.wallet_address == data["wallet_address"]).first()
+        else:
+            s.close()
+            return False, False
+
         if result is None:
-            return False
+            s.close()
+            return True, False
 
         result.approval_status = data["approval_status"]
         if "module_address" in data:
             logging.debug(f"module_address: {data['module_address']}")
             result.module_address = data["module_address"]
 
-        s.commit()
-        s.close()
-
-        return True
+        if self.Commit(s):
+            return True, True
+        else:
+            return False, False
 
     def SetTokenMinted(self, data):
         s = self.session()
-        result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == data["wallet_address"]).first()
+
+        s, query = self.Query(s, ViolasSSOInfo)
+        if query:
+            result = query.filter(ViolasSSOInfo.wallet_address == data["wallet_address"]).first()
+        else:
+            s.close()
+            return False, False
+
         if result is None:
-            return False
+            s.close()
+            return True, False
 
         result.approval_status = 4
 
-        s.commit()
-        s.close()
-
-        return True
+        if self.Commit(s):
+            return True, True
+        else:
+            return False, True
 
     def GetGovernorInfo(self, offset, limit):
         s = self.session()
-        govInfos = s.query(ViolasGovernorInfo).order_by(ViolasGovernorInfo.id).offset(offset).limit(limit).all()
+
+        s, query = self.Query(s, ViolasGovernorInfo)
+        if query:
+            govInfos = query.order_by(ViolasGovernorInfo.id).offset(offset).limit(limit).all()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         infos = []
         for i in govInfos:
@@ -223,24 +314,30 @@ class ViolasPGHandler():
 
             infos.append(info)
 
-        s.close()
-        return infos
+        return True, infos
 
     def GetGovernorInfoAboutAddress(self, address):
         s = self.session()
-        govInfos = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.wallet_address == address).first()
+
+        s, query = self.Query(s, ViolasGovernorInfo)
+        if query:
+            govInfos = query.filter(ViolasGovernorInfo.wallet_address == address).first()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         info = {}
-        info["toxid"] = i.toxid
-        info["name"] = i.name
-        info["public_key"] = i.public_key
-        info["wallet_address"] = i.wallet_address
-        info["vstake_address"] = i.vstake_address
-        info["multisig_address"] = i.multisig_address
-        info["is_chairman"] = i.is_chairman
-        info["subaccount_count"] = i.subaccount_count
+        info["toxid"] = govInfos.toxid
+        info["name"] = govInfos.name
+        info["public_key"] = govInfos.public_key
+        info["wallet_address"] = govInfos.wallet_address
+        info["vstake_address"] = govInfos.vstake_address
+        info["multisig_address"] = govinfos.multisig_address
+        info["is_chairman"] = govInfos.is_chairman
+        info["subaccount_count"] = govInfos.subaccount_count
 
-        return infos
+        return True, infos
 
     def AddGovernorInfo(self, data):
         s = self.session()
@@ -250,32 +347,47 @@ class ViolasPGHandler():
         else:
             isChairman = True
 
-        if not s.query(exists().where(ViolasGovernorInfo.wallet_address == data["wallet_address"])).scalar():
-            info = ViolasGovernorInfo(
-                wallet_address = data["wallet_address"],
-                toxid = data["toxid"],
-                name = data["name"],
-                public_key = data["public_key"],
-                vstake_address = data["vstake_address"],
-                multisig_address = data["multisig_address"],
-                is_chairman = isChairman,
-                is_handle = 0,
-                subaccount_count = data["subaccount_count"]
-            )
+        for i in range(5):
+            try:
+                if not s.query(exists().where(ViolasGovernorInfo.wallet_address == data["wallet_address"])).scalar():
+                    info = ViolasGovernorInfo(
+                        wallet_address = data["wallet_address"],
+                        toxid = data["toxid"],
+                        name = data["name"],
+                        public_key = data["public_key"],
+                        vstake_address = data["vstake_address"],
+                        multisig_address = data["multisig_address"],
+                        is_chairman = isChairman,
+                        is_handle = 0,
+                        subaccount_count = data["subaccount_count"]
+                    )
 
-            s.add(info)
-            s.commit()
+                    s.add(info)
+
+                return self.Commit(s)
+            except OperationalError:
+                s.close()
+                logging.error(f"ERROR: Database query Failed! Retry after {i} second.")
+                sleep(i)
+                s = self.session()
+                continue
 
         s.close()
-
-        return
+        return False
 
     def ModifyGovernorInfo(self, data):
         s = self.session()
 
-        result =  s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.wallet_address == data["wallet_address"]).first()
+        s, query = self.Query(s, ViolasGovernorInfo)
+        if query:
+            result = query.filter(ViolasGovernorInfo.wallet_address == data["wallet_address"]).first()
+        else:
+            s.close()
+            return False, False
+
         if result is None:
-            return False
+            s.close()
+            return True, False
 
         if "toxid" in data:
             result.toxid = data["toxid"]
@@ -300,13 +412,21 @@ class ViolasPGHandler():
         if "subaccount_count" in data:
             result.subaccount_count = data["subaccount_count"]
 
-        s.commit()
-        s.close()
-        return True
+        if self.Commit(s):
+            return True, True
+        else:
+            return False, True
 
     def GetInvestmentedGovernorInfo(self):
         s = self.session()
-        result = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.btc_txid.isnot(None)).order_by(ViolasGovernorInfo.id).all()
+
+        s, query = self.Query(s, ViolasGovernorInfo)
+        if query:
+            result = query.filter(ViolasGovernorInfo.btc_txid.isnot(None)).order_by(ViolasGovernorInfo.id).all()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         infos = []
         for i in result:
@@ -323,12 +443,18 @@ class ViolasPGHandler():
 
             infos.append(info)
 
-        s.close()
-        return infos
+        return True, infos
 
     def GetCurrencies(self):
         s = self.session()
-        ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.approval_status == 4).order_by(ViolasSSOInfo.id).all()
+
+        s, query = self.Query(s, ViolasSSOInfo)
+        if query:
+            ssoInfos = query.filter(ViolasSSOInfo.approval_status == 4).order_by(ViolasSSOInfo.id).all()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         currencies = []
         for i in ssoInfos:
@@ -339,35 +465,19 @@ class ViolasPGHandler():
 
             currencies.append(currency)
 
-        s.close()
-        return currencies
+        return True, currencies
 
     # explorer db handle function
     def GetRecentTransaction(self, limit, offset):
         s = self.session()
-        query = s.query(ViolasTransaction).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
 
-        infoList = []
-        for i in query:
-            info = {}
-            info["version"] = i.id - 1
-            info["type"] = i.transaction_type
-            info["sender"] = i.sender
-            info["gas"] = int(i.gas_unit_price)
-            info["expiration_time"] = i.expiration_time
-            info["receiver"] = i.receiver
-            info["amount"] = int(i.amount)
-            info["status"] = i.status
-            info["module_address"] = i.module
-
-            infoList.append(info)
-
-        s.close()
-        return infoList
-
-    def GetRecentTransactionAboutModule(self, limit, offset, module):
-        s = self.session()
-        result = s.query(ViolasTransaction).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+        s, query = self.Query(s, ViolasTransaction)
+        if query:
+            result = query.order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         infoList = []
         for i in result:
@@ -384,14 +494,49 @@ class ViolasPGHandler():
 
             infoList.append(info)
 
-        s.close()
-        return infoList
+        return True, infoList
+
+    def GetRecentTransactionAboutModule(self, limit, offset, module):
+        s = self.session()
+        s, query = self.Query(s, ViolasTransaction)
+        if query:
+            result = query.filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            s.close()
+        else:
+            s.close()
+            return False, None
+
+        infoList = []
+        for i in result:
+            info = {}
+            info["version"] = i.id - 1
+            info["type"] = i.transaction_type
+            info["sender"] = i.sender
+            info["gas"] = int(i.gas_unit_price)
+            info["expiration_time"] = i.expiration_time
+            info["receiver"] = i.receiver
+            info["amount"] = int(i.amount)
+            info["status"] = i.status
+            info["module_address"] = i.module
+
+            infoList.append(info)
+
+        return True, infoList
 
     def GetAddressInfo(self, address):
         s = self.session()
-        result = s.query(ViolasAddressInfo).filter(ViolasAddressInfo.address == address).first()
+
+        s, query = self.Query(s, ViolasAddressInfo)
+        if query:
+            result = query.filter(ViolasAddressInfo.address == address).first()
+            s.close()
+        else:
+            s.close()
+            return False, None
+
         if result is None:
-            return None
+            s.close()
+            return True, None
 
         info = {}
         if result is not None:
@@ -406,15 +551,21 @@ class ViolasPGHandler():
             info["sent_failed_tx_count"] = result.sent_failed_tx_count
             info["received_failed_tx_count"] = result.received_failed_tx_count
 
-        s.close()
-        return info
+        return True, info
 
     def GetTransactionsByAddress(self, address, limit, offset):
         s = self.session()
-        query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+
+        s, query = self.Query(s, ViolasTransaction)
+        if query:
+            result = query.filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         infoList = []
-        for i in query:
+        for i in result:
             info = {}
             info["version"] = i.id - 1
             info["type"] = i.transaction_type
@@ -428,15 +579,21 @@ class ViolasPGHandler():
 
             infoList.append(info)
 
-        s.close()
-        return infoList
+        return True, infoList
 
     def GetTransactionsByAddressAboutModule(self, address, limit, offset, module):
         s = self.session()
-        query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+
+        s, query = self.Query(s, ViolasTransaction)
+        if query:
+            result = query.filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         infoList = []
-        for i in query:
+        for i in result:
             info = {}
             info["version"] = i.id - 1
             info["type"] = i.transaction_type
@@ -450,12 +607,18 @@ class ViolasPGHandler():
 
             infoList.append(info)
 
-        s.close()
-        return infoList
+        return True, infoList
 
     def GetTransactionByVersion(self, version):
         s = self.session()
-        result = s.query(ViolasTransaction).filter(ViolasTransaction.id == (version + 1)).first()
+
+        s, query = self.Query(s, ViolasTransaction)
+        if query:
+            result = query.filter(ViolasTransaction.id == (version + 1)).first()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         info = {}
         info["version"] = result.id - 1
@@ -473,55 +636,73 @@ class ViolasPGHandler():
         info["status"] = result.status
         info["data"] = result.data
 
-        s.close()
-        return info
+        return True, info
 
     def GetTransactionCount(self):
         s = self.session()
-        result = s.query(ViolasTransaction).count()
-        s.close()
 
-        return result
+        s, query = self.Query(s, ViolasTransaction)
+        if query:
+            result = query.count()
+            s.close()
+        else:
+            s.close()
+            return False, None
+
+        return True, result
 
     def VerifyTransactionAboutVBtc(self, data):
         s = self.session()
-        result = s.query(ViolasTransaction).filter(ViolasTransaction.id == data["version"] + 1).first()
-        s.close()
+
+        s, query = self.Query(s, ViolasTransaction)
+        if query:
+            result = query.filter(ViolasTransaction.id == data["version"] + 1).first()
+            s.close()
+        else:
+            s.close()
+            return False, False
 
         if result is None:
-            return False
+            return True, False
 
         if result.sender != data["sender_address"]:
-            return False
+            return True, False
 
         if result.sequence_number != data["sequence_number"]:
-            return False
+            return True, False
 
         if int(result.amount) != data["amount"]:
-            return False
+            return True, False
 
         try:
             res = result.data.rsplit(":", 1)
             if res[0] != "v2b:btc_address":
-                return False
+                return True, False
 
             if res[1] != data["btc_address"]:
-                return False
+                return True, False
 
         except:
-            return False
+            return True, False
 
         if result.module != data["module"]:
-            return False
+            return True, False
 
         if result.receiver != data["receiver"]:
-            return False
+            return True, False
 
-        return True
+        return True, True
 
     def GetTransactionsAboutVBtc(self, address, module, start_version):
         s = self.session()
-        result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.module == module).filter(ViolasTransaction.id >= (start_version + 1)).order_by(ViolasTransaction.id).limit(10).all()
+
+        s, query = self.Query(s, ViolasTransaction)
+        if query:
+            result = query.filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.module == module).filter(ViolasTransaction.id >= (start_version + 1)).order_by(ViolasTransaction.id).limit(10).all()
+            s.close()
+        else:
+            s.close()
+            return False
 
         infoList = []
         for i in result:
@@ -543,15 +724,21 @@ class ViolasPGHandler():
 
             infoList.append(info)
 
-        s.close()
-        return infoList
+        return True, infoList
 
     def GetTransactionsAboutGovernor(self, address, start_version, limit):
         s = self.session()
-        query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.id > (start_version + 1)).order_by(ViolasTransaction.id).limit(limit).all()
+
+        s, query = self.Query(s, ViolasTransaction)
+        if query:
+            result = query.filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.id > (start_version + 1)).order_by(ViolasTransaction.id).limit(limit).all()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         infoList = []
-        for i in query:
+        for i in result:
             info = {}
             info["version"] = i.id - 1
             info["sender"] = i.sender
@@ -574,26 +761,46 @@ class ViolasPGHandler():
 
             infoList.append(info)
 
-        s.close()
-        return infoList
+        return True, infoList
 
     def GetTransactionsForWallet(self, address, module, offset, limit):
         s = self.session()
-        infoList = []
+        moduleMap = {"0000000000000000000000000000000000000000000000000000000000000000": "vtoken"}
 
-        result = s.query(ViolasSSOInfo.module_address, ViolasSSOInfo.token_name).all()
-        moduleMap = {}
-        moduleMap["0000000000000000000000000000000000000000000000000000000000000000"] = "vtoken"
+        for i in range(5):
+            try:
+                result = s.query(ViolasSSOInfo.module_address, ViolasSSOInfo.token_name).all()
+                for i in result:
+                    moduleMap[i.module_address] = i.token_name
 
-        for i in result:
-            moduleMap[i.module_address] = i.token_name
+                break
+            except OperationalError:
+                s.close()
+                logging.error(f"ERROR: Database query failed! Retry after {i} second.")
+                if i == 4:
+                    return False, None
+
+                sleep(i)
+                s = self.session()
+                continue
 
         if module == "0000000000000000000000000000000000000000000000000000000000000000":
-            query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            s, query = self.Query(s, ViolasTransaction)
+            if query:
+                result = query.filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            else:
+                s.close()
+                return False, None
         else:
-            query = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            s, query = self.Query(s, ViolasTransaction)
+            if query:
+                result = query.filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            else:
+                s.close()
+                return False, None
 
-        for i in query:
+        infoList = []
+        for i in result:
             info = {}
 
             info["type"] = TransferType[i.transaction_type]
@@ -611,11 +818,18 @@ class ViolasPGHandler():
             infoList.append(info)
 
         s.close()
-        return infoList
+        return True, infoList
 
     def GetGovernorInfoForSSO(self):
         s = self.session()
-        govInfos = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.is_handle == 4).order_by(ViolasGovernorInfo.id).all()
+
+        s, query = self.Query(s, ViolasGovernorInfo)
+        if query:
+            govInfos = query.filter(ViolasGovernorInfo.is_handle == 4).order_by(ViolasGovernorInfo.id).all()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         infos = []
         for i in govInfos:
@@ -625,5 +839,5 @@ class ViolasPGHandler():
 
             infos.append(info)
 
-        s.close()
-        return infos
+
+        return True, infos

@@ -1,7 +1,9 @@
+from time import sleep
 from LibraModules import LibraAddressInfo, LibraTransaction
 
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import OperationalError
 
 class LibraPGHandler():
     def __init__(self, dbUrl):
@@ -10,12 +12,48 @@ class LibraPGHandler():
 
         return
 
+    def Commit(self, session):
+        for i in range(5):
+            try:
+                session.commit()
+                session.close()
+                return True
+            except OperationalError:
+                session.close()
+                logging.debug(f"ERROR: Database commit failed! Retry after {i} second.")
+                sleep(i)
+                session = self.session()
+                continue
+
+        session.close()
+        return False
+
+    def Query(self, session, table):
+        for i in range(5):
+            try:
+                return session, session.query(table)
+            except OperationalError:
+                session.close()
+                logging.debug(f"ERROR: Database query failed! Retry after {i} second.")
+                sleep(i)
+                session = self.session()
+                continue
+
+        return session, False
+
     def GetRecentTransaction(self, limit, offset):
         s = self.session()
-        query = s.query(LibraTransaction).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+
+        s, query = self.Query(s, LibraTransaction)
+        if query:
+            result = query.order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         infoList = []
-        for i in query:
+        for i in result:
             info = {}
             info["version"] = i.id - 1
             info["type"] = i.transaction_type
@@ -28,12 +66,18 @@ class LibraPGHandler():
 
             infoList.append(info)
 
-        s.close()
-        return infoList
+        return True, infoList
 
     def GetAddressInfo(self, address):
         s = self.session()
-        result = s.query(LibraAddressInfo).filter(LibraAddressInfo.address == address).first()
+
+        s, query = self.Query(s, LibraAddressInfo)
+        if query:
+            result = query.filter(LibraAddressInfo.address == address).first()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         info = {}
         if result is not None:
@@ -48,12 +92,18 @@ class LibraPGHandler():
             info["sent_failed_tx_count"] = result.sent_failed_tx_count
             info["received_failed_tx_count"] = result.received_failed_tx_count
 
-        s.close()
-        return info
+        return True, info
 
     def GetTransactionsByAddress(self, address, limit, offset):
         s = self.session()
-        query = s.query(LibraTransaction).filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address)).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+
+        s, query = self.Query(s, LibraTransaction)
+        if query:
+            result  = query.filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address)).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         infoList = []
         for i in query:
@@ -69,12 +119,18 @@ class LibraPGHandler():
 
             infoList.append(info)
 
-        s.close()
-        return infoList
+        return True, infoList
 
     def GetTransactionByVersion(self, version):
         s = self.session()
-        result = s.query(LibraTransaction).filter(LibraTransaction.id == (version + 1)).first()
+
+        s, query = self.Query(s, LibraTransaction)
+        if query:
+            result = query.filter(LibraTransaction.id == (version + 1)).first()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         info = {}
         info["version"] = result.id - 1
@@ -90,22 +146,34 @@ class LibraPGHandler():
         info["signature"] = result.signature
         info["status"] = result.status
 
-        s.close()
-        return info
+        return True, info
 
     def GetTransactionCount(self):
         s = self.session()
-        result = s.query(LibraTransaction).count()
-        s.close()
 
-        return result
+        s, query = self.Query(s, LibraTransaction)
+        if query:
+            result = query.count()
+            s.close()
+        else:
+            s.close()
+            return False, None
+
+        return True, result
 
     def GetTransactionsForWallet(self, address, offset, limit):
         s = self.session()
-        query = s.query(LibraTransaction).filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address)).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+
+        s, query = self.Query(s, LibraTransaction)
+        if query:
+            result = query.filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address)).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+            s.close()
+        else:
+            s.close()
+            return False, None
 
         infoList = []
-        for i in query:
+        for i in result:
             info = {}
             info["version"] = i.id - 1
             info["sender"] = i.sender
@@ -117,5 +185,4 @@ class LibraPGHandler():
 
             infoList.append(info)
 
-        s.close()
-        return infoList
+        return True, infoList

@@ -13,6 +13,7 @@ class ErrorCode(IntEnum):
     ERR_VBTC_TRANSACTION_INFO = 2009
     ERR_TOKEN_NAME_DUPLICATE = 2010
     ERR_GOV_INFO_DOES_NOT_EXIST = 2011
+    ERR_DATABASE_CONNECT = 2012
 
     ERR_GRPC_CONNECT = 3000
 
@@ -31,6 +32,7 @@ ErrorMsg = {
     ErrorCode.ERR_VBTC_TRANSACTION_INFO: "The transaction information is incorrect.",
     ErrorCode.ERR_TOKEN_NAME_DUPLICATE: "Token name duplicate.",
     ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST: "Governor info does not exist.",
+    ErrorCode.ERR_DATABASE_CONNECT: "Database query failed."
 
     ErrorCode.ERR_GRPC_CONNECT: "Grpc call failed.",
 
