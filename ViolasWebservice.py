@@ -305,7 +305,7 @@ def SubmitTokenInfo():
     if not VerifyCodeExist(userInfo["email_address"], params["email_verify_code"]):
         return MakeResp(ErrorCode.ERR_VERIFICATION_CODE)
 
-    succ, result = HViolas.AddSSOInfo(params):
+    succ, result = HViolas.AddSSOInfo(params)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
