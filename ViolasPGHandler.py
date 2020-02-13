@@ -765,7 +765,9 @@ class ViolasPGHandler():
 
     def GetTransactionsForWallet(self, address, module, offset, limit):
         s = self.session()
-        moduleMap = {"0000000000000000000000000000000000000000000000000000000000000000": "vtoken"}
+        moduleMap = {"0000000000000000000000000000000000000000000000000000000000000000": "vtoken",
+                     "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb": "vbtc",
+                     "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410": "vlibra"}
 
         for i in range(5):
             try:
@@ -841,3 +843,28 @@ class ViolasPGHandler():
 
 
         return True, infos
+    def GetExchangeTransactionCountFrom(self, address, exchangeAddress, exchangeModule, offset, limit):
+        s = self.session()
+
+        s, query = self.Query(s, ViolasTransaction)
+        if query:
+            result = query.filter(ViolasTransaction.sender == address).filter(ViolasTransaction.receiver == exchangeAddress).filter(ViolasTransaction.module == exchangeModule).count()
+            s.close()
+        else:
+            s.close()
+            return False, None
+
+        return True, result
+
+    def GetExchangeTransactionCountTo(self, address, exchangeAddress, exchangeModule):
+        s = self.session()
+
+        s, query = self.Query(s, ViolasTransaction)
+        if query:
+            result = query.filter(ViolasTransaction.sender == exchangeAddress).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.module == exchangeModule).count()
+            s.close()
+        else:
+            s.close()
+            return False, None
+
+        return True, result

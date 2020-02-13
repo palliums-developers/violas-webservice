@@ -239,6 +239,7 @@ def VerifyVBtcTransactionInfo():
 
     return MakeResp(ErrorCode.ERR_OK)
 
+# sso
 @app.route("/1.0/violas/sso/user")
 def GetSSOUserInfo():
     address = request.args.get("address")
@@ -452,6 +453,7 @@ def GetGovernors():
 
     return MakeResp(ErrorCode.ERR_OK, infos)
 
+# governor
 @app.route("/1.0/violas/governor")
 def GetGovernorInfo():
     offset = request.args.get("offset", 0, int)
@@ -664,3 +666,78 @@ def ViolasGetTransactionsByVersion(version):
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, transInfo)
+
+# corss chain
+AddressMap = {"btc": "2MxBZG7295wfsXaUj69quf8vucFzwG35UWh",
+              "violas": "fd0426fa9a3ba4fae760d0f614591c61bb53232a3b1138d5078efa11ef07c49c",
+              "libra": "29223f25fe4b74d75ca87527aed560b2826f5da9382e2fb83f9ab740ac40b8f7"}
+
+ModuleMap = {"vbtc": "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb",
+             "vlibra": "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410"}
+
+@app.route("/1.0/crosschain/address")
+def GetAddressOfCrossChainTransaction():
+    addressName = request.args.get("type")
+
+    if addressName == "vbtc" or addressName == "vlibra":
+        addressName = "violas"
+
+    return MakeResp(ErrorCode.ERR_OK, AddressMap.get(addressName))
+
+@app.route("/1.0/crosschain/module")
+def GetModuleOfCrossChainTransaction():
+    moduleName = request.args.get("type")
+
+    return MakeResp(ErrorCode.ERR_OK, ModuleMap.get(moduleName))
+
+@app.route("/1.0/crosschain/rate")
+def GetRateOfCrossChainTransaction():
+    exchangeName = request.args.get("type")
+
+    data = {}
+    data["exchange_name"] = exchangeName
+    data["exchange_rate"] = 1
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/crosschain/transactions/count")
+def GetCountOfCrossChainTransaction():
+    transactionType = request.args.get("type")
+    address = request.args.get("address")
+
+    if transactionType == "vbtc":
+        count = HViolas.GetExchangeTransactionCountFrom(address, AddressMap.get("violas"), ModuleMap.get(transactionType))
+    elif transactionType == "vlibra":
+        count = HViolas.GetExchangeTransactionCountFrom(address, AddressMap.get("violas"), ModuleMap.get(transactionType))
+    elif transactionType == "btc":
+        count = HViolas.GetExchangeTransactionCountto(address, AddressMap.get(transactionType), ModuleMap.get("vbtc"))
+    elif transactionType == "libra":
+        count = HViolas.GetExchangeTransactionCountTo(address, AddressMap.get(transactionType), ModuleMap.get("vlibra"))
+
+    return MakeResp(ErrorCode.ERR_OK, count)
+
+@app.route("/1.0/crosschain/module/status")
+def GetPublishStatusOfCrossChainModule():
+    address = request.args.get("address")
+    module = request.args.get("module")
+
+    cli = MakeViolasClient()
+
+    try:
+        info = cli.get_account_state(address)
+    except ViolasError as e:
+        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+
+    if not info.exists():
+        return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
+
+    modus = []
+    for key in info.get_scoin_resources():
+        modus.append(key)
+
+    if module in modus:
+        status = 1
+    else:
+        status = 0
+
+    return MakeResp(ErrorCode.ERR_OK, status)

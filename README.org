@@ -1080,6 +1080,95 @@
               "message": "ok"
           }
         #+END_SRC
+*** 跨链映射相关接口
+    获取跨链交易转账地址，type类型为：btc，vbtc，libra，vlibra
+**** 获取转账地址
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/crosschain/address?type=btc=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code": 2000,
+              "data": "fd0426fa9a3ba4fae760d0f614591c61bb53232a3b1138d5078efa11ef07c49c",
+              "message": "ok"
+          }
+        #+END_SRC
+
+**** 获取转账module地址
+     获取跨链交易转账Module地址，type类型为：vbtc，vlibra
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/crosschain/module?type=vbtc=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code": 2000,
+              "data": "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410",
+              "message": "ok"
+          }
+        #+END_SRC
+
+**** 获取跨链兑换汇率
+     获取跨链交易兑换汇率，type类型为：btc，vbtc，libra，vlibra
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/crosschain/rate?type=btc=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code": 2000,
+              "data": {
+                  "exchange_name": "btc",
+                  "exchange_rate": 1
+              },
+              "message": "ok"
+          }
+        #+END_SRC
+
+**** 获取跨链兑换交易数量
+     获取当前账户的跨链交易次数
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/crosschain/transactions/count?address=address&type=btc=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code": 2000,
+              "data": 10,
+              "message": "ok"
+          }
+        #+END_SRC
+
+**** 查询跨链module publish状态
+     查询当前账户是否已对某module进行publish
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/crosschain/module/status?address=address&module=module=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code": 2000,
+              "data": 1,                  // 0:未publish，1:已publish
+              "message": "ok"
+          }
+        #+END_SRC
+
 ** 附录：
 *** 交易类型
     | 类型 | 交易名称                               |
