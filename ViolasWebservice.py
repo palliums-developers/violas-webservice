@@ -706,13 +706,16 @@ def GetCountOfCrossChainTransaction():
     address = request.args.get("address")
 
     if transactionType == "vbtc":
-        count = HViolas.GetExchangeTransactionCountFrom(address, AddressMap.get("violas"), ModuleMap.get(transactionType))
+        succ, count = HViolas.GetExchangeTransactionCountFrom(address, AddressMap.get("violas"), ModuleMap.get(transactionType))
     elif transactionType == "vlibra":
-        count = HViolas.GetExchangeTransactionCountFrom(address, AddressMap.get("violas"), ModuleMap.get(transactionType))
+        succ, count = HViolas.GetExchangeTransactionCountFrom(address, AddressMap.get("violas"), ModuleMap.get(transactionType))
     elif transactionType == "btc":
-        count = HViolas.GetExchangeTransactionCountto(address, AddressMap.get(transactionType), ModuleMap.get("vbtc"))
+        succ, count = HViolas.GetExchangeTransactionCountto(address, AddressMap.get(transactionType), ModuleMap.get("vbtc"))
     elif transactionType == "libra":
-        count = HViolas.GetExchangeTransactionCountTo(address, AddressMap.get(transactionType), ModuleMap.get("vlibra"))
+        succ, count = HViolas.GetExchangeTransactionCountTo(address, AddressMap.get(transactionType), ModuleMap.get("vlibra"))
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, count)
 
