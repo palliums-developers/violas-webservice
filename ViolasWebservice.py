@@ -747,15 +747,27 @@ def GetMapInfoOfCrossChainTransaction():
     coinType = request.args.get("type")
 
     info = {}
-    if coinType == "btc" or coinType == "libra":
-        info["name"] = coinType
+    if coinType == "btc":
+        info["name"] = "vbtc"
         info["address"] = AddressMap.get(coinType)
-        info["module"] = ""
+        info["module"] = ModuleMap.get("vbtc")
         info["rate"] = 1
-    else:
-        info["name"] = coinType
+    elif coinType == "libra":
+        info["name"] = "vlibra"
+        info["address"] = AddressMap.get(coinType)
+        info["module"] = ModuleMap.get("vlibra")
+        info["rate"] = 1
+    elif coinType == "vbtc":
+        info["name"] = "btc"
         info["address"] = AddressMap.get("libra")
         info["module"] = ModuleMap.get(coinType)
         info["rate"] = 1
+    elif coinType == "vlibra":
+        info["name"] = "libra"
+        info["address"] = AddressMap.get("libra")
+        info["module"] = ModuleMap.get(coinType)
+        info["rate"] = 1
+    else:
+        return MakeResp(ErrorCode.ERR_INVAILED_COIN_TYPE)
 
     return MakeResp(ErrorCode.ERR_OK, info)

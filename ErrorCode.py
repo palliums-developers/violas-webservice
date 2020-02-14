@@ -14,6 +14,7 @@ class ErrorCode(IntEnum):
     ERR_TOKEN_NAME_DUPLICATE = 2010
     ERR_GOV_INFO_DOES_NOT_EXIST = 2011
     ERR_DATABASE_CONNECT = 2012
+    ERR_INVAILED_COIN_TYPE = 2013
 
     ERR_GRPC_CONNECT = 3000
 
@@ -33,6 +34,7 @@ ErrorMsg = {
     ErrorCode.ERR_TOKEN_NAME_DUPLICATE: "Token name duplicate.",
     ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST: "Governor info does not exist.",
     ErrorCode.ERR_DATABASE_CONNECT: "Database connect error.",
+    ErrorCode.ERR_INVAILED_COIN_TYPE: "Invailed coin type.",
 
     ErrorCode.ERR_GRPC_CONNECT: "Grpc call failed.",
 
