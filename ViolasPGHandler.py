@@ -841,9 +841,9 @@ class ViolasPGHandler():
 
             infos.append(info)
 
-
         return True, infos
-    def GetExchangeTransactionCountFrom(self, address, exchangeAddress, exchangeModule, offset, limit):
+
+    def GetExchangeTransactionCountFrom(self, address, exchangeAddress, exchangeModule):
         s = self.session()
 
         s, query = self.Query(s, ViolasTransaction)
