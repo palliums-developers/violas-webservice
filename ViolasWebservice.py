@@ -710,7 +710,7 @@ def GetCountOfCrossChainTransaction():
     elif transactionType == "vlibra":
         succ, count = HViolas.GetExchangeTransactionCountFrom(address, AddressMap.get("violas"), ModuleMap.get(transactionType))
     elif transactionType == "btc":
-        succ, count = HViolas.GetExchangeTransactionCountto(address, AddressMap.get(transactionType), ModuleMap.get("vbtc"))
+        succ, count = HViolas.GetExchangeTransactionCountTo(address, AddressMap.get(transactionType), ModuleMap.get("vbtc"))
     elif transactionType == "libra":
         succ, count = HViolas.GetExchangeTransactionCountTo(address, AddressMap.get(transactionType), ModuleMap.get("vlibra"))
 
