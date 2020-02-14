@@ -759,12 +759,12 @@ def GetMapInfoOfCrossChainTransaction():
         info["rate"] = 1
     elif coinType == "vbtc":
         info["name"] = "btc"
-        info["address"] = AddressMap.get("libra")
+        info["address"] = AddressMap.get("violas")
         info["module"] = ModuleMap.get(coinType)
         info["rate"] = 1
     elif coinType == "vlibra":
         info["name"] = "libra"
-        info["address"] = AddressMap.get("libra")
+        info["address"] = AddressMap.get("violas")
         info["module"] = ModuleMap.get(coinType)
         info["rate"] = 1
     else:
