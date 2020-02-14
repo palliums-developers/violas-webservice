@@ -2,3 +2,4 @@
 /violas
 Pipfile
 Pipfile.lock
+*.log
