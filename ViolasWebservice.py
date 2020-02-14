@@ -741,3 +741,21 @@ def GetPublishStatusOfCrossChainModule():
         status = 0
 
     return MakeResp(ErrorCode.ERR_OK, status)
+
+@app.route("/1.0/crosschain/info")
+def GetMapInfoOfCrossChainTransaction():
+    coinType = request.args.get("type")
+
+    info = {}
+    if coinType == "btc" or coinType == "libra":
+        info["name"] = coinType
+        info["address"] = AddressMap.get(coinType)
+        info["module"] = ""
+        info["rate"] = 1
+    else:
+        info["name"] = coinType
+        info["address"] = AddressMap.get("libra")
+        info["module"] = ModuleMap.get(coinType)
+        info["rate"] = 1
+
+    return MakeResp(ErrorCode.ERR_OK, info)
