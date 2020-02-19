@@ -221,7 +221,9 @@ def GetVBtcTransactionInfo():
     moduleAddress = request.args.get("module_address")
     startVersion = request.args.get("start_version", type = int)
 
-    datas = HViolas.GetTransactionsAboutVBtc(receiverAddress, moduleAddress, startVersion)
+    succ, datas = HViolas.GetTransactionsAboutVBtc(receiverAddress, moduleAddress, startVersion)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, datas)
 
@@ -262,22 +264,26 @@ def GetSSOUserInfo():
 @app.route("/1.0/violas/sso/user", methods = ["POST"])
 def SSOUserRegister():
     params = request.get_json()
-    if not HViolas.AddSSOUser(params["wallet_address"]):
+
+    succ, result = HViolas.AddSSOUser(params["wallet_address"])
+    if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-    if not HViolas.UpdateSSOUserInfo(params):
+    succ, result = HViolas.UpdateSSOUserInfo(params)
+    if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    if not result:
+        return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
 
     return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.0/violas/sso/token")
 def GetTokenApprovalStatus():
     address = request.args.get("address")
-    succ, info = HViolas.GetSSOApprovalStatus(address)
 
+    succ, info = HViolas.GetSSOApprovalStatus(address)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
     if info is None:
         return MakeResp(ErrorCode.ERR_TOKEN_INFO_DOES_NOT_EXIST)
 
@@ -309,7 +315,6 @@ def SubmitTokenInfo():
     succ, result = HViolas.AddSSOInfo(params)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
     if result:
         return MakeResp(ErrorCode.ERR_OK)
     else:
@@ -318,8 +323,12 @@ def SubmitTokenInfo():
 @app.route("/1.0/violas/sso/token", methods = ["PUT"])
 def TokenPublish():
     params = request.get_json()
-    if not HViolas.SetTokenPublished(params["address"]):
+
+    succ, result = HViolas.SetTokenPublished(params["address"])
+    if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    if not result:
+        return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
 
     return MakeResp(ErrorCode.ERR_OK)
 
@@ -350,7 +359,8 @@ def SendVerifyCode():
     verifyCode = random.randint(100000, 999999)
     local_number = params.get("phone_local_number")
 
-    if not HViolas.AddSSOUser(address):
+    succ, result = HViolas.AddSSOUser(address)
+    if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     if receiver.find("@") >= 0:
@@ -401,8 +411,11 @@ def BindUserInfo():
             data["phone_local_number"] = local_number
             data["phone_number"] = receiver
 
-        if not HViolas.UpdateSSOUserInfo(data):
+        succ, result = HViolas.UpdateSSOUserInfo(data)
+        if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+        if not result:
+            return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
 
     return MakeResp(ErrorCode.ERR_OK)
 
@@ -477,7 +490,8 @@ def GetGovernorInfoAboutAddress(address):
 def AddGovernorInfo():
     params = request.get_json()
 
-    if not HViolas.AddGovernorInfo(params):
+    succ, result = HViolas.AddGovernorInfo(params)
+    if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK)

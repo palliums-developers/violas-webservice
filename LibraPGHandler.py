@@ -12,43 +12,13 @@ class LibraPGHandler():
 
         return
 
-    def Commit(self, session):
-        for i in range(5):
-            try:
-                session.commit()
-                session.close()
-                return True
-            except OperationalError:
-                session.close()
-                logging.debug(f"ERROR: Database commit failed! Retry after {i} second.")
-                sleep(i)
-                session = self.session()
-                continue
-
-        session.close()
-        return False
-
-    def Query(self, session, table):
-        for i in range(5):
-            try:
-                return session, session.query(table)
-            except OperationalError:
-                session.close()
-                logging.debug(f"ERROR: Database query failed! Retry after {i} second.")
-                sleep(i)
-                session = self.session()
-                continue
-
-        return session, False
-
     def GetRecentTransaction(self, limit, offset):
         s = self.session()
 
-        s, query = self.Query(s, LibraTransaction)
-        if query:
-            result = query.order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+        try:
+            result = s.query(LibraTransaction).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
             s.close()
-        else:
+        except OperationalError:
             s.close()
             return False, None
 
@@ -71,11 +41,10 @@ class LibraPGHandler():
     def GetAddressInfo(self, address):
         s = self.session()
 
-        s, query = self.Query(s, LibraAddressInfo)
-        if query:
-            result = query.filter(LibraAddressInfo.address == address).first()
+        try:
+            result = s.query(LibraAddressInfo).filter(LibraAddressInfo.address == address).first()
             s.close()
-        else:
+        except OperationalError:
             s.close()
             return False, None
 
@@ -97,11 +66,10 @@ class LibraPGHandler():
     def GetTransactionsByAddress(self, address, limit, offset):
         s = self.session()
 
-        s, query = self.Query(s, LibraTransaction)
-        if query:
-            result  = query.filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address)).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+        try:
+            result  = s.query(LibraTransaction).filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address)).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
             s.close()
-        else:
+        except OperationalError:
             s.close()
             return False, None
 
@@ -124,11 +92,10 @@ class LibraPGHandler():
     def GetTransactionByVersion(self, version):
         s = self.session()
 
-        s, query = self.Query(s, LibraTransaction)
-        if query:
-            result = query.filter(LibraTransaction.id == (version + 1)).first()
+        try:
+            result = s.query(LibraTransaction).filter(LibraTransaction.id == (version + 1)).first()
             s.close()
-        else:
+        except OperationalError:
             s.close()
             return False, None
 
@@ -151,24 +118,27 @@ class LibraPGHandler():
     def GetTransactionCount(self):
         s = self.session()
 
-        s, query = self.Query(s, LibraTransaction)
-        if query:
-            result = query.count()
+        try:
+            result = s.query(LibraTransaction.id).order_by(LibraTransaction.id.desc()).limit(1).first()
             s.close()
-        else:
+        except OperationalError:
             s.close()
             return False, None
+
+        if result is None:
+            result = 0
+        else:
+            result = result[0]
 
         return True, result
 
     def GetTransactionsForWallet(self, address, offset, limit):
         s = self.session()
 
-        s, query = self.Query(s, LibraTransaction)
-        if query:
-            result = query.filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address)).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+        try:
+            result = s.query(LibraTransaction).filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address)).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
             s.close()
-        else:
+        except OperationalError:
             s.close()
             return False, None
 
