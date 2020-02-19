@@ -787,19 +787,21 @@ class ViolasPGHandler():
                 continue
 
         if module == "0000000000000000000000000000000000000000000000000000000000000000":
-            s, query = self.Query(s, ViolasTransaction)
-            if query:
-                result = query.filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-            else:
-                s.close()
-                return False, None
+            result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            # s, query = self.Query(s, ViolasTransaction)
+            # if query:
+            #     result = query.filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            # else:
+            #     s.close()
+            #     return False, None
         else:
-            s, query = self.Query(s, ViolasTransaction)
-            if query:
-                result = query.filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-            else:
-                s.close()
-                return False, None
+            result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            # s, query = self.Query(s, ViolasTransaction)
+            # if query:
+            #     result = query.filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            # else:
+            #     s.close()
+            #     return False, None
 
         infoList = []
         for i in result:
