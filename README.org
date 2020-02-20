@@ -1191,6 +1191,73 @@
           }
         #+END_SRC
 
+**** 获取兑换交易记录
+     获取映射币兑换交易记录，钱包类型type参数为：0（violas)，1（libra），（2（btc）暂不支持）
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/crosschain/transactions?address=address&type=0&offset=0&limit=10=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code": 2000,
+              "data": {
+                  "date": 1285820202,
+                  "amount": 1000,
+                  "address": xxxxxxxxxxxxxxxxxxxxx,
+                  "coin": "vlibra"
+                  "status": 0
+              },
+              "message": "ok"
+          }
+        #+END_SRC
+
+**** 转发BTC上链交易
+     转发BTC上链交易到比特大陆接口
+***** Request
+      - Method: *POST*
+      - URL: =/1.0/crosschain/transactions/btc=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "rawhex":"xxxxxx"
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code": 2000,
+              "message": "ok"
+          }
+        #+END_SRC
+
+**** 获取已映射稳定币信息
+     获取当前钱包已映射稳定币的信息
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/crosschain/modules?address=address=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code": 2000,
+              "data": {
+                  "name": "btc",
+                  "address": "xxxxxxxxxxxxxxxxxxxxx",
+                  "module": "xxxxxxxxxxxxxxxxxxxx",
+                  "map_name":"vbtc",
+                  "rate": 1
+              },
+              "message": "ok"
+          }
+        #+END_SRC
+
 ** 附录：
 *** 交易类型
     | 类型 | 交易名称                               |
