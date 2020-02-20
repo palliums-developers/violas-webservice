@@ -3,6 +3,7 @@ from flask import Flask, request, send_file
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from redis import Redis
+import requests
 
 from violas import Client
 from violas.error.error import ViolasError
@@ -34,7 +35,8 @@ pushInfo = config["PUSH SERVER"]
 pushh = PushServerHandler(pushInfo["HOST"], int(pushInfo["PORT"]))
 
 cachingInfo = config["CACHING SERVER"]
-rds = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["DB"], cachingInfo["PASSWORD"])
+rdsVerify = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["VERIFYDB"], cachingInfo["PASSWORD"])
+rdsCoinMap = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["COINMAPDB"], cachingInfo["PASSWORD"])
 
 def MakeLibraClient():
     return Client("libra_testnet")
@@ -181,7 +183,14 @@ def GetViolasTransactionInfo():
     limit = request.args.get("limit", 10, int)
     offset = request.args.get("offset", 0, int)
 
-    succ, datas = HViolas.GetTransactionsForWallet(address, module, offset, limit)
+    vbtcModule = rdsCoinMap.hget("vbtc", "module").decode("utf8")
+    vlibraModule = rdsCoinMap.hget("vlibra", "module").decode("utf8")
+
+    moduleMap = {"0000000000000000000000000000000000000000000000000000000000000000": "vtoken",
+                 vbtcModule: "vbtc",
+                 vlibraModule: "vlibra"}
+
+    succ, datas = HViolas.GetTransactionsForWallet(address, module, offset, limit, moduleMap)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
@@ -365,10 +374,10 @@ def SendVerifyCode():
 
     if receiver.find("@") >= 0:
         succ = pushh.PushEmailSMSCode(verifyCode, receiver, 5)
-        rds.setex(receiver, 600, str(verifyCode))
+        rdsVerify.setex(receiver, 600, str(verifyCode))
     else:
         succ = pushh.PushPhoneSMSCode(verifyCode, local_number + receiver, 5)
-        rds.setex(local_number + receiver, 600, str(verifyCode))
+        rdsVerify.setex(local_number + receiver, 600, str(verifyCode))
 
     if not succ:
         return MakeResp(ErrorCode.ERR_SEND_VERIFICATION_CODE)
@@ -376,14 +385,14 @@ def SendVerifyCode():
     return MakeResp(ErrorCode.ERR_OK)
 
 def VerifyCodeExist(receiver, code):
-    value = rds.get(receiver)
+    value = rdsVerify.get(receiver)
 
     if value is None:
         return False
     elif value.decode("utf8") != str(code):
         return False
 
-    rds.delete(receiver)
+    rdsVerify.delete(receiver)
 
     return True
 
@@ -682,27 +691,19 @@ def ViolasGetTransactionsByVersion(version):
     return MakeResp(ErrorCode.ERR_OK, transInfo)
 
 # corss chain
-AddressMap = {"btc": "2MxBZG7295wfsXaUj69quf8vucFzwG35UWh",
-              "violas": "fd0426fa9a3ba4fae760d0f614591c61bb53232a3b1138d5078efa11ef07c49c",
-              "libra": "29223f25fe4b74d75ca87527aed560b2826f5da9382e2fb83f9ab740ac40b8f7"}
-
-ModuleMap = {"vbtc": "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb",
-             "vlibra": "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410"}
-
 @app.route("/1.0/crosschain/address")
 def GetAddressOfCrossChainTransaction():
     addressName = request.args.get("type")
 
-    if addressName == "vbtc" or addressName == "vlibra":
-        addressName = "violas"
-
-    return MakeResp(ErrorCode.ERR_OK, AddressMap.get(addressName))
+    address = rdsCoinMap.hget(addressName, "address").decode("utf8")
+    return MakeResp(ErrorCode.ERR_OK, address)
 
 @app.route("/1.0/crosschain/module")
 def GetModuleOfCrossChainTransaction():
     moduleName = request.args.get("type")
 
-    return MakeResp(ErrorCode.ERR_OK, ModuleMap.get(moduleName))
+    module = rdsCoinMap.hget(moduleName, "module").decode("utf8")
+    return MakeResp(ErrorCode.ERR_OK, module)
 
 @app.route("/1.0/crosschain/rate")
 def GetRateOfCrossChainTransaction():
@@ -710,7 +711,7 @@ def GetRateOfCrossChainTransaction():
 
     data = {}
     data["exchange_name"] = exchangeName
-    data["exchange_rate"] = 1
+    data["exchange_rate"] = int(rdsCoinMap.hget(exchangeName, "rate").decode("utf8"))
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
@@ -719,14 +720,13 @@ def GetCountOfCrossChainTransaction():
     transactionType = request.args.get("type")
     address = request.args.get("address")
 
-    if transactionType == "vbtc":
-        succ, count = HViolas.GetExchangeTransactionCountFrom(address, AddressMap.get("violas"), ModuleMap.get(transactionType))
-    elif transactionType == "vlibra":
-        succ, count = HViolas.GetExchangeTransactionCountFrom(address, AddressMap.get("violas"), ModuleMap.get(transactionType))
-    elif transactionType == "btc":
-        succ, count = HViolas.GetExchangeTransactionCountTo(address, AddressMap.get(transactionType), ModuleMap.get("vbtc"))
-    elif transactionType == "libra":
-        succ, count = HViolas.GetExchangeTransactionCountTo(address, AddressMap.get(transactionType), ModuleMap.get("vlibra"))
+    exchangeAddress = rdsCoinMap.hget(transactionType, "address").decode("utf8")
+    exchangeModule = rdsCoinMap.hget(transactionType, "module").decode("utf8")
+
+    if transactionType == "vbtc" or transactionType == "vlibra":
+        succ, count = HViolas.GetExchangeTransactionCountFrom(address, exchangeAddress, exchangeModule)
+    elif transactionType == "btc" or transactionType == "libra":
+        succ, count = HViolas.GetExchangeTransactionCountTo(address, exchangeAddress, exchangeModule)
 
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
@@ -764,27 +764,76 @@ def GetMapInfoOfCrossChainTransaction():
     coinType = request.args.get("type")
 
     info = {}
-    if coinType == "btc":
-        info["name"] = "vbtc"
-        info["address"] = AddressMap.get(coinType)
-        info["module"] = ModuleMap.get("vbtc")
-        info["rate"] = 1
-    elif coinType == "libra":
-        info["name"] = "vlibra"
-        info["address"] = AddressMap.get(coinType)
-        info["module"] = ModuleMap.get("vlibra")
-        info["rate"] = 1
-    elif coinType == "vbtc":
-        info["name"] = "btc"
-        info["address"] = AddressMap.get("violas")
-        info["module"] = ModuleMap.get(coinType)
-        info["rate"] = 1
-    elif coinType == "vlibra":
-        info["name"] = "libra"
-        info["address"] = AddressMap.get("violas")
-        info["module"] = ModuleMap.get(coinType)
-        info["rate"] = 1
-    else:
-        return MakeResp(ErrorCode.ERR_INVAILED_COIN_TYPE)
+    info["name"] = rdsCoinMap.hget(coinType, "map_name").decode("utf8")
+    info["address"] = rdsCoinMap.hget(coinType, "address").decode("utf8")
+    info["module"] = rdsCoinMap.hget(coinType, "module").decode("utf8")
+    info["rate"] = int(rdsCoinMap.hget(coinType, "rate").decode("utf8"))
 
     return MakeResp(ErrorCode.ERR_OK, info)
+
+@app.route("/1.0/crosschain/transactions")
+def GetCrossChainTransactionInfo():
+    address = request.args.get("address")
+    walletType = request.args.get("type", 0, int)
+    offset = request.args.get("offset", 0, int)
+    limit = request.args.get("limit", 10, int)
+
+    if walletType == 0:
+        receiver = rdsCoinMap.hget("vbtc", "address").decode("utf8")
+        moduleMap = {}
+        moduleMap[rdsCoinMap.hget("vbtc", "module").decode("utf8")] = rdsCoinMap.hget("vbtc", "map_name").decode("utf8")
+        moduleMap[rdsCoinMap.hget("vlibra", "module").decode("utf8")] = rdsCoinMap.hget("vlibra", "map_name").decode("utf8")
+
+        infos = HViolas.GetMapTransactionInfo(address, receiver, moduleMap, offset, limit)
+    elif walletType == 1:
+        receiver = rdsCoinMap.hget("libra", "address").decode("utf8")
+        infos = HLibra.GetMapTransactionInfo(address, receiver, offset, limit)
+    else:
+        return MakeResp(ErrorCode.ERR_UNKNOW_WALLET_TYPE)
+
+    return MakeResp(ErrorCode.ERR_OK, infos)
+
+@app.route("/1.0/crosschain/transactions/btc", methods = ["POST"])
+def ForwardBtcTransaction():
+    params = request.get_json()
+    rawHex = params["rawhex"]
+
+    resp = requests.post("https://tchain.api.btc.com/v3/tools/tx-publish", params = {"rawhex": rawHex})
+    if resp.json()["err_no"] != 0:
+        logging.error(f"ERROR: Forward BTC request failed, msg: {resp.json()['error_msg']}")
+        return MakeResp(ErrorCode.ERR_BTC_FORWARD_REQUEST)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/crosschain/modules")
+def GetMapedCoinModules():
+    address = request.args.get("address")
+
+    cli = MakeViolasClient()
+
+    try:
+        info = cli.get_account_state(address)
+    except ViolasError as e:
+        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+
+    if not info.exists():
+        return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
+
+    modus = []
+    for key in info.get_scoin_resources():
+        modus.append(key)
+
+    infos = []
+    coins = ["vbtc", "vlibra"]
+    for coin in coins:
+        if rdsCoinMap.hget(coin, "module").decode("utf8") in modus:
+            info = {}
+            info["name"] = coin
+            info["address"] = rdsCoinMap.hget(coin, "address").decode("utf8")
+            info["module"] = rdsCoinMap.hget(coin, "module").decode("utf8")
+            info["map_name"] = rdsCoinMap.hget(coin, "map_name").decode("utf8")
+            info["rate"] = int(rdsCoinMap.hget(coin, "rate").decode("utf8"))
+
+            infos.append(info)
+
+    return MakeResp(ErrorCode.ERR_OK, infos)

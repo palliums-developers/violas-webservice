@@ -156,3 +156,26 @@ class LibraPGHandler():
             infoList.append(info)
 
         return True, infoList
+
+    def GetMapTransactionInfo(self, sender, receiver, offset, limit):
+        s = self.session()
+
+        try:
+            result = s.query(LibraTransaction).filter(LibraTransaction.sender == sender).filter(LibraTransaction.receiver == receiver).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+            s.close()
+        except OperationalError:
+            s.close()
+            return False, None
+
+        infos = []
+        for i in result:
+            info = {}
+            info["date"] = i.expiration_time
+            info["amount"] = int(i.amount)
+            info["address"] = receiver
+            info["coin"] = "vlibra"
+            info["status"] = 0
+
+            infos.append(info)
+
+        return True, infos

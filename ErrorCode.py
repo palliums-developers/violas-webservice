@@ -15,10 +15,13 @@ class ErrorCode(IntEnum):
     ERR_GOV_INFO_DOES_NOT_EXIST = 2011
     ERR_DATABASE_CONNECT = 2012
     ERR_INVAILED_COIN_TYPE = 2013
+    ERR_UNKNOW_WALLET_TYPE = 2014
 
     ERR_GRPC_CONNECT = 3000
 
     ERR_NODE_RUNTIME = 4000
+
+    ERR_BTC_FORWARD_REQUEST = 5000
 
 ErrorMsg = {
     ErrorCode.ERR_OK: "ok",
@@ -35,8 +38,11 @@ ErrorMsg = {
     ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST: "Governor info does not exist.",
     ErrorCode.ERR_DATABASE_CONNECT: "Database connect error.",
     ErrorCode.ERR_INVAILED_COIN_TYPE: "Invailed coin type.",
+    ErrorCode.ERR_UNKNOW_WALLET_TYPE: "Unknow wallet type.",
 
     ErrorCode.ERR_GRPC_CONNECT: "Grpc call failed.",
 
-    ErrorCode.ERR_NODE_RUNTIME: "Node runtime error."
+    ErrorCode.ERR_NODE_RUNTIME: "Node runtime error.",
+
+    ErrorCode.ERR_BTC_FORWARD_REQUEST: "Forward BTC request failed."
 }

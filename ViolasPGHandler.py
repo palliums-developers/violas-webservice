@@ -767,11 +767,8 @@ class ViolasPGHandler():
 
         return True, infoList
 
-    def GetTransactionsForWallet(self, address, module, offset, limit):
+    def GetTransactionsForWallet(self, address, module, offset, limit, moduleMap):
         s = self.session()
-        moduleMap = {"0000000000000000000000000000000000000000000000000000000000000000": "vtoken",
-                     "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb": "vbtc",
-                     "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410": "vlibra"}
 
         try:
             result = s.query(ViolasSSOInfo.module_address, ViolasSSOInfo.token_name).all()
@@ -854,3 +851,26 @@ class ViolasPGHandler():
             return False, None
 
         return True, result
+
+    def GetMapTransactionInfo(self, sender, receiver, moduleMap, offset, limit):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == sender).filter(ViolasTransaction.receiver == receiver).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            s.close()
+        except OperationalError:
+            s.close()
+            return False, None
+
+        infos = []
+        for i in result:
+            info = {}
+            info["date"] = i.expiration_time
+            info["amount"] = int(i.amount)
+            info["address"] = receiver
+            info["coin"] = moduleMap.get(ViolasTransaction.module)
+            info["status"] = 0
+
+            infos.append(info)
+
+        return True, infos
