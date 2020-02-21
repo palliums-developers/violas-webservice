@@ -784,10 +784,15 @@ def GetCrossChainTransactionInfo():
         moduleMap[rdsCoinMap.hget("vbtc", "module").decode("utf8")] = rdsCoinMap.hget("vbtc", "map_name").decode("utf8")
         moduleMap[rdsCoinMap.hget("vlibra", "module").decode("utf8")] = rdsCoinMap.hget("vlibra", "map_name").decode("utf8")
 
-        infos = HViolas.GetMapTransactionInfo(address, receiver, moduleMap, offset, limit)
+        succ, infos = HViolas.GetMapTransactionInfo(address, receiver, moduleMap, offset, limit)
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
     elif walletType == 1:
         receiver = rdsCoinMap.hget("libra", "address").decode("utf8")
-        infos = HLibra.GetMapTransactionInfo(address, receiver, offset, limit)
+
+        succ, infos = HLibra.GetMapTransactionInfo(address, receiver, offset, limit)
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
     else:
         return MakeResp(ErrorCode.ERR_UNKNOW_WALLET_TYPE)
 
