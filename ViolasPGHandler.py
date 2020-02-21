@@ -868,7 +868,7 @@ class ViolasPGHandler():
             info["date"] = i.expiration_time
             info["amount"] = int(i.amount)
             info["address"] = receiver
-            info["coin"] = moduleMap.get(ViolasTransaction.module)
+            info["coin"] = moduleMap.get(i.module)
             info["status"] = 0
 
             infos.append(info)
