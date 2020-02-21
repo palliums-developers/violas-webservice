@@ -1208,7 +1208,7 @@
                   "amount": 1000,
                   "address": xxxxxxxxxxxxxxxxxxxxx,
                   "coin": "vlibra"
-                  "status": 0
+                  "status": 0             // 0：兑换中，1：成功，2：失败
               },
               "message": "ok"
           }
