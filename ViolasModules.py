@@ -81,7 +81,7 @@ class ViolasGovernorInfo(Base):
     wallet_address = Column(String(64), nullable = False)
     toxid = Column(String(76), nullable = False)
     name = Column(String(32), nullable = False)
-    public_key = Column(String(64), nullable = False)
+    public_key = Column(String(128), nullable = False)
     vstake_address = Column(String(64), nullable = True)
     multisig_address = Column(String(35), nullable = False)
     is_chairman = Column(Boolean, nullable = False)
