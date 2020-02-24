@@ -340,11 +340,11 @@ class ViolasPGHandler():
         info["public_key"] = govInfos.public_key
         info["wallet_address"] = govInfos.wallet_address
         info["vstake_address"] = govInfos.vstake_address
-        info["multisig_address"] = govinfos.multisig_address
+        info["multisig_address"] = govInfos.multisig_address
         info["is_chairman"] = govInfos.is_chairman
         info["subaccount_count"] = govInfos.subaccount_count
 
-        return True, infos
+        return True, info
 
     def AddGovernorInfo(self, data):
         s = self.session()
