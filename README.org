@@ -1192,7 +1192,7 @@
         #+END_SRC
 
 **** 获取兑换交易记录
-     获取映射币兑换交易记录，钱包类型type参数为：0（violas)，1（libra），（2（btc）暂不支持）
+     获取映射币兑换交易记录，钱包类型type参数为：0（violas)，1（libra），2（btc）
 ***** Request
       - Method: *GET*
       - URL: =/1.0/crosschain/transactions?address=address&type=0&offset=0&limit=10=

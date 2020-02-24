@@ -778,25 +778,48 @@ def GetCrossChainTransactionInfo():
     offset = request.args.get("offset", 0, int)
     limit = request.args.get("limit", 10, int)
 
+    url = "http://18.136.139.151:8088/tranrecord/"
     if walletType == 0:
-        receiver = rdsCoinMap.hget("vbtc", "address").decode("utf8")
-        moduleMap = {}
-        moduleMap[rdsCoinMap.hget("vbtc", "module").decode("utf8")] = rdsCoinMap.hget("vbtc", "map_name").decode("utf8")
-        moduleMap[rdsCoinMap.hget("vlibra", "module").decode("utf8")] = rdsCoinMap.hget("vlibra", "map_name").decode("utf8")
-
-        succ, infos = HViolas.GetMapTransactionInfo(address, receiver, moduleMap, offset, limit)
-        if not succ:
-            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+        wallet = "violas"
     elif walletType == 1:
-        receiver = rdsCoinMap.hget("libra", "address").decode("utf8")
-
-        succ, infos = HLibra.GetMapTransactionInfo(address, receiver, offset, limit)
-        if not succ:
-            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+        wallet = "libra"
+    elif walletType == 2:
+        wallet = "btc"
     else:
         return MakeResp(ErrorCode.ERR_UNKNOW_WALLET_TYPE)
 
-    return MakeResp(ErrorCode.ERR_OK, infos)
+    url = f"{url}{wallet}/{address}/{offset}/{limit}"
+
+    resp = requests.get(url)
+    infos = resp.json()["datas"]
+
+    datas = []
+    for info in infos["datas"]:
+        data = {}
+        if info["state"] == "start":
+            data["status"] = 0
+        elif info["state"] == "end":
+            data["status"] = 1
+        else:
+            data["status"] = 2
+
+        data["address"] = info["to_address"]
+        data["amount"] = info["amount"]
+
+        if info["type"] == "V2B":
+            data["coin"] = "btc"
+        elif info["type"] == "V2L":
+            data["coin"] = "libra"
+        elif info["type"] == "B2V":
+            data["coin"] = "vbtc"
+        elif info["type"] == "L2V":
+            data["coin"]= "vlibra"
+
+        data["date"] = 0
+
+        datas.append(data)
+
+    return MakeResp(ErrorCode.ERR_OK, datas)
 
 @app.route("/1.0/crosschain/transactions/btc", methods = ["POST"])
 def ForwardBtcTransaction():
