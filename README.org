@@ -779,6 +779,25 @@
 
         #+END_SRC
 
+**** 检查州长发币权限
+     检查州长是否有发币的权限
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/governor/authority?address=address&module=module=
+      - Headers: None
+      - Body: None
+***** response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code": 2000,
+              "data": {
+                  "authority":0           // 0: False, 1: True
+              },
+              "message": "ok"
+          }
+        #+END_SRC
+
 **** 获取未审批SSO信息
      州长钱包获取待审批的SSO信息
 ***** Request

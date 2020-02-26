@@ -598,6 +598,25 @@ def GetVstakeAddress():
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
+@app.route("/1.0/violas/governor/authority")
+def CheckGovernorAuthority():
+    address = request.args.get("address")
+    module = request.args.get("module")
+
+    cli = MakeViolasClient()
+
+    try:
+        result = cli.get_balance(address, module)
+    except ViolasError as e:
+        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+
+    if result != 1:
+        data = {"authority": 0}
+        return MakeResp(ErrorCode.ERR_OK, data)
+
+    data = {"authority": 1}
+    return MakeResp(ErrorCode.ERR_OK, data)
+
 # explorer API
 
 @app.route("/explorer/libra/recent")
