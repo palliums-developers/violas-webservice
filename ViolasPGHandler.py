@@ -370,6 +370,37 @@ class ViolasPGHandler():
 
                 s.add(info)
                 s.commit()
+            else:
+                s.close()
+                return True, False
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        s.close()
+        return True, True
+
+    def AddGovernorInfoForFrontEnd(self, data):
+        s = self.session()
+
+        try:
+            if not s.query(exists().where(ViolasGovernorInfo.wallet_address == data["wallet_address"])).scalar():
+                info = ViolasGovernorInfo(
+                    wallet_address = data["wallet_address"],
+                    name = data["name"],
+                    btc_txid = data["txid"],
+                    is_chairman = False,
+                    is_handle = 0,
+                    subaccount_count = 1,
+                    application_date = int(time())
+                )
+
+                s.add(info)
+                s.commit()
+            else:
+                s.close()
+                return True, False
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
