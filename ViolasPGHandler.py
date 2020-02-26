@@ -343,6 +343,7 @@ class ViolasPGHandler():
         info["multisig_address"] = govInfos.multisig_address
         info["is_chairman"] = govInfos.is_chairman
         info["subaccount_count"] = govInfos.subaccount_count
+        info["status"] = govInfos.is_handle
 
         return True, info
 

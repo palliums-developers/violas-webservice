@@ -545,6 +545,30 @@
               "message":"ok"
           }
         #+END_SRC
+
+**** SSO钱包端州长注册
+     SSO钱包端州长注册接口
+***** Request
+      - Method: *POST*
+      - URL: =/1.0/violas/governors/sso=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "wallet_address":"address",
+              "name":"name",
+              "txid":"txid"
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code": 2000,
+              "message": "ok"
+          }
+        #+END_SRC
+
 **** 修改州长信息
      修改州长信息
 ***** Request
@@ -621,7 +645,8 @@
                   "multisig_address":"xxx",     // 多签地址
                   "vstake_address":"xxx",       // vstake地址
                   "is_chairman":0,               // 是否是董事长，0：否；1：是
-                  "subaccount_count":0          // 子账户个数
+                  "subaccount_count":0,          // 子账户个数
+                  "status":0                     // 0: not approved; 1: pass; 2: not pass; 3: published; 4: minted
               }
           }
         #+END_SRC

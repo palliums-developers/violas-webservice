@@ -475,20 +475,6 @@ def GetGovernors():
 
     return MakeResp(ErrorCode.ERR_OK, infos)
 
-@app.route("/1.0/violas/sso/governors", methods = ["POST"])
-def AddGovernorInfoForSSOWallet():
-    params = request.get_json()
-
-    succ, result = HViolas.AddGovernorInfoForFrontEnd(params)
-
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    if not result:
-        return MakeResp(ErrorCode.ERR_GOV_INFO_HAD_EXISTED)
-
-    return MakeResp(ErrorCode.ERR_OK)
-
 # governor
 @app.route("/1.0/violas/governor")
 def GetGovernorInfo():
@@ -514,6 +500,20 @@ def AddGovernorInfo():
     params = request.get_json()
 
     succ, result = HViolas.AddGovernorInfo(params)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
+        return MakeResp(ErrorCode.ERR_GOV_INFO_HAD_EXISTED)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/governors/sso", methods = ["POST"])
+def AddGovernorInfoForSSOWallet():
+    params = request.get_json()
+
+    succ, result = HViolas.AddGovernorInfoForFrontEnd(params)
+
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
