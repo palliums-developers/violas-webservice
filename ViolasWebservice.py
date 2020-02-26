@@ -508,7 +508,7 @@ def AddGovernorInfo():
 
     return MakeResp(ErrorCode.ERR_OK)
 
-@app.route("/1.0/violas/governors/sso", methods = ["POST"])
+@app.route("/1.0/violas/governor/sso", methods = ["POST"])
 def AddGovernorInfoForSSOWallet():
     params = request.get_json()
 
@@ -583,6 +583,20 @@ def GetTransactionsAboutGovernor():
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, datas)
+
+@app.route("/1.0/violas/governor/vstake/address")
+def GetVstakeAddress():
+    succ, address = HViolas.GetVstakeModuleAddress()
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if address is None:
+        return MakeResp(ErrorCode.ERR_VSTAKE_ADDRESS)
+
+    data = {"address": address}
+
+    return MakeResp(ErrorCode.ERR_OK, data)
 
 # explorer API
 

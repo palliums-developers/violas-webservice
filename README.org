@@ -758,6 +758,27 @@
               ]
           }
         #+END_SRC
+
+**** 获取Vstake module address
+     获取Vstake module address用来接收vstake
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/governor/vstake/address=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code": 2000,
+              "data": {
+                  "address": "module address"
+              },
+              "message": "ok"
+          }
+
+        #+END_SRC
+
 **** 获取未审批SSO信息
      州长钱包获取待审批的SSO信息
 ***** Request
