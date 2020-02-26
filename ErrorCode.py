@@ -17,6 +17,7 @@ class ErrorCode(IntEnum):
     ERR_INVAILED_COIN_TYPE = 2013
     ERR_UNKNOW_WALLET_TYPE = 2014
     ERR_GOV_INFO_HAD_EXISTED = 2015
+    ERR_VSTAKE_ADDRESS = 2016
 
     ERR_GRPC_CONNECT = 3000
 
@@ -41,6 +42,7 @@ ErrorMsg = {
     ErrorCode.ERR_INVAILED_COIN_TYPE: "Invailed coin type.",
     ErrorCode.ERR_UNKNOW_WALLET_TYPE: "Unknow wallet type.",
     ErrorCode.ERR_GOV_INFO_HAD_EXISTED: "Governor info had existed.",
+    ErrorCode.ERR_VSTAKE_ADDRESS: "Vstake module address does not exist.",
 
     ErrorCode.ERR_GRPC_CONNECT: "Grpc call failed.",
 

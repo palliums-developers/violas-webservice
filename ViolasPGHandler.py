@@ -906,3 +906,18 @@ class ViolasPGHandler():
             infos.append(info)
 
         return True, infos
+
+    def GetVstakeModuleAddress(self):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasGovernorInfo.vstake_address).filter(ViolasGovernorInfo.is_chairman == True).first()
+            s.close()
+        except OperationalError:
+            s.close()
+            return False, None
+
+        if result == None:
+            return True, None
+
+        return True, result[0]

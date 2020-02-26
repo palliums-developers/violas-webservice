@@ -550,7 +550,7 @@
      SSO钱包端州长注册接口
 ***** Request
       - Method: *POST*
-      - URL: =/1.0/violas/governors/sso=
+      - URL: =/1.0/violas/governor/sso=
       - Headers: Content-Type:application/json
       - Body:
         #+BEGIN_SRC js
