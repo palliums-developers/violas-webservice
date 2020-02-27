@@ -832,7 +832,7 @@
                       "reserve_photo_url":"xxxxxxxxxxxxxxxx",
                       "account_info_photo_positive_url":"xxxxxxxxxxxxxxxx",
                       "account_info_photo_back_url":"xxxxxxxxxxxxxxxxx",
-                      "approval_status":0
+                      "approval_status":0 // 0: 未审批; 1: 审批通过; 2: 审批失败; 3: 已Publish; 4: 铸币成功
                   },
                   ...
               ]
