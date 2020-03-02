@@ -334,6 +334,9 @@ class ViolasPGHandler():
             s.close()
             return False, None
 
+        if govInfos is None:
+            return True, None
+
         info = {}
         info["toxid"] = govInfos.toxid
         info["name"] = govInfos.name

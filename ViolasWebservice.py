@@ -493,6 +493,9 @@ def GetGovernorInfoAboutAddress(address):
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
+    if info is None:
+        return MakeResp(ErrorCode.ERR_OK, {})
+
     return MakeResp(ErrorCode.ERR_OK, info)
 
 @app.route("/1.0/violas/governor", methods = ["POST"])
