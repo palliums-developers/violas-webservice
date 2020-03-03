@@ -510,7 +510,7 @@ def AddGovernorInfo():
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     if not result:
-        return MakeResp(ErrorCode.ERR_GOV_INFO_HAD_EXISTED)
+        return MakeResp(ErrorCode.ERR_GOV_INFO_EXISTED)
 
     return MakeResp(ErrorCode.ERR_OK)
 
@@ -524,7 +524,20 @@ def AddGovernorInfoForSSOWallet():
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     if not result:
-        return MakeResp(ErrorCode.ERR_GOV_INFO_HAD_EXISTED)
+        return MakeResp(ErrorCode.ERR_GOV_INFO_EXISTED)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.1/violas/governor", methods=["POST"])
+def AddGovernorInfoV2():
+    params = request.get_json()
+
+    succ, result = HViolas.AddGovernorInfoForFrontEnd(params)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
+        return MakeResp(ErrorCode.ERR_GOV_INFO_EXISTED)
 
     return MakeResp(ErrorCode.ERR_OK)
 
@@ -624,7 +637,6 @@ def CheckGovernorAuthority():
     return MakeResp(ErrorCode.ERR_OK, data)
 
 # EXPLORER
-
 @app.route("/explorer/libra/recent")
 def LibraGetRecentTx():
     limit = request.args.get("limit", 30, type = int)

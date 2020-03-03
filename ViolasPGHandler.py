@@ -394,6 +394,7 @@ class ViolasPGHandler():
                     wallet_address = data["wallet_address"],
                     name = data["name"],
                     btc_txid = data["txid"],
+                    toxid = data.get("toxid"),
                     is_chairman = False,
                     is_handle = 0,
                     subaccount_count = 1,

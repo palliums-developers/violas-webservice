@@ -569,6 +569,30 @@
           }
         #+END_SRC
 
+**** 州长注册2.0
+     州长注册接口2.0
+***** Request
+      - Method: *POST*
+      - URL: =/1.0/violas/governor=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "wallet_address":"address", // 必填
+              "name":"name",              // 必填
+              "txid":"txid",              // 必填
+              "toxid":"toxid"             // 选填
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code": 2000,
+              "message": "ok"
+          }
+        #+END_SRC
+
 **** 修改州长信息
      修改州长信息
 ***** Request
