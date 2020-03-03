@@ -437,11 +437,6 @@ class ViolasPGHandler():
             result.vstake_address = data["vstake_address"]
         if "multisig_address" in data:
             result.multisig_address = data["multisig_address"]
-        if "is_chairman" in data:
-            if data["is_chairman"] == 0:
-                result.is_chairman = False
-            else:
-                result.is_chairman = True
         if "btc_txid" in data:
             result.btc_txid = data["btc_txid"]
             result.application_date = int(time())
