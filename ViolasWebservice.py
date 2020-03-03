@@ -59,6 +59,7 @@ def MakeResp(code, data = None, exception = None):
 
     return resp
 
+# LIBRA WALLET
 @app.route("/1.0/libra/balance")
 def GetLibraBalance():
     address = request.args.get("addr")
@@ -73,6 +74,47 @@ def GetLibraBalance():
     except ViolasError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
+@app.route("/1.0/libra/seqnum")
+def GetLibraSequenceNumbert():
+    address = request.args.get("addr")
+
+    cli = MakeLibraClient()
+    try:
+        seqNum = cli.get_account_sequence_number(address)
+    except ViolasError as e:
+        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, seqNum)
+
+@app.route("/1.0/libra/transaction", methods = ["POST"])
+def MakeLibraTransaction():
+    params = request.get_json()
+    signedtxn = params["signedtxn"]
+
+    cli = MakeLibraClient()
+    try:
+        cli.submit_signed_transaction(signedtxn, True)
+    except ViolasError as e:
+        if e.code == 6011:
+            return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+        else:
+            return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/libra/transaction")
+def GetLibraTransactionInfo():
+    address = request.args.get("addr")
+    limit = request.args.get("limit", 5, int)
+    offset = request.args.get("offset", 0, int)
+
+    succ, datas = HLibra.GetTransactionsForWallet(address, offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, datas)
+
+# VIOLAS WALLET
 @app.route("/1.0/violas/balance")
 def GetViolasBalance():
     address = request.args.get("addr")
@@ -107,18 +149,6 @@ def GetViolasBalance():
 
     return MakeResp(ErrorCode.ERR_OK, info)
 
-@app.route("/1.0/libra/seqnum")
-def GetLibraSequenceNumbert():
-    address = request.args.get("addr")
-
-    cli = MakeLibraClient()
-    try:
-        seqNum = cli.get_account_sequence_number(address)
-    except ViolasError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
-
-    return MakeResp(ErrorCode.ERR_OK, seqNum)
-
 @app.route("/1.0/violas/seqnum")
 def GetViolasSequenceNumbert():
     address = request.args.get("addr")
@@ -130,22 +160,6 @@ def GetViolasSequenceNumbert():
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, seqNum)
-
-@app.route("/1.0/libra/transaction", methods = ["POST"])
-def MakeLibraTransaction():
-    params = request.get_json()
-    signedtxn = params["signedtxn"]
-
-    cli = MakeLibraClient()
-    try:
-        cli.submit_signed_transaction(signedtxn, True)
-    except ViolasError as e:
-        if e.code == 6011:
-            return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
-        else:
-            return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
-
-    return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.0/violas/transaction", methods = ["POST"])
 def MakeViolasTransaction():
@@ -163,18 +177,6 @@ def MakeViolasTransaction():
             return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     return MakeResp(ErrorCode.ERR_OK)
-
-@app.route("/1.0/libra/transaction")
-def GetLibraTransactionInfo():
-    address = request.args.get("addr")
-    limit = request.args.get("limit", 5, int)
-    offset = request.args.get("offset", 0, int)
-
-    succ, datas = HLibra.GetTransactionsForWallet(address, offset, limit)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    return MakeResp(ErrorCode.ERR_OK, datas)
 
 @app.route("/1.0/violas/transaction")
 def GetViolasTransactionInfo():
@@ -224,6 +226,62 @@ def CheckMoudleExise():
 
     return MakeResp(ErrorCode.ERR_OK, modus)
 
+def AllowedType(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route("/1.0/violas/photo", methods = ["POST"])
+def UploadPhoto():
+    photo = request.files["photo"]
+
+    if not AllowedType(photo.filename):
+        return MakeResp(ErrorCode.ERR_IMAGE_FORMAT)
+
+    ext = secure_filename(photo.filename).rsplit(".", 1)[1]
+    nowTime = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    randomNum = random.randint(1000, 9999)
+    uuid = str(nowTime) + str(randomNum) + "." + ext
+    path = os.path.join(PHOTO_FOLDER, uuid)
+    photo.save(path)
+
+    return MakeResp(ErrorCode.ERR_OK, uuid)
+
+@app.route("/1.0/violas/verify_code", methods = ["POST"])
+def SendVerifyCode():
+    params = request.get_json()
+    receiver = params["receiver"]
+    address = params["address"]
+    verifyCode = random.randint(100000, 999999)
+    local_number = params.get("phone_local_number")
+
+    succ, result = HViolas.AddSSOUser(address)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if receiver.find("@") >= 0:
+        succ = pushh.PushEmailSMSCode(verifyCode, receiver, 5)
+        rdsVerify.setex(receiver, 600, str(verifyCode))
+    else:
+        succ = pushh.PushPhoneSMSCode(verifyCode, local_number + receiver, 5)
+        rdsVerify.setex(local_number + receiver, 600, str(verifyCode))
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_SEND_VERIFICATION_CODE)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+def VerifyCodeExist(receiver, code):
+    value = rdsVerify.get(receiver)
+
+    if value is None:
+        return False
+    elif value.decode("utf8") != str(code):
+        return False
+
+    rdsVerify.delete(receiver)
+
+    return True
+
+# VBTC
 @app.route("/1.0/violas/vbtc/transaction")
 def GetVBtcTransactionInfo():
     receiverAddress = request.args.get("receiver_address")
@@ -250,7 +308,7 @@ def VerifyVBtcTransactionInfo():
 
     return MakeResp(ErrorCode.ERR_OK)
 
-# sso
+# SSO
 @app.route("/1.0/violas/sso/user")
 def GetSSOUserInfo():
     address = request.args.get("address")
@@ -341,61 +399,6 @@ def TokenPublish():
 
     return MakeResp(ErrorCode.ERR_OK)
 
-def AllowedType(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
-
-@app.route("/1.0/violas/photo", methods = ["POST"])
-def UploadPhoto():
-    photo = request.files["photo"]
-
-    if not AllowedType(photo.filename):
-        return MakeResp(ErrorCode.ERR_IMAGE_FORMAT)
-
-    ext = secure_filename(photo.filename).rsplit(".", 1)[1]
-    nowTime = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    randomNum = random.randint(1000, 9999)
-    uuid = str(nowTime) + str(randomNum) + "." + ext
-    path = os.path.join(PHOTO_FOLDER, uuid)
-    photo.save(path)
-
-    return MakeResp(ErrorCode.ERR_OK, uuid)
-
-@app.route("/1.0/violas/verify_code", methods = ["POST"])
-def SendVerifyCode():
-    params = request.get_json()
-    receiver = params["receiver"]
-    address = params["address"]
-    verifyCode = random.randint(100000, 999999)
-    local_number = params.get("phone_local_number")
-
-    succ, result = HViolas.AddSSOUser(address)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    if receiver.find("@") >= 0:
-        succ = pushh.PushEmailSMSCode(verifyCode, receiver, 5)
-        rdsVerify.setex(receiver, 600, str(verifyCode))
-    else:
-        succ = pushh.PushPhoneSMSCode(verifyCode, local_number + receiver, 5)
-        rdsVerify.setex(local_number + receiver, 600, str(verifyCode))
-
-    if not succ:
-        return MakeResp(ErrorCode.ERR_SEND_VERIFICATION_CODE)
-
-    return MakeResp(ErrorCode.ERR_OK)
-
-def VerifyCodeExist(receiver, code):
-    value = rdsVerify.get(receiver)
-
-    if value is None:
-        return False
-    elif value.decode("utf8") != str(code):
-        return False
-
-    rdsVerify.delete(receiver)
-
-    return True
-
 @app.route("/1.0/violas/sso/bind", methods = ["POST"])
 def BindUserInfo():
     params = request.get_json()
@@ -475,7 +478,7 @@ def GetGovernors():
 
     return MakeResp(ErrorCode.ERR_OK, infos)
 
-# governor
+# GOVERNOR
 @app.route("/1.0/violas/governor")
 def GetGovernorInfo():
     offset = request.args.get("offset", 0, int)
@@ -620,7 +623,7 @@ def CheckGovernorAuthority():
     data = {"authority": 1}
     return MakeResp(ErrorCode.ERR_OK, data)
 
-# explorer API
+# EXPLORER
 
 @app.route("/explorer/libra/recent")
 def LibraGetRecentTx():
