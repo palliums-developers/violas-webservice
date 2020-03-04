@@ -457,6 +457,20 @@ def ModifyApprovalStatus():
 
     return MakeResp(ErrorCode.ERR_OK)
 
+@app.route("/1.1/violas/sso/token/approval", methods = ["PUT"])
+def ModifyApprovalStatusV2():
+    params = request.get_json()
+    logging.debug(f"Get params: {params}")
+
+    succ, result = HViolas.SetMintInfoV2(params)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
+        return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
 @app.route("/1.0/violas/sso/token/minted", methods = ["PUT"])
 def SetTokenMinted():
     params = request.get_json()

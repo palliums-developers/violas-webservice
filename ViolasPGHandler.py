@@ -920,3 +920,32 @@ class ViolasPGHandler():
             return True, None
 
         return True, result[0]
+
+    def SetMintInfoV2(self, data):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == data["wallet_address"]).first()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        if result is None:
+            s.close()
+            return True, False
+
+        result.approval_status = data["approval_status"]
+        result.module_address = data["module_address"]
+        result.subaccount_number = data["subaccount_number"]
+
+        try:
+            s.commit()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        s.close()
+        return True, True
+
