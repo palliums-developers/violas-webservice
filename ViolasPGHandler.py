@@ -949,3 +949,32 @@ class ViolasPGHandler():
         s.close()
         return True, True
 
+    def GetUnapprovalSSOList(self, address, limit, offset):
+        s = self.session()
+
+        try:
+            ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.governor_address == address).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        infos = []
+        for i in ssoInfos:
+            try:
+                userInfo = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == i.wallet_address).first()
+            except OperationalError:
+                logging.error(f"ERROR: Database operation failed!")
+                s.close()
+                return False, None
+
+            info = {}
+            info["id"] = i.id
+            info["name"] = userInfo.name
+            info["application_date"] = i.application_date
+            info["approval_status"] = i.approval_status
+
+            infos.append(info)
+
+        s.close()
+        return True, infos

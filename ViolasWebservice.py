@@ -443,6 +443,18 @@ def GetUnapprovalTokenInfo():
 
     return MakeResp(ErrorCode.ERR_OK, infos)
 
+@app.route("/1.1/violas/sso/token/approval")
+def GetUnapprovalTokenInfo():
+    offset = request.args.get("offset", 0, int)
+    limit = request.args.get("limit", 10, int)
+    address = request.args.get("address")
+
+    succ, infos = HViolas.GetUnapprovalSSOList(address, limit, offset)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, infos)
+
 @app.route("/1.0/violas/sso/token/approval", methods = ["PUT"])
 def ModifyApprovalStatus():
     params = request.get_json()

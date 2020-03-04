@@ -889,6 +889,31 @@
           }
         #+END_SRC
 
+**** 获取未审批SSO信息2.0
+     州长钱包获取待审批的SSO信息列表
+***** Request
+      - Method: *GET*
+      - URL: =/1.1/violas/sso/token/approval?address=xxxxxxxxxxxxxxxx&offset=0&limit=10=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":[
+                  {
+                      "id":1,
+                      "name":"xxxxx",
+                      "application_date":12323324234,
+                      "approval_status":0 // 0: 未审批; 1: 审批通过; 2: 审批失败; 3: 已Publish; 4: 铸币成功
+                  },
+                  ...
+              ]
+          }
+        #+END_SRC
+
 **** 提交SSO审批结果
      州长钱包提交Token审核结果与module地址
 ***** Request
