@@ -978,3 +978,50 @@ class ViolasPGHandler():
 
         s.close()
         return True, infos
+
+    def GetUnapprovalSSOInfo(self, id):
+        s = self.session()
+
+        try:
+            ssoInfo = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.id == id).all()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        if ssoInfo is None:
+            return True, None
+
+        try:
+            userInfo = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == ssoInfo.wallet_address).first()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        info = {}
+        info["wallet_address"] = userInfo.wallet_address
+        info["name"] = userInfo.name
+        info["country"] = userInfo.country
+        info["id_number"] = userInfo.id_number
+        info["phone_local_number"] = userInfo.phone_local_number
+        info["phone_number"] = userInfo.phone_number
+        info["email_address"] = userInfo.email_address
+        # info["id_photo_positive_url"] = userInfo.id_photo_positive_url
+        # info["id_photo_back_url"] = userInfo.id_photo_back_url
+        info["token_type"] = ssoInfo.token_type
+        info["amount"] = int(ssoInfo.amount)
+        info["token_value"] = int(ssoInfo.token_value)
+        info["token_name"] = ssoInfo.token_name
+        info["application_date"] = ssoInfo.application_date
+        info["validity_period"] = ssoInfo.validity_period
+        info["expiration_date"] = ssoInfo.expiration_date
+        info["reserve_photo_url"] = ssoInfo.reserve_photo_url
+        info["account_info_photo_positive_url"] = ssoInfo.account_info_photo_positive_url
+        info["account_info_photo_back_url"] = ssoInfo.account_info_photo_back_url
+        info["approval_status"] = ssoInfo.approval_status
+        info["subaccount_number"] = ssoInfo.subaccount_number
+        info["module_address"] = ssoInfo.module_address
+
+        s.close()
+        return True, info
