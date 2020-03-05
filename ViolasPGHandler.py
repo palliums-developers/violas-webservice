@@ -1001,6 +1001,7 @@ class ViolasPGHandler():
             return False, None
 
         info = {}
+        info["id"] = ssoInfo.id
         info["wallet_address"] = userInfo.wallet_address
         info["name"] = userInfo.name
         info["country"] = userInfo.country
