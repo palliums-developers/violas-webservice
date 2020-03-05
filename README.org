@@ -982,7 +982,7 @@
      州长钱包提交Token审核结果与module地址2.0版本
 ***** Request
       - Method: *PUT*
-      - URL: =/1.0/violas/sso/token/approval=
+      - URL: =/1.1/violas/sso/token/approval=
       - Headers: Content-Type:application/json
       - Body:
         #+BEGIN_SRC js
