@@ -18,6 +18,7 @@ class ErrorCode(IntEnum):
     ERR_UNKNOW_WALLET_TYPE = 2014
     ERR_GOV_INFO_EXISTED = 2015
     ERR_VSTAKE_ADDRESS = 2016
+    ERR_VSTAKE = 2017
 
     ERR_GRPC_CONNECT = 3000
 
@@ -43,6 +44,7 @@ ErrorMsg = {
     ErrorCode.ERR_UNKNOW_WALLET_TYPE: "Unknow wallet type.",
     ErrorCode.ERR_GOV_INFO_EXISTED: "Governor info had existed.",
     ErrorCode.ERR_VSTAKE_ADDRESS: "Vstake module address does not exist.",
+    ErrorCode.ERR_VSTAKE: "User review process is not complete.",
 
     ErrorCode.ERR_GRPC_CONNECT: "Grpc call failed.",
 

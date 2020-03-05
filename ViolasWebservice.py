@@ -449,6 +449,16 @@ def GetUnapprovalTokenInfoList():
     limit = request.args.get("limit", 10, int)
     address = request.args.get("address")
 
+    succ, info = HViolas.GetGovernorInfoAboutAddress(address)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if info is None:
+        return MakeResp(ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST)
+
+    if info["status"] != 4:
+        return MakeResp(ErrorCode.ERR_VSTAKE)
+
     succ, infos = HViolas.GetUnapprovalSSOList(address, limit, offset)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
@@ -531,7 +541,7 @@ def GetGovernorInfoAboutAddress(address):
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     if info is None:
-        return MakeResp(ErrorCode.ERR_OK, {})
+        return MakeResp(ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST)
 
     return MakeResp(ErrorCode.ERR_OK, info)
 
