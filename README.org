@@ -907,7 +907,8 @@
                       "id":1,
                       "name":"xxxxx",
                       "application_date":12323324234,
-                      "approval_status":0 // 0: 未审批; 1: 审批通过; 2: 审批失败; 3: 已Publish; 4: 铸币成功
+                      "approval_status":0, // 0: 未审批; 1: 审批通过; 2: 审批失败; 3: 已Publish; 4: 铸币成功
+                      "expiration_date":12323324234
                   },
                   ...
               ]

@@ -973,6 +973,7 @@ class ViolasPGHandler():
             info["name"] = userInfo.name
             info["application_date"] = i.application_date
             info["approval_status"] = i.approval_status
+            info["expiration_date"] = i.expiration_date
 
             infos.append(info)
 
