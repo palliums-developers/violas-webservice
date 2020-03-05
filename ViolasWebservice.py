@@ -470,6 +470,8 @@ def GetUnapprovalTokenDetailInfo(id):
     succ, info = HViolas.GetUnapprovalSSOInfo(id)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    if info is None:
+        return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
 
     return MakeResp(ErrorCode.ERR_OK, info)
 

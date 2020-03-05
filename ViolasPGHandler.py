@@ -984,7 +984,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            ssoInfo = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.id == id).all()
+            ssoInfo = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.id == id).first()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
