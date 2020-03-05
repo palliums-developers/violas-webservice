@@ -444,7 +444,7 @@ def GetUnapprovalTokenInfo():
     return MakeResp(ErrorCode.ERR_OK, infos)
 
 @app.route("/1.1/violas/sso/token/approval")
-def GetUnapprovalTokenInfo():
+def GetUnapprovalTokenInfoList():
     offset = request.args.get("offset", 0, int)
     limit = request.args.get("limit", 10, int)
     address = request.args.get("address")
@@ -456,7 +456,7 @@ def GetUnapprovalTokenInfo():
     return MakeResp(ErrorCode.ERR_OK, infos)
 
 @app.route("/1.0/violas/sso/token/approval/<int:id>")
-def GetUnapprovalTokenInfo(id):
+def GetUnapprovalTokenDetailInfo(id):
     succ, info = HViolas.GetUnapprovalSSOInfo(id)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
