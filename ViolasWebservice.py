@@ -42,7 +42,6 @@ def MakeLibraClient():
     return Client("libra_testnet")
 
 def MakeViolasClient():
-    # return Client("violas_testnet")
     return Client.new(config["NODE INFO"]["VIOLAS_HOST"], int(config["NODE INFO"]["VIOLAS_PORT"]))
 
 def MakeResp(code, data = None, exception = None):
