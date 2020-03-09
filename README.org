@@ -1420,11 +1420,23 @@
           {
               "code": 2000,
               "data": {
-                  "date": 1285820202,
-                  "amount": 1000,
-                  "address": xxxxxxxxxxxxxxxxxxxxx,
-                  "coin": "vlibra"
-                  "status": 0             // 0：兑换中，1：成功，2：失败
+                  "offset":10,            // 下次调用是需要将当前值传回去
+                  "infos":[
+                      {
+                          "date": 1285820202,
+                          "amount": 1000,
+                          "address": xxxxxxxxxxxxxxxxxxxxx,
+                          "coin": "vlibra"
+                          "status": 0             // 0：兑换中，1：成功，2：失败
+                      },
+                      {
+                          "address": "2MxBZG7295wfsXaUj69quf8vucFzwG35UWh",
+                          "amount": 1001,
+                          "coin": "btc",
+                          "date": 0,
+                          "status": 0
+                      }
+                  ]
               },
               "message": "ok"
           }
