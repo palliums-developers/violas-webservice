@@ -472,6 +472,15 @@ def GetUnapprovalTokenDetailInfo(id):
     if info is None:
         return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
 
+    if info["account_info_photo_positive_url"] is not None:
+        info["account_info_photo_positive_url"] = PHOTO_URL + info["account_info_photo_positive_url"]
+
+    if info["account_info_photo_back_url"] is not None:
+        info["account_info_photo_back_url"] = PHOTO_URL + info["account_info_photo_back_url"]
+
+    if info["reserve_photo_url"] is not None:
+        info["reserve_photo_url"] = PHOTO_URL + info["reserve_photo_url"]
+
     return MakeResp(ErrorCode.ERR_OK, info)
 
 @app.route("/1.0/violas/sso/token/approval", methods = ["PUT"])
