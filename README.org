@@ -30,38 +30,6 @@
               }
           }
         #+END_SRC
-
-**** 获取violas余额信息
-     用于获取violas钱包资产信息
-***** Request
-      - Method: *GET*
-      - URL: =/1.0/violas/balance?addr=address[&modu=modu1,modu2,modu3...]=
-      - Headers: None
-      - Body: None
-***** Response
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "code":2000,
-              "message":"ok",
-              "data":{
-                  "address":"address",
-                  "balance":1,
-                  "modules":[
-                      {
-                          "address":"address",
-                          "balance":1
-                      },
-                      {
-                          "address":"address",
-                          "balance":1
-                      },
-                      ...
-                  ]
-              }
-          }
-        #+END_SRC
-
 **** 获取libra钱包sequence number
      用于获取libra钱包sequence_number
 ***** Request
@@ -78,24 +46,6 @@
               "data":3
           }
         #+END_SRC
-
-**** 获取violas钱包sequence number
-     用于获取violas钱包sequence_number
-***** Request
-      - Method: *GET*
-      - URL: =/1.0/violas/seqnum?addr=address=
-      - Headers: None
-      - Body: None
-***** Response
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "code":2000,
-              "message":"ok",
-              "data":3
-          }
-        #+END_SRC
-
 **** 发起libra转账
      发起转账交易
 ***** Request
@@ -116,28 +66,6 @@
               "message":"ok"
           }
         #+END_SRC
-
-**** 发起violas转账
-     发起转账交易
-***** Request
-      - Method: *POST*
-      - URL: =/1.0/violas/transaction=
-      - Headers: Content-Type:application/json
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "signedtxn":"xxxxx"
-          }
-        #+END_SRC
-***** Response
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "code":2000,
-              "message":"ok"
-          }
-        #+END_SRC
-
 **** 获取libra交易记录
 ***** Request
       - Method: *GET*
@@ -169,7 +97,72 @@
               ]
           }
         #+END_SRC
-
+**** 获取violas余额信息
+     用于获取violas钱包资产信息
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/balance?addr=address[&modu=modu1,modu2,modu3...]=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":{
+                  "address":"address",
+                  "balance":1,
+                  "modules":[
+                      {
+                          "address":"address",
+                          "balance":1
+                      },
+                      {
+                          "address":"address",
+                          "balance":1
+                      },
+                      ...
+                  ]
+              }
+          }
+        #+END_SRC
+**** 获取violas钱包sequence number
+     用于获取violas钱包sequence_number
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/seqnum?addr=address=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":3
+          }
+        #+END_SRC
+**** 发起violas转账
+     发起转账交易
+***** Request
+      - Method: *POST*
+      - URL: =/1.0/violas/transaction=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "signedtxn":"xxxxx"
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
 **** 获取violas交易记录
      根据钱包地址与module地址查询交易记录，[[https://github.com/palliums-developers/violas-webservice#%E4%BA%A4%E6%98%93%E7%B1%BB%E5%9E%8B][交易类型]]见附录。
 ***** Request
@@ -214,7 +207,6 @@
               ]
           }
         #+END_SRC
-
 **** 获取币种信息
      用于获取Violas钱包币种信息
 ***** Request
@@ -248,7 +240,6 @@
               ]
           }
         #+END_SRC
-
 **** 检测稳定币状态
      查看账户下是否拥有某稳定币
 ***** Request
@@ -269,7 +260,6 @@
               ]
           }
         #+END_SRC
-
 **** VBTC交易信息查询
      用于查询violas链中VBTC转账交易信息
 ***** Request
@@ -295,7 +285,6 @@
               ]
           }
         #+END_SRC
-
 **** VBTC交易信息验证
      用于验证violas链中VBTC转账交易信息
 ***** Request
@@ -322,7 +311,6 @@
               "message":"ok"              // "The transaction information is incorrect."
           }
         #+END_SRC
-
 *** SSO钱包
 **** SSO钱包注册
      用户使用身份证信息注册SSO钱包
@@ -349,7 +337,6 @@
               "message":"ok",
           }
         #+END_SRC
-
 **** 获取SSO钱包用户信息
      获取该SSO钱包地址的注册信息
 ***** Request
@@ -376,7 +363,6 @@
               }
           }
         #+END_SRC
-
 **** 申请发行稳定币
      用户提交申请发行稳定币
 ***** Request
@@ -407,7 +393,6 @@
               "message":"ok"
           }
         #+END_SRC
-
 **** 查询审批状态
      查询用户申请发行稳定币的审批状态
 ***** Request
@@ -429,7 +414,6 @@
               }
           }
         #+END_SRC
-
 **** 更改Publish状态
      审批成功后用户申请铸币时更改Publish状态
 ***** Request
@@ -450,7 +434,6 @@
               "message":"ok"
           }
         #+END_SRC
-
 **** 提交照片文件
      用户提交照片文件，访问图片路径拼接： =http://xxx.xxx.xxx.xxx:xxxxx/1.0/violas/photo/ + filename=
 ***** Request
@@ -466,7 +449,6 @@
               "message":"ok"
           }
         #+END_SRC
-
 **** 获取验证码
      用户发送手机验证码或邮箱验证码
 ***** Request
@@ -489,7 +471,6 @@
               "message":"ok"
           }
         #+END_SRC
-
 **** 绑定信息
      绑定用户手机号或邮箱
 ***** Request
@@ -513,7 +494,6 @@
               "message":"ok"
           }
         #+END_SRC
-
 **** 获取州长列表
      获取可以委托发行的州长列表
 ***** Request
@@ -536,7 +516,6 @@
               "message": "ok"
           }
         #+END_SRC
-
 *** 州长钱包
 **** 州长注册
      提交州长信息进行注册
@@ -566,7 +545,6 @@
               "message":"ok"
           }
         #+END_SRC
-
 **** SSO钱包端州长注册
      SSO钱包端州长注册接口
 ***** Request
@@ -589,7 +567,6 @@
               "message": "ok"
           }
         #+END_SRC
-
 **** 州长注册2.0
      州长注册接口2.0
 ***** Request
@@ -613,7 +590,6 @@
               "message": "ok"
           }
         #+END_SRC
-
 **** 修改州长信息
      修改州长信息
 ***** Request
@@ -640,7 +616,6 @@
               "message":"ok"
           }
         #+END_SRC
-
 **** 获取州长信息列表
      获取所有州长信息
 ***** Request
@@ -669,7 +644,6 @@
               ]
           }
         #+END_SRC
-
 **** 获取州长信息
      使用钱包地址获取某州长信息
 ***** Request
@@ -696,7 +670,6 @@
               }
           }
         #+END_SRC
-
 **** 增加投资信息
      提交州长向董事长转账100BTC的转账信息
 ***** Request
@@ -718,7 +691,6 @@
               "message":"ok"
           }
         #+END_SRC
-
 **** 获取投资信息
      董事长获取未处理的州长BTC转账信息
 ***** Request
@@ -747,7 +719,6 @@
               ]
           }
         #+END_SRC
-
 **** 修改处理状态
      董事长修改投资信息处理状态
 ***** Request
@@ -769,7 +740,6 @@
               "message":"ok"
           }
         #+END_SRC
-
 **** 获取交易记录
      获取州长相关的交易记录
 ***** Request
@@ -808,7 +778,6 @@
               ]
           }
         #+END_SRC
-
 **** 获取Vstake module address
      获取Vstake module address用来接收vstake
 ***** Request
@@ -828,7 +797,6 @@
           }
 
         #+END_SRC
-
 **** 检查州长发币权限
      检查州长是否有发币的权限
 ***** Request
@@ -847,7 +815,6 @@
               "message": "ok"
           }
         #+END_SRC
-
 **** 获取未审批SSO信息
      州长钱包获取待审批的SSO信息
 ***** Request
@@ -888,7 +855,6 @@
               ]
           }
         #+END_SRC
-
 **** 获取未审批SSO信息2.0
      州长钱包获取待审批的SSO信息列表
 ***** Request
@@ -914,7 +880,6 @@
               ]
           }
         #+END_SRC
-
 **** 获取未审批SSO详细信息
      州长钱包获取待审批的SSO详细信息
 ***** Request
@@ -956,7 +921,6 @@
               ]
           }
         #+END_SRC
-
 **** 提交SSO审批结果
      州长钱包提交Token审核结果与module地址
 ***** Request
@@ -979,7 +943,6 @@
               "message":"ok"
           }
         #+END_SRC
-
 **** 提交SSO审批结果2.0
      州长钱包提交Token审核结果与module地址2.0版本
 ***** Request
@@ -1003,7 +966,6 @@
               "message":"ok"
           }
         #+END_SRC
-
 **** 设置token铸币状态
      州长钱包向sso token地址转账后设置状态为已铸币
 ***** Request
@@ -1024,7 +986,6 @@
               "message":"ok"
           }
         #+END_SRC
-
 *** Libra浏览器
 **** 获取最新交易
      用于获取libra钱包资产信息
@@ -1064,7 +1025,6 @@
               ]
           }
         #+END_SRC
-
 **** 获取交易信息
      获取某特定Version交易的信息
 ***** Request
@@ -1094,7 +1054,6 @@
               }
           }
         #+END_SRC
-
 **** 获取地址信息
      获取某特定address的信息
 ***** Request
@@ -1139,7 +1098,6 @@
               "message": "ok"
           }
         #+END_SRC
-
 *** Violas浏览器
 **** 获取最新交易
      用于获取Violas最新的交易信息
@@ -1181,7 +1139,6 @@
               ]
           }
         #+END_SRC
-
 **** 获取某稳定币的最新交易
      用于获取Violas中某个稳定币最新的交易信息
 ***** Request
@@ -1211,7 +1168,6 @@
               ]
           }
         #+END_SRC
-
 **** 获取交易信息
      获取某特定Version交易的信息
 ***** Request
@@ -1243,7 +1199,6 @@
               }
           }
         #+END_SRC
-
 **** 获取地址信息
      获取某特定address的信息
 ***** Request
@@ -1295,7 +1250,6 @@
               "message": "ok"
           }
         #+END_SRC
-
 *** 跨链映射相关接口
     获取跨链交易转账地址，type类型为：btc，vbtc，libra，vlibra
 **** 获取转账地址
@@ -1313,7 +1267,6 @@
               "message": "ok"
           }
         #+END_SRC
-
 **** 获取转账module地址
      获取跨链交易转账Module地址，type类型为：vbtc，vlibra
 ***** Request
@@ -1330,7 +1283,6 @@
               "message": "ok"
           }
         #+END_SRC
-
 **** 获取跨链兑换汇率
      获取跨链交易兑换汇率，type类型为：btc，vbtc，libra，vlibra
 ***** Request
@@ -1350,7 +1302,6 @@
               "message": "ok"
           }
         #+END_SRC
-
 **** 获取跨链兑换交易数量
      获取当前账户的跨链交易次数
 ***** Request
@@ -1367,7 +1318,6 @@
               "message": "ok"
           }
         #+END_SRC
-
 **** 查询跨链module publish状态
      查询当前账户是否已对某module进行publish
 ***** Request
@@ -1384,7 +1334,6 @@
               "message": "ok"
           }
         #+END_SRC
-
 **** 查询跨链交易币种信息
      查询跨链交易币种信息，type类型为：btc，vbtc，libra，vlibra
 ***** Request
@@ -1406,7 +1355,6 @@
               "message": "ok"
           }
         #+END_SRC
-
 **** 获取兑换交易记录
      获取映射币兑换交易记录，钱包类型type参数为：0（violas)，1（libra），2（btc）
 ***** Request
@@ -1441,7 +1389,6 @@
               "message": "ok"
           }
         #+END_SRC
-
 **** 转发BTC上链交易
      转发BTC上链交易到比特大陆接口
 ***** Request
@@ -1462,7 +1409,6 @@
               "message": "ok"
           }
         #+END_SRC
-
 **** 获取已映射稳定币信息
      获取当前钱包已映射稳定币的信息
 ***** Request
@@ -1485,7 +1431,6 @@
               "message": "ok"
           }
         #+END_SRC
-
 ** 附录：
 *** 交易类型
     | 类型 | 交易名称                               |
