@@ -786,7 +786,7 @@ def ViolasGetAddressInfo(address):
         item["balance"] = cli.get_balance(address, key)
         module_balance.append(item)
 
-    addressInfo["balance"] = cli.get_balance()
+    addressInfo["balance"] = cli.get_balance(address)
     addressInfo["module_balande"] = module_balance
 
     if module is None:
