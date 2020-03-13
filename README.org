@@ -260,6 +260,43 @@
               ]
           }
         #+END_SRC
+**** 提交照片文件
+     用户提交照片文件，访问图片路径拼接： =http://xxx.xxx.xxx.xxx:xxxxx/1.0/violas/photo/ + filename=
+***** Request
+      - Method: *POST*
+      - URL: =/1.0/violas/photo=
+      - Headers: Content-Type:multipart/form-data;name="photo"
+      - Body: 图片文件路径
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
+**** 获取验证码
+     用户发送手机验证码或邮箱验证码
+***** Request
+      - Method: *POST*
+      - URL: =/1.0/violas/verify_code=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "address":"xxxxxxxxxxxxxxxxx",
+              "receiver":"xxxxxxxxxx",
+              "phone_local_number":"+86"
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
 **** VBTC交易信息查询
      用于查询violas链中VBTC转账交易信息
 ***** Request
@@ -434,43 +471,6 @@
               "message":"ok"
           }
         #+END_SRC
-**** 提交照片文件
-     用户提交照片文件，访问图片路径拼接： =http://xxx.xxx.xxx.xxx:xxxxx/1.0/violas/photo/ + filename=
-***** Request
-      - Method: *POST*
-      - URL: =/1.0/violas/photo=
-      - Headers: Content-Type:multipart/form-data;name="photo"
-      - Body: 图片文件路径
-***** Response
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "code":2000,
-              "message":"ok"
-          }
-        #+END_SRC
-**** 获取验证码
-     用户发送手机验证码或邮箱验证码
-***** Request
-      - Method: *POST*
-      - URL: =/1.0/violas/verify_code=
-      - Headers: Content-Type:application/json
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "address":"xxxxxxxxxxxxxxxxx",
-              "receiver":"xxxxxxxxxx",
-              "phone_local_number":"+86"
-          }
-        #+END_SRC
-***** Response
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "code":2000,
-              "message":"ok"
-          }
-        #+END_SRC
 **** 绑定信息
      绑定用户手机号或邮箱
 ***** Request
@@ -484,6 +484,177 @@
               "receiver":"xxxxxxxxxx",
               "code":222222,
               "phone_local_number":"+86"
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
+**** 获取未审批SSO信息
+     州长钱包获取待审批的SSO信息
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/sso/token/approval?address=xxxxxxxxxxxxxxxx&offset=0&limit=10=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":[
+                  {
+                      "wallet_address":"xxxxxxxxxxxxxx",
+                      "name":"xxxxx",
+                      "country":"xxx",
+                      "id_number":"xxxxxxxxxxx",
+                      "phone_local_number":"+xx",
+                      "phone_number":"xxxxxxxxxxxxxx",
+                      "email_address":"xxxxxxxxxxxx",
+                      "id_photo_positive_url":"xxxxxxxxxxxxxxx",
+                      "id_photo_back_url":"xxxxxxxxxxxxxxx",
+                      "token_type":"xxxxx",
+                      "amount":100000000,
+                      "token_value":10,
+                      "token_name":"xxxxxx",
+                      "application_date":12323324234,
+                      "validity_period":5,
+                      "expiration_date":12312415412,
+                      "reserve_photo_url":"xxxxxxxxxxxxxxxx",
+                      "account_info_photo_positive_url":"xxxxxxxxxxxxxxxx",
+                      "account_info_photo_back_url":"xxxxxxxxxxxxxxxxx",
+                      "approval_status":0 // 0: 未审批; 1: 审批通过; 2: 审批失败; 3: 已Publish; 4: 铸币成功
+                  },
+                  ...
+              ]
+          }
+        #+END_SRC
+**** 获取未审批SSO信息2.0
+     州长钱包获取待审批的SSO信息列表
+***** Request
+      - Method: *GET*
+      - URL: =/1.1/violas/sso/token/approval?address=xxxxxxxxxxxxxxxx&offset=0&limit=10=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":[
+                  {
+                      "id":1,
+                      "name":"xxxxx",
+                      "application_date":12323324234,
+                      "approval_status":0, // 0: 未审批; 1: 审批通过; 2: 审批失败; 3: 已Publish; 4: 铸币成功
+                      "expiration_date":12323324234
+                  },
+                  ...
+              ]
+          }
+        #+END_SRC
+**** 获取未审批SSO详细信息
+     州长钱包获取待审批的SSO详细信息
+***** Request
+      - Method: *GET*
+      - URL: =/1.0/violas/sso/token/approval/<id>=
+      - Headers: None
+      - Body: None
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok",
+              "data":[
+                  {
+                      "id":1,
+                      "wallet_address":"xxxxxxxxxxxxxx",
+                      "name":"xxxxx",
+                      "country":"xxx",
+                      "id_number":"xxxxxxxxxxx",
+                      "phone_local_number":"+xx",
+                      "phone_number":"xxxxxxxxxxxxxx",
+                      "email_address":"xxxxxxxxxxxx",
+                      "token_type":"xxxxx",
+                      "amount":100000000,
+                      "token_value":10,
+                      "token_name":"xxxxxx",
+                      "application_date":12323324234,
+                      "validity_period":5,
+                      "expiration_date":12312415412,
+                      "reserve_photo_url":"xxxxxxxxxxxxxxxx",
+                      "account_info_photo_positive_url":"xxxxxxxxxxxxxxxx",
+                      "account_info_photo_back_url":"xxxxxxxxxxxxxxxxx",
+                      "approval_status":0, // 0: 未审批; 1: 审批通过; 2: 审批失败; 3: 已Publish; 4: 铸币成功
+                      "subaccount_number":1,
+                      "module_address":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                  },
+                  ...
+              ]
+          }
+        #+END_SRC
+**** 提交SSO审批结果
+     州长钱包提交Token审核结果与module地址
+***** Request
+      - Method: *PUT*
+      - URL: =/1.0/violas/sso/token/approval=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "approval_status":1,        // 审核结果，1：通过；2：未通过
+              "module_address":"xxxxxxxxxxxxxxxxxxxx",
+              "wallet_address":"xxxxxxxxxxxxxxxxxxxx"
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
+**** 提交SSO审批结果2.0
+     州长钱包提交Token审核结果与module地址2.0版本
+***** Request
+      - Method: *PUT*
+      - URL: =/1.1/violas/sso/token/approval=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "approval_status":1,        // 审核结果，1：通过；2：未通过
+              "module_address":"xxxxxxxxxxxxxxxxxxxx",
+              "wallet_address":"xxxxxxxxxxxxxxxxxxxx",
+              "subaccount_number":1
+          }
+        #+END_SRC
+***** Response
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "code":2000,
+              "message":"ok"
+          }
+        #+END_SRC
+**** 设置token铸币状态
+     州长钱包向sso token地址转账后设置状态为已铸币
+***** Request
+      - Method: *PUT*
+      - URL: =/1.0/violas/sso/token/minted=
+      - Headers: Content-Type:application/json
+      - Body:
+        #+BEGIN_SRC js
+          {
+              "wallet_address":"xxxxxxxxxxxxxxxxxx"
           }
         #+END_SRC
 ***** Response
@@ -815,177 +986,6 @@
               "message": "ok"
           }
         #+END_SRC
-**** 获取未审批SSO信息
-     州长钱包获取待审批的SSO信息
-***** Request
-      - Method: *GET*
-      - URL: =/1.0/violas/sso/token/approval?address=xxxxxxxxxxxxxxxx&offset=0&limit=10=
-      - Headers: None
-      - Body: None
-***** Response
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "code":2000,
-              "message":"ok",
-              "data":[
-                  {
-                      "wallet_address":"xxxxxxxxxxxxxx",
-                      "name":"xxxxx",
-                      "country":"xxx",
-                      "id_number":"xxxxxxxxxxx",
-                      "phone_local_number":"+xx",
-                      "phone_number":"xxxxxxxxxxxxxx",
-                      "email_address":"xxxxxxxxxxxx",
-                      "id_photo_positive_url":"xxxxxxxxxxxxxxx",
-                      "id_photo_back_url":"xxxxxxxxxxxxxxx",
-                      "token_type":"xxxxx",
-                      "amount":100000000,
-                      "token_value":10,
-                      "token_name":"xxxxxx",
-                      "application_date":12323324234,
-                      "validity_period":5,
-                      "expiration_date":12312415412,
-                      "reserve_photo_url":"xxxxxxxxxxxxxxxx",
-                      "account_info_photo_positive_url":"xxxxxxxxxxxxxxxx",
-                      "account_info_photo_back_url":"xxxxxxxxxxxxxxxxx",
-                      "approval_status":0 // 0: 未审批; 1: 审批通过; 2: 审批失败; 3: 已Publish; 4: 铸币成功
-                  },
-                  ...
-              ]
-          }
-        #+END_SRC
-**** 获取未审批SSO信息2.0
-     州长钱包获取待审批的SSO信息列表
-***** Request
-      - Method: *GET*
-      - URL: =/1.1/violas/sso/token/approval?address=xxxxxxxxxxxxxxxx&offset=0&limit=10=
-      - Headers: None
-      - Body: None
-***** Response
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "code":2000,
-              "message":"ok",
-              "data":[
-                  {
-                      "id":1,
-                      "name":"xxxxx",
-                      "application_date":12323324234,
-                      "approval_status":0, // 0: 未审批; 1: 审批通过; 2: 审批失败; 3: 已Publish; 4: 铸币成功
-                      "expiration_date":12323324234
-                  },
-                  ...
-              ]
-          }
-        #+END_SRC
-**** 获取未审批SSO详细信息
-     州长钱包获取待审批的SSO详细信息
-***** Request
-      - Method: *GET*
-      - URL: =/1.0/violas/sso/token/approval/<id>=
-      - Headers: None
-      - Body: None
-***** Response
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "code":2000,
-              "message":"ok",
-              "data":[
-                  {
-                      "id":1,
-                      "wallet_address":"xxxxxxxxxxxxxx",
-                      "name":"xxxxx",
-                      "country":"xxx",
-                      "id_number":"xxxxxxxxxxx",
-                      "phone_local_number":"+xx",
-                      "phone_number":"xxxxxxxxxxxxxx",
-                      "email_address":"xxxxxxxxxxxx",
-                      "token_type":"xxxxx",
-                      "amount":100000000,
-                      "token_value":10,
-                      "token_name":"xxxxxx",
-                      "application_date":12323324234,
-                      "validity_period":5,
-                      "expiration_date":12312415412,
-                      "reserve_photo_url":"xxxxxxxxxxxxxxxx",
-                      "account_info_photo_positive_url":"xxxxxxxxxxxxxxxx",
-                      "account_info_photo_back_url":"xxxxxxxxxxxxxxxxx",
-                      "approval_status":0, // 0: 未审批; 1: 审批通过; 2: 审批失败; 3: 已Publish; 4: 铸币成功
-                      "subaccount_number":1,
-                      "module_address":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                  },
-                  ...
-              ]
-          }
-        #+END_SRC
-**** 提交SSO审批结果
-     州长钱包提交Token审核结果与module地址
-***** Request
-      - Method: *PUT*
-      - URL: =/1.0/violas/sso/token/approval=
-      - Headers: Content-Type:application/json
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "approval_status":1,        // 审核结果，1：通过；2：未通过
-              "module_address":"xxxxxxxxxxxxxxxxxxxx",
-              "wallet_address":"xxxxxxxxxxxxxxxxxxxx"
-          }
-        #+END_SRC
-***** Response
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "code":2000,
-              "message":"ok"
-          }
-        #+END_SRC
-**** 提交SSO审批结果2.0
-     州长钱包提交Token审核结果与module地址2.0版本
-***** Request
-      - Method: *PUT*
-      - URL: =/1.1/violas/sso/token/approval=
-      - Headers: Content-Type:application/json
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "approval_status":1,        // 审核结果，1：通过；2：未通过
-              "module_address":"xxxxxxxxxxxxxxxxxxxx",
-              "wallet_address":"xxxxxxxxxxxxxxxxxxxx",
-              "subaccount_number":1
-          }
-        #+END_SRC
-***** Response
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "code":2000,
-              "message":"ok"
-          }
-        #+END_SRC
-**** 设置token铸币状态
-     州长钱包向sso token地址转账后设置状态为已铸币
-***** Request
-      - Method: *PUT*
-      - URL: =/1.0/violas/sso/token/minted=
-      - Headers: Content-Type:application/json
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "wallet_address":"xxxxxxxxxxxxxxxxxx"
-          }
-        #+END_SRC
-***** Response
-      - Body:
-        #+BEGIN_SRC js
-          {
-              "code":2000,
-              "message":"ok"
-          }
-        #+END_SRC
 *** Libra浏览器
 **** 获取最新交易
      用于获取libra钱包资产信息
@@ -1251,8 +1251,8 @@
           }
         #+END_SRC
 *** 跨链映射相关接口
-    获取跨链交易转账地址，type类型为：btc，vbtc，libra，vlibra
 **** 获取转账地址
+     获取跨链交易转账地址，type类型为：btc，vbtc，libra，vlibra
 ***** Request
       - Method: *GET*
       - URL: =/1.0/crosschain/address?type=btc=
