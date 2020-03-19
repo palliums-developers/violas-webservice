@@ -4,6 +4,8 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from redis import Redis
 import requests
+import nacl.signing
+import hashlib
 
 from violas import Client
 from violas.error.error import ViolasError
@@ -747,6 +749,39 @@ def GetSinginStatus():
         data = {"status": 2}
 
     return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/violas/governor/singin", methods = ["POST"])
+def VerifySinginSessionID():
+    params = request.get_json()
+
+    succ, result = HViolas.CheckBind(params["address"])
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
+        return MakeResp(ErrorCode.ERR_CHAIRMAN_UNBIND)
+
+    succ, info = HViolas.GetGovernorInfoAboutAddress(params["address"])
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    value = rdsAuth.get("SessionID")
+
+    if value is None:
+        return MakeResp(ErrorCode.ERR_SINGIN_TIMEOUT)
+
+    data = hashlib.sha3_256()
+    data.update(value)
+
+    verify_key = nacl.signing.VerifyKey(info["violas_public_key"], encoder=nacl.encoding.HexEncoder)
+    try:
+        verify_key.verify(data.hexdigest(), params["session_id"], encoder=nacl.encoding.HexEncoder)
+    except nacl.exceptions.BadSignatureError:
+        rdsAuth.set("SessionID", "Failed")
+        return MakeResp(ErrorCode.ERR_SIG_ERROR)
+
+    rdsAuth.set("SessionID", "Success")
+    return MakeResp(ErrorCode.ERR_OK)
 
 # EXPLORER
 @app.route("/explorer/libra/recent")

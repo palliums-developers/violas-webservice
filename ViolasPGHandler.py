@@ -374,6 +374,7 @@ class ViolasPGHandler():
         info["is_chairman"] = govInfos.is_chairman
         info["subaccount_count"] = govInfos.subaccount_count
         info["status"] = govInfos.is_handle
+        info["violas_public_key"] = govInfos.violas_public_key
 
         return True, info
 
@@ -1078,3 +1079,20 @@ class ViolasPGHandler():
 
         s.close()
         return True, True
+
+    def CheckBind(self, address):
+        s = self.session()
+
+        try:
+            info = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.is_chairman == True).first()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        s.close()
+
+        if info.bind_governor == address:
+            return True, True
+        else:
+            return True, False

@@ -19,7 +19,9 @@ class ErrorCode(IntEnum):
     ERR_GOV_INFO_EXISTED = 2015
     ERR_VSTAKE_ADDRESS = 2016
     ERR_VSTAKE = 2017
-    ERR_GOV_SINGIN = 2018
+    ERR_CHAIRMAN_UNBIND = 2018
+    ERR_SINGIN_TIMEOUT = 2019
+    ERR_SIG_ERROR = 2020
 
     ERR_GRPC_CONNECT = 3000
 
@@ -46,6 +48,9 @@ ErrorMsg = {
     ErrorCode.ERR_GOV_INFO_EXISTED: "Governor info had existed.",
     ErrorCode.ERR_VSTAKE_ADDRESS: "Vstake module address does not exist.",
     ErrorCode.ERR_VSTAKE: "User review process is not complete.",
+    ErrorCode.ERR_CHAIRMAN_UNBIND: "Not the chairman bind account.",
+    ErrorCode.ERR_SINGIN_TIMEOUT: "Timeout, session id invailed.",
+    ErrorCode.ERR_SIG_ERROR: "Signature verify failed.",
 
     ErrorCode.ERR_GRPC_CONNECT: "Grpc call failed.",
 
