@@ -704,6 +704,16 @@ def CheckGovernorAuthority():
     data = {"authority": 1}
     return MakeResp(ErrorCode.ERR_OK, data)
 
+@app.route("/1.0/violas/governor/bind", methods = ["POST"])
+def ChairmanBindGovernor():
+    params = request.get_json()
+
+    succ, result = HViolas.ChairmanBindGovernor(params)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
 @app.route("/1.0/violas/governor/singin/qrcode")
 def GetSinginQRCodeInfo():
     bSessionId = os.urandom(32)

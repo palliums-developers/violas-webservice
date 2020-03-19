@@ -344,6 +344,7 @@ class ViolasPGHandler():
             info["multisig_address"] = i.multisig_address
             info["is_chairman"] = i.is_chairman
             info["subaccount_count"] = i.subaccount_count
+            info["violas_public_key"] = i.violas_public_key
 
             infos.append(info)
 
@@ -395,7 +396,8 @@ class ViolasPGHandler():
                     multisig_address = data["multisig_address"],
                     is_chairman = isChairman,
                     is_handle = 0,
-                    subaccount_count = data["subaccount_count"]
+                    subaccount_count = data["subaccount_count"],
+                    violas_public_key = data["violas_public_key"]
                 )
 
                 s.add(info)
@@ -424,7 +426,8 @@ class ViolasPGHandler():
                     is_chairman = False,
                     is_handle = 0,
                     subaccount_count = 1,
-                    application_date = int(time())
+                    application_date = int(time()),
+                    violas_public_key = data["public_key"]
                 )
 
                 s.add(info)
@@ -1053,3 +1056,25 @@ class ViolasPGHandler():
 
         s.close()
         return True, info
+
+    def ChairmanBindGovernor(self, data):
+        s = self.session()
+
+        try:
+            info = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.wallet_address == data["address"]).first()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        info.bind_governor = data["governor_address"]
+
+        try:
+            s.commit()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        s.close()
+        return True, True
