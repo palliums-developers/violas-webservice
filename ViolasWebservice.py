@@ -524,6 +524,19 @@ def SetTokenMinted():
 
     return MakeResp(ErrorCode.ERR_OK)
 
+@app.route("/1.1/violas/sso/token/minted", methods = ["PUT"])
+def SetTokenMinted():
+    params = request.get_json()
+
+    succ, result = HViolas.SetTokenMintedV2(params)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
+        return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
 @app.route("/1.0/violas/sso/governors")
 def GetGovernors():
     succ, infos = HViolas.GetGovernorInfoForSSO()
