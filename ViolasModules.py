@@ -90,3 +90,5 @@ class ViolasGovernorInfo(Base):
     is_handle = Column(SmallInteger, nullable = False) # 0: not approved; 1: pass; 2: not pass; 3: published; 4: minted
     subaccount_count = Column(SmallInteger, nullable = False)
     application_date = Column(Integer, nullable = True)
+    violas_public_key = Column(String(64), nullable = False)
+    bind_governor = Column(String(64), nullable = True)
