@@ -951,7 +951,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == data["wallet_address"]).first()
+            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.id == data["id"]).first()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
