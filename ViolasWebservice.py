@@ -729,6 +729,25 @@ def GetSinginQRCodeInfo():
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
+@app.route("/1.0/violas/governor/singin")
+def GetSinginStatus():
+    value = rdsAuth.get("SessionID")
+    if value is None:
+        data = {"status": 3}
+        return MakeResp(ErrorCode.ERR_OK, data)
+
+    et = rdsAuth.ttl("SessionID")
+    if et != -1:
+        data = {"status": 0}
+        return MakeResp(ErrorCode.ERR_OK, data)
+
+    if str(value, "utf-8") == "Success":
+        data = {"status": 1}
+    else:
+        data = {"status": 2}
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
 # EXPLORER
 @app.route("/explorer/libra/recent")
 def LibraGetRecentTx():
