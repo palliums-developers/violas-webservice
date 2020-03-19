@@ -296,6 +296,32 @@ class ViolasPGHandler():
         s.close()
         return True, True
 
+    def SetTokenMintedV2(self, data):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.id == data["id"]).first()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        if result is None:
+            s.close()
+            return True, False
+
+        result.approval_status = 4
+
+        try:
+            s.commit()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        s.close()
+        return True, True
+
     def GetGovernorInfo(self, offset, limit):
         s = self.session()
 
