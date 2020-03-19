@@ -525,7 +525,7 @@ def SetTokenMinted():
     return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.1/violas/sso/token/minted", methods = ["PUT"])
-def SetTokenMinted():
+def SetTokenMintedByID():
     params = request.get_json()
 
     succ, result = HViolas.SetTokenMintedV2(params)
