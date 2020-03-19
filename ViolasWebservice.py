@@ -1,4 +1,4 @@
-import os, random, logging, configparser, datetime, json
+import os, random, logging, configparser, datetime, json, time
 from flask import Flask, request, send_file
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -37,6 +37,7 @@ pushh = PushServerHandler(pushInfo["HOST"], int(pushInfo["PORT"]))
 cachingInfo = config["CACHING SERVER"]
 rdsVerify = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["VERIFYDB"], cachingInfo["PASSWORD"])
 rdsCoinMap = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["COINMAPDB"], cachingInfo["PASSWORD"])
+rdsAuth = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["AUTH"], cachingInfo["PASSWORD"])
 
 def MakeLibraClient():
     return Client("libra_testnet")
@@ -701,6 +702,21 @@ def CheckGovernorAuthority():
         return MakeResp(ErrorCode.ERR_OK, data)
 
     data = {"authority": 1}
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/violas/governor/singin/qrcode")
+def GetSinginQRCodeInfo():
+    bSessionId = os.urandom(32)
+
+    data = {}
+    data["timestamp"] = int(time.time())
+    data["expiration_time"] = 60
+    qr = {}
+    qr["type"] = 1
+    qr["session_id"] = bSessionId.hex()
+    data["qr_code"] = qr
+    rdsAuth.setex("SessionID", 60, bSessionId.hex())
+
     return MakeResp(ErrorCode.ERR_OK, data)
 
 # EXPLORER
