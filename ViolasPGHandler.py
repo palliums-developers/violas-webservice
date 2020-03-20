@@ -983,7 +983,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.governor_address == address).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
+            ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.governor_address == address).order_by(ViolasSSOInfo.id.desc()).offset(offset).limit(limit).all()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
