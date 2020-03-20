@@ -398,7 +398,7 @@ class ViolasPGHandler():
                     is_chairman = isChairman,
                     is_handle = 0,
                     subaccount_count = data["subaccount_count"],
-                    violas_public_key = data["violas_public_key"]
+                    violas_public_key = ""
                 )
 
                 s.add(info)
