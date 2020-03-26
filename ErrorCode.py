@@ -22,6 +22,8 @@ class ErrorCode(IntEnum):
     ERR_CHAIRMAN_UNBIND = 2018
     ERR_SINGIN_TIMEOUT = 2019
     ERR_SIG_ERROR = 2020
+    ERR_SESSION_NOT_EXIST = 2021
+    ERR_NEED_REQUEST_PARAM = 2022
 
     ERR_GRPC_CONNECT = 3000
 
@@ -51,6 +53,8 @@ ErrorMsg = {
     ErrorCode.ERR_CHAIRMAN_UNBIND: "Not the chairman bind account.",
     ErrorCode.ERR_SINGIN_TIMEOUT: "Timeout, session id invailed.",
     ErrorCode.ERR_SIG_ERROR: "Signature verify failed.",
+    ErrorCode.ERR_SESSION_NOT_EXIST: "Session ID does not exist.",
+    ErrorCode.ERR_NEED_REQUEST_PARAM: "Need request params.",
 
     ErrorCode.ERR_GRPC_CONNECT: "Grpc call failed.",
 

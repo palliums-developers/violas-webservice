@@ -283,6 +283,21 @@ def VerifyCodeExist(receiver, code):
 
     return True
 
+@app.route("/1.0/violas/singin", methods = ["POST"])
+def UploadWalletInfo():
+    params = request.get_json()
+
+    value = rdsAuth.get(params["session_id"])
+
+    if value is None:
+        return MakeResp(ErrorCode.ERR_SESSION_NOT_EXIST)
+
+    data = {"status": "Success", "wallets":params["wallets"]}
+
+    rdsAuth.set(params["session_id"], json.JSONEncoder().encode(data))
+
+    return MakeResp(ErrorCode.ERR_OK)
+
 # VBTC
 @app.route("/1.0/violas/vbtc/transaction")
 def GetVBtcTransactionInfo():
@@ -904,6 +919,50 @@ def ViolasGetTransactionsByVersion(version):
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, transInfo)
+
+@app.route("/explorer/violas/singin/qrcode")
+def GetSinginSessionID():
+    bSessionId = os.urandom(32)
+
+    data = {}
+    data["timestamp"] = int(time.time())
+    data["expiration_time"] = 60
+    qr = {}
+    qr["type"] = 2
+    qr["session_id"] = bSessionId.hex()
+    data["qr_code"] = qr
+    rdsAuth.setex(bSessionId.hex(), 600, json.JSONEncoder().encode({"status": "unknow"}))
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/explorer/violas/singin")
+def GetExplorerSinginStatus():
+    sessionid = request.args.get("session_id")
+    if sessionid is None:
+        return MakeResp(ErrorCode.ERR_NEED_REQUEST_PARAM)
+
+    value = rdsAuth.get(sessionid)
+    v = json.loads(str(value, "utf-8"))
+
+    if value is None:
+        data = {"status": 3}
+        return MakeResp(ErrorCode.ERR_OK, data)
+
+    et = rdsAuth.ttl(sessionid)
+    if et != -1:
+        data = {"status": 0}
+        return MakeResp(ErrorCode.ERR_OK, data)
+
+    v = json.loads(str(value, "utf-8"))
+
+    if v["status"] == "Success":
+        data = {"status": 1, "wallets": v["wallets"]}
+        rdsAuth.delete(sessionid)
+    else:
+        data = {"status": 2}
+        rdsAuth.delete(sessionid)
+
+    return MakeResp(ErrorCode.ERR_OK, data)
 
 # corss chain
 @app.route("/1.0/crosschain/address")
