@@ -931,7 +931,7 @@ def GetSinginSessionID():
     qr["type"] = 2
     qr["session_id"] = bSessionId.hex()
     data["qr_code"] = qr
-    rdsAuth.setex(bSessionId.hex(), 600, json.JSONEncoder().encode({"status": "unknow"}))
+    rdsAuth.setex(bSessionId.hex(), 60, json.JSONEncoder().encode({"status": "unknow"}))
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
