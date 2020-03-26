@@ -942,7 +942,6 @@ def GetExplorerSinginStatus():
         return MakeResp(ErrorCode.ERR_NEED_REQUEST_PARAM)
 
     value = rdsAuth.get(sessionid)
-    v = json.loads(str(value, "utf-8"))
 
     if value is None:
         data = {"status": 3}
