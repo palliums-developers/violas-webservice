@@ -131,8 +131,10 @@ def GetViolasBalance():
     except ViolasError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
-    moduleState = cli.get_account_state("e1be1ab8360a35a0259f1c93e3eac736")
+
     if len(modules) != 0:
+        moduleState = cli.get_account_state("e1be1ab8360a35a0259f1c93e3eac736")
+
         modulesBalance = []
         moduleList = modules.split(",")
         for i in moduleList:
@@ -902,18 +904,26 @@ def ViolasGetAddressInfo(address):
         return MakeResp(ErrorCode.ERR_OK, {})
 
     cli = MakeViolasClient()
-    account_state = cli.get_account_state(address)
-    info = account_state.get_scoin_resources()
+    moduleState = cli.get_account_state("e1be1ab8360a35a0259f1c93e3eac736")
 
-    module_balance = []
-    for key in info.keys():
-        item = {}
-        item["module"] = key
-        item["balance"] = cli.get_balance(address, key)
-        module_balance.append(item)
+    modulesBalance = []
+    for i in range(moduleState.get_token_num()):
+        try:
+            result = cli.get_balance(address, i, "e1be1ab8360a35a0259f1c93e3eac736")
+        except ViolasError as e:
+            return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+
+        moduleInfo = {}
+        moduleInfo["id"] = i
+        moduleInfo["name"] = moduleState.get_token_data(i, "e1be1ab8360a35a0259f1c93e3eac736")
+        moduleInfo["balance"] = result
+
+        modulesBalance.append(moduleInfo)
+
+        info["modules"] = modulesBalance
 
     addressInfo["balance"] = cli.get_balance(address)
-    addressInfo["module_balande"] = module_balance
+    addressInfo["module_balande"] = modulesBalance
 
     if module is None:
         succ, addressTransactions = HViolas.GetTransactionsByAddress(address, limit, offset)
