@@ -907,7 +907,8 @@ def ViolasGetAddressInfo(address):
     moduleState = cli.get_account_state("e1be1ab8360a35a0259f1c93e3eac736")
 
     modulesBalance = []
-    for i in range(moduleState.get_token_num()):
+    tokenNum = moduleState.get_scoin_resources('e1be1ab8360a35a0259f1c93e3eac736').get_token_num()
+    for i in range(tokenNum):
         try:
             result = cli.get_balance(address, i, "e1be1ab8360a35a0259f1c93e3eac736")
         except ViolasError as e:
@@ -919,8 +920,6 @@ def ViolasGetAddressInfo(address):
         moduleInfo["balance"] = result
 
         modulesBalance.append(moduleInfo)
-
-        info["modules"] = modulesBalance
 
     addressInfo["balance"] = cli.get_balance(address)
     addressInfo["module_balande"] = modulesBalance
