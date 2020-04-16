@@ -124,25 +124,27 @@ def GetViolasBalance():
 
     cli = MakeViolasClient()
     try:
-        result = cli.get_balance(address)
+        accState = cli.get_account_state(address)
         info = {}
         info["address"] = address
-        info["balance"] = result
+        info["balance"] = accState.get_balance()
     except ViolasError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
+    moduleState = cli.get_account_state("e1be1ab8360a35a0259f1c93e3eac736")
     if len(modules) != 0:
         modulesBalance = []
         moduleList = modules.split(",")
         for i in moduleList:
             try:
-                result = cli.get_balance(address, i)
+                result = cli.get_balance(address, int(i), "e1be1ab8360a35a0259f1c93e3eac736")
             except ViolasError as e:
                 return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
             print(result)
             moduleInfo = {}
-            moduleInfo["address"] = i
+            moduleInfo["id"] = int(i)
+            moduleInfo["name"] = moduleState.get_token_data(int(i), "e1be1ab8360a35a0259f1c93e3eac736")
             moduleInfo["balance"] = result
 
             modulesBalance.append(moduleInfo)
@@ -202,11 +204,26 @@ def GetViolasTransactionInfo():
 
 @app.route("/1.0/violas/currency")
 def GetCurrency():
-    succ, currencies = HViolas.GetCurrencies()
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    cli = MakeViolasClient()
 
-    return MakeResp(ErrorCode.ERR_OK, currencies)
+    try:
+        info = cli.get_account_state("e1be1ab8360a35a0259f1c93e3eac736")
+    except ViolasError as e:
+        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+
+    if not info.exists():
+        return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
+
+    currencies = []
+    tokenNum = info.get_scoin_resources("e1be1ab8360a35a0259f1c93e3eac736").get_token_num()
+    print(f"tokens are {tokenNum}")
+    for i in range(tokenNum):
+        name = info.get_token_data(i, "e1be1ab8360a35a0259f1c93e3eac736")
+        tokenInfo = {"id": i, "name": name}
+        currencies.append(tokenInfo)
+
+    data = {"currencies": currencies}
+    return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/violas/module")
 def CheckMoudleExise():
@@ -222,11 +239,12 @@ def CheckMoudleExise():
     if not info.exists():
         return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
 
-    modus = []
-    for key in info.get_scoin_resources():
-        modus.append(key)
+    if info.is_published("e1be1ab8360a35a0259f1c93e3eac736"):
+        data = {"is_published": 1}
+    else:
+        data = {"is_published": 0}
 
-    return MakeResp(ErrorCode.ERR_OK, modus)
+    return MakeResp(ErrorCode.ERR_OK, data)
 
 def AllowedType(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
