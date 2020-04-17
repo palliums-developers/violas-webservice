@@ -224,7 +224,7 @@ def GetCurrency():
         tokenInfo = {"id": i, "name": name}
         currencies.append(tokenInfo)
 
-    data = {"currencies": currencies}
+    data = {"module": "e1be1ab8360a35a0259f1c93e3eac736", "currencies": currencies}
     return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/violas/module")
