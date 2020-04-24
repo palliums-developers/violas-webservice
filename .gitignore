@@ -4,3 +4,4 @@ Pipfile
 Pipfile.lock
 *.log
 /canoser
+/libra_client
