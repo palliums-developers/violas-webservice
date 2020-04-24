@@ -9,11 +9,14 @@ import hashlib
 
 from violas import Client as ViolasClient
 from violas.error.error import ViolasError
+
+from libra_client import Client as LibraClient
+from libra_client.error.error import ViolasError as LibraError
+
 from ViolasPGHandler import ViolasPGHandler
 from LibraPGHandler import LibraPGHandler
 from PushServerHandler import PushServerHandler
 from ErrorCode import ErrorCode, ErrorMsg
-from libra_client import Client as LibraClient
 
 logging.basicConfig(filename = "ViolasWebservice.log", level = logging.DEBUG)
 config = configparser.ConfigParser()
@@ -46,7 +49,7 @@ def MakeLibraClient():
     return LibraClient("libra_testnet")
 
 def MakeViolasClient():
-    return ViolasClient.new(config["NODE INFO"]["VIOLAS_HOST"], int(config["NODE INFO"]["VIOLAS_PORT"]))
+    return ViolasClient.new(config["NODE INFO"]["VIOLAS_HOST"], int(config["NODE INFO"]["VIOLAS_PORT"]), faucet_file = "./mint_test.key")
 
 def MakeResp(code, data = None, exception = None):
     resp = {}
@@ -74,7 +77,7 @@ def GetLibraBalance():
         info["address"] = address
         info["balance"] = result
         return MakeResp(ErrorCode.ERR_OK, info)
-    except ViolasError as e:
+    except LibraError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
 @app.route("/1.0/libra/seqnum")
@@ -84,7 +87,7 @@ def GetLibraSequenceNumbert():
     cli = MakeLibraClient()
     try:
         seqNum = cli.get_sequence_number(address)
-    except ViolasError as e:
+    except LibraError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, seqNum)
@@ -97,7 +100,7 @@ def MakeLibraTransaction():
     cli = MakeLibraClient()
     try:
         cli.submit_signed_transaction(signedtxn, True)
-    except ViolasError as e:
+    except LibraError as e:
         if e.code == 6011:
             return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
         else:
@@ -116,6 +119,21 @@ def GetLibraTransactionInfo():
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, datas)
+
+@app.route("/1.0/libra/mint")
+def MintLibraToAccount():
+    address = request.args.get("address")
+    authKey = request.args.get("auth_key_prefix")
+
+    cli = MakeLibraClient()
+    try:
+        cli.mint_coin(address, 100, is_blocking = True, receiver_auth_key_prefix_opt = authKey)
+    except LibraError as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+    except ValueError:
+        return MakeResp(ErrorCode.ERR_INVAILED_ADDRESS)
+
+    return MakeResp(ErrorCode.ERR_OK)
 
 # VIOLAS WALLET
 @app.route("/1.0/violas/balance")
@@ -316,6 +334,21 @@ def UploadWalletInfo():
     data = {"status": "Success", "wallets":params["wallets"]}
 
     rdsAuth.set(params["session_id"], json.JSONEncoder().encode(data))
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/mint")
+def MintViolasToAccount():
+    address = request.args.get("address")
+    authKey = request.args.get("auth_key_prefix")
+
+    cli = MakeViolasClient()
+    try:
+        cli.mint_coin(address, 100, is_blocking = True, auth_key_prefix = authKey)
+    except ViolasError as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+    except ValueError:
+        return MakeResp(ErrorCode.ERR_INVAILED_ADDRESS)
 
     return MakeResp(ErrorCode.ERR_OK)
 
