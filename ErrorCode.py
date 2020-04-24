@@ -26,6 +26,7 @@ class ErrorCode(IntEnum):
     ERR_NEED_REQUEST_PARAM = 2022
 
     ERR_GRPC_CONNECT = 3000
+    ERR_INVAILED_ADDRESS = 3001
 
     ERR_NODE_RUNTIME = 4000
 
@@ -57,6 +58,7 @@ ErrorMsg = {
     ErrorCode.ERR_NEED_REQUEST_PARAM: "Need request params.",
 
     ErrorCode.ERR_GRPC_CONNECT: "Grpc call failed.",
+    ErrorCode.ERR_INVAILED_ADDRESS: "Invailed address.",
 
     ErrorCode.ERR_NODE_RUNTIME: "Node runtime error.",
 
