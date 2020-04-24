@@ -7,12 +7,13 @@ import requests
 import nacl.signing
 import hashlib
 
-from violas import Client
+from violas import Client as ViolasClient
 from violas.error.error import ViolasError
 from ViolasPGHandler import ViolasPGHandler
 from LibraPGHandler import LibraPGHandler
 from PushServerHandler import PushServerHandler
 from ErrorCode import ErrorCode, ErrorMsg
+from libra_client import Client as LibraClient
 
 logging.basicConfig(filename = "ViolasWebservice.log", level = logging.DEBUG)
 config = configparser.ConfigParser()
@@ -42,10 +43,10 @@ rdsCoinMap = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["COINMA
 rdsAuth = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["AUTH"], cachingInfo["PASSWORD"])
 
 def MakeLibraClient():
-    return Client("libra_testnet")
+    return LibraClient("libra_testnet")
 
 def MakeViolasClient():
-    return Client.new(config["NODE INFO"]["VIOLAS_HOST"], int(config["NODE INFO"]["VIOLAS_PORT"]))
+    return ViolasClient.new(config["NODE INFO"]["VIOLAS_HOST"], int(config["NODE INFO"]["VIOLAS_PORT"]))
 
 def MakeResp(code, data = None, exception = None):
     resp = {}
@@ -82,7 +83,7 @@ def GetLibraSequenceNumbert():
 
     cli = MakeLibraClient()
     try:
-        seqNum = cli.get_account_sequence_number(address)
+        seqNum = cli.get_sequence_number(address)
     except ViolasError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
