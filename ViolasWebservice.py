@@ -123,7 +123,7 @@ def GetLibraTransactionInfo():
 @app.route("/1.0/libra/mint")
 def MintLibraToAccount():
     address = request.args.get("address")
-    authKey = request.args.get("auth_key_prefix")
+    authKey = request.args.get("auth_key_perfix")
 
     cli = MakeLibraClient()
     try:
@@ -340,7 +340,7 @@ def UploadWalletInfo():
 @app.route("/1.0/violas/mint")
 def MintViolasToAccount():
     address = request.args.get("address")
-    authKey = request.args.get("auth_key_prefix")
+    authKey = request.args.get("auth_key_perfix")
 
     cli = MakeViolasClient()
     try:
