@@ -352,6 +352,28 @@ def MintViolasToAccount():
 
     return MakeResp(ErrorCode.ERR_OK)
 
+@app.route("/1.0/violas/account/info")
+def GetAccountInfo():
+    address = request.args.get("address")
+
+    cli = MakeViolasClient()
+
+    try:
+        state = cli.get_account_state(address)
+    except ViolasError as e:
+        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+
+    data = {"balance": state.get_balance(),
+            "authentication_key": state.get_authentication_key(),
+            "sequence_number": state.get_sequence_number(),
+            "delegated_key_rotation_capability": state.get_delegated_key_rotation_capability(),
+            "delegated_withdrawal_capability": state.get_delegated_withdrawal_capability(),
+            "delegated_withdrawal_capability": state.get_delegated_withdrawal_capability(),
+            "received_events_key": state.get_received_events_key(),
+            "sent_events_key": state.get_sent_events_key()}
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
 # VBTC
 @app.route("/1.0/violas/vbtc/transaction")
 def GetVBtcTransactionInfo():
