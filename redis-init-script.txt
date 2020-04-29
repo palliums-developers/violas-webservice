@@ -1,9 +1,11 @@
 select 2
 
-hmset vbtc address "cae5f8464c564aabb684ecbcc19153e9" id 2 rate 1 map_name "btc"
+flushdb
 
-hmset btc address "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB" id 2 rate 1 map_name "vbtc"
+hmset vbtc address "cae5f8464c564aabb684ecbcc19153e9" id 5 rate 1 map_name "btc"
 
-hmset vlibra address "ee1e24e8fc664894709c947b74823b2f" id 3 rate 1 map_name "libra"
+hmset btc address "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY" id 5 rate 1 map_name "vbtc"
 
-hmset libra address "0a82179351b8ecb6c5e68ab7b08622de" id 3 rate 1 map_name "vlibra"
+hmset vlibra address "ee1e24e8fc664894709c947b74823b2f" id 6 rate 1 map_name "libra"
+
+hmset libra address "9334bb5e39e5919e081b6db72482e139" id 6 rate 1 map_name "vlibra"
