@@ -1,5 +1,5 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, SmallInteger, Integer, String, Numeric, BigInteger, Boolean
+from sqlalchemy import Column, SmallInteger, Integer, BigInteger, String, Numeric, Boolean
 
 Base = declarative_base()
 
@@ -16,6 +16,7 @@ class ViolasTransaction(Base):
     receiver = Column(String(64), nullable = True)
     amount = Column(Numeric, nullable = False)
     module = Column(String(64), nullable = True)
+    token_id = Column(Integer, nullable = True)
     data = Column(String(512), nullable = True)
     public_key = Column(String(64), nullable = True)
     signature = Column(String(128), nullable = True)
@@ -32,8 +33,8 @@ class ViolasAddressInfo(Base):
     address = Column(String(64), nullable = False)
     type = Column(SmallInteger, nullable = False) # 0: Minter, 1: Faucet, 2: Normal
     first_seen = Column(BigInteger, nullable = False)
-    received_amount = Column(Numeric, nullable = False)
     sent_amount = Column(Numeric, nullable = False)
+    received_amount = Column(Numeric, nullable = False)
     sent_tx_count = Column(BigInteger, nullable = False)
     received_tx_count = Column(BigInteger, nullable = False)
     sent_minted_tx_count = Column(BigInteger, nullable = False)
@@ -64,16 +65,16 @@ class ViolasSSOInfo(Base):
     amount = Column(Numeric, nullable = False)
     token_value = Column(Numeric, nullable = False)
     token_name = Column(String(32), nullable = False)
+    token_id = Column(Integer, nullable = True)
     application_date = Column(Integer, nullable = False)
     validity_period = Column(SmallInteger, nullable = False)
     expiration_date = Column(Integer, nullable = False)
     reserve_photo_url = Column(String(64), nullable = False)
     account_info_photo_positive_url = Column(String(64), nullable = False)
     account_info_photo_back_url = Column(String(64), nullable = False)
-    module_address = Column(String(64), nullable = True)
-    approval_status = Column(SmallInteger, nullable = False) # 0: not approved; 1: pass; 2: not pass; 3: published; 4: minted
     governor_address = Column(String(64), nullable = False)
     subaccount_number = Column(SmallInteger, nullable = True)
+    approval_status = Column(SmallInteger, nullable = False) # 0: not approved; 1: pass; 2: not pass; 3: published; 4: minted
 
 class ViolasGovernorInfo(Base):
     __tablename__ = "governor_info"

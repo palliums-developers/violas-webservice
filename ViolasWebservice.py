@@ -45,6 +45,8 @@ rdsVerify = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["VERIFYD
 rdsCoinMap = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["COINMAPDB"], cachingInfo["PASSWORD"])
 rdsAuth = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["AUTH"], cachingInfo["PASSWORD"])
 
+ContractAddress = "e1be1ab8360a35a0259f1c93e3eac736"
+
 def MakeLibraClient():
     return LibraClient("libra_testnet")
 
@@ -152,20 +154,20 @@ def GetViolasBalance():
 
 
     if len(modules) != 0:
-        moduleState = cli.get_account_state("e1be1ab8360a35a0259f1c93e3eac736")
+        moduleState = cli.get_account_state(ContractAddress)
 
         modulesBalance = []
         moduleList = modules.split(",")
         for i in moduleList:
             try:
-                result = cli.get_balance(address, int(i), "e1be1ab8360a35a0259f1c93e3eac736")
+                result = cli.get_balance(address, int(i), ContractAddress)
             except ViolasError as e:
                 return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
             print(result)
             moduleInfo = {}
             moduleInfo["id"] = int(i)
-            moduleInfo["name"] = moduleState.get_token_data(int(i), "e1be1ab8360a35a0259f1c93e3eac736")
+            moduleInfo["name"] = moduleState.get_token_data(int(i), ContractAddress)
             moduleInfo["balance"] = result
 
             modulesBalance.append(moduleInfo)
@@ -206,18 +208,23 @@ def MakeViolasTransaction():
 @app.route("/1.0/violas/transaction")
 def GetViolasTransactionInfo():
     address = request.args.get("addr")
-    module = request.args.get("modu", "0000000000000000000000000000000000000000000000000000000000000000")
+    token_id = request.args.get("modu")
     limit = request.args.get("limit", 10, int)
     offset = request.args.get("offset", 0, int)
 
-    vbtcModule = rdsCoinMap.hget("vbtc", "module").decode("utf8")
-    vlibraModule = rdsCoinMap.hget("vlibra", "module").decode("utf8")
+    if token_id is None:
+        module = "00000000000000000000000000000000"
+    else:
+        module = ContractAddress
 
-    moduleMap = {"0000000000000000000000000000000000000000000000000000000000000000": "vtoken",
-                 vbtcModule: "vbtc",
-                 vlibraModule: "vlibra"}
+    print(module)
+    vbtcTokenId = int(rdsCoinMap.hget("vbtc", "id").decode("utf8"))
+    vlibraTokenId = int(rdsCoinMap.hget("vlibra", "id").decode("utf8"))
 
-    succ, datas = HViolas.GetTransactionsForWallet(address, module, offset, limit, moduleMap)
+    moduleMap = {vbtcTokenId: "vbtc",
+                 vlibraTokenId: "vlibra"}
+
+    succ, datas = HViolas.GetTransactionsForWallet(address, module, token_id, offset, limit, moduleMap)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
@@ -1077,7 +1084,7 @@ def GetCountOfCrossChainTransaction():
     address = request.args.get("address")
 
     exchangeAddress = rdsCoinMap.hget(transactionType, "address").decode("utf8")
-    exchangeModule = rdsCoinMap.hget(transactionType, "module").decode("utf8")
+    exchangeModule = int(rdsCoinMap.hget(transactionType, "id").decode("utf8"))
 
     if transactionType == "vbtc" or transactionType == "vlibra":
         succ, count = HViolas.GetExchangeTransactionCountFrom(address, exchangeAddress, exchangeModule)
