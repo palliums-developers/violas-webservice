@@ -828,23 +828,23 @@ class ViolasPGHandler():
 
         return True, infoList
 
-    def GetTransactionsForWallet(self, address, module, offset, limit, moduleMap):
+    def GetTransactionsForWallet(self, address, module, token_id, offset, limit, moduleMap):
         s = self.session()
 
         try:
-            result = s.query(ViolasSSOInfo.module_address, ViolasSSOInfo.token_name).all()
+            result = s.query(ViolasSSOInfo.token_id, ViolasSSOInfo.token_name).filter(ViolasSSOInfo.approval_status == 4).all()
         except OperationalError:
             s.close()
             return False, None
 
         for i in result:
-            moduleMap[i.module_address] = i.token_name
+            moduleMap[i.tokne_id] = i.token_name
 
         try:
-            if module == "0000000000000000000000000000000000000000000000000000000000000000":
+            if module == "00000000000000000000000000000000":
                 result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
             else:
-                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).filter(ViolasTransaction.token_id == token_id).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
         except OperationalError:
             s.close()
             return False, None
@@ -860,9 +860,8 @@ class ViolasPGHandler():
             info["expiration_time"] = i.expiration_time
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
-            info["sender_module"] = i.module
-            info["receiver_module"] = i.module
-            info["module_name"] = moduleMap.get(i.module)
+            info["token_id"] = i.token_id
+            info["module_name"] = moduleMap.get(i.token_id)
 
             infoList.append(info)
 
