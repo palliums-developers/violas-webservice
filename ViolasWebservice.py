@@ -1058,7 +1058,7 @@ def GetAddressOfCrossChainTransaction():
 def GetModuleOfCrossChainTransaction():
     moduleName = request.args.get("type")
 
-    module = rdsCoinMap.hget(moduleName, "module").decode("utf8")
+    module = rdsCoinMap.hget(moduleName, "id").decode("utf8")
     return MakeResp(ErrorCode.ERR_OK, module)
 
 @app.route("/1.0/crosschain/rate")
