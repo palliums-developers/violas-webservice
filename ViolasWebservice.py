@@ -1122,7 +1122,7 @@ def GetMapInfoOfCrossChainTransaction():
     info = {}
     info["name"] = rdsCoinMap.hget(coinType, "map_name").decode("utf8")
     info["address"] = rdsCoinMap.hget(coinType, "address").decode("utf8")
-    info["module"] = int(rdsCoinMap.hget(coinType, "id").decode("utf8"))
+    info["token_id"] = int(rdsCoinMap.hget(coinType, "id").decode("utf8"))
     info["rate"] = int(rdsCoinMap.hget(coinType, "rate").decode("utf8"))
 
     return MakeResp(ErrorCode.ERR_OK, info)
