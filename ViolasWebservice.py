@@ -164,7 +164,6 @@ def GetViolasBalance():
             except ViolasError as e:
                 return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
-            print(result)
             moduleInfo = {}
             moduleInfo["id"] = int(i)
             moduleInfo["name"] = moduleState.get_token_data(int(i), ContractAddress)
@@ -244,7 +243,7 @@ def GetCurrency():
 
     currencies = []
     tokenNum = info.get_scoin_resources(ContractAddress).get_token_num()
-    print(f"tokens are {tokenNum}")
+
     for i in range(tokenNum):
         name = info.get_token_data(i, ContractAddress)
         tokenInfo = {"id": i, "name": name}
@@ -967,19 +966,19 @@ def ViolasGetAddressInfo(address):
         return MakeResp(ErrorCode.ERR_OK, {})
 
     cli = MakeViolasClient()
-    moduleState = cli.get_account_state("e1be1ab8360a35a0259f1c93e3eac736")
+    moduleState = cli.get_account_state(ContractAddress)
 
     modulesBalance = []
-    tokenNum = moduleState.get_scoin_resources('e1be1ab8360a35a0259f1c93e3eac736').get_token_num()
+    tokenNum = moduleState.get_scoin_resources(ContractAddress).get_token_num()
     for i in range(tokenNum):
         try:
-            result = cli.get_balance(address, i, "e1be1ab8360a35a0259f1c93e3eac736")
+            result = cli.get_balance(address, i, ContractAddress)
         except ViolasError as e:
             return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
         moduleInfo = {}
         moduleInfo["id"] = i
-        moduleInfo["name"] = moduleState.get_token_data(i, "e1be1ab8360a35a0259f1c93e3eac736")
+        moduleInfo["name"] = moduleState.get_token_data(i, ContractAddress)
         moduleInfo["balance"] = result
 
         modulesBalance.append(moduleInfo)
