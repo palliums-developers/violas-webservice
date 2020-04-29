@@ -1199,7 +1199,7 @@ def GetMapedCoinModules():
             info = {}
             info["name"] = coin
             info["address"] = rdsCoinMap.hget(coin, "address").decode("utf8")
-            info["id"] = int(rdsCoinMap.hget(coin, "id").decode("utf8"))
+            info["token_id"] = int(rdsCoinMap.hget(coin, "id").decode("utf8"))
             info["map_name"] = rdsCoinMap.hget(coin, "map_name").decode("utf8")
             info["rate"] = int(rdsCoinMap.hget(coin, "rate").decode("utf8"))
 
