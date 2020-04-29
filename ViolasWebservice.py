@@ -235,7 +235,7 @@ def GetCurrency():
     cli = MakeViolasClient()
 
     try:
-        info = cli.get_account_state("e1be1ab8360a35a0259f1c93e3eac736")
+        info = cli.get_account_state(ContractAddress)
     except ViolasError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
@@ -243,14 +243,14 @@ def GetCurrency():
         return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
 
     currencies = []
-    tokenNum = info.get_scoin_resources("e1be1ab8360a35a0259f1c93e3eac736").get_token_num()
+    tokenNum = info.get_scoin_resources(ContractAddress).get_token_num()
     print(f"tokens are {tokenNum}")
     for i in range(tokenNum):
-        name = info.get_token_data(i, "e1be1ab8360a35a0259f1c93e3eac736")
+        name = info.get_token_data(i, ContractAddress)
         tokenInfo = {"id": i, "name": name}
         currencies.append(tokenInfo)
 
-    data = {"module": "e1be1ab8360a35a0259f1c93e3eac736", "currencies": currencies}
+    data = {"module": ContractAddress, "currencies": currencies}
     return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/violas/module")
@@ -267,7 +267,7 @@ def CheckMoudleExise():
     if not info.exists():
         return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
 
-    if info.is_published("e1be1ab8360a35a0259f1c93e3eac736"):
+    if info.is_published(ContractAddress):
         data = {"is_published": 1}
     else:
         data = {"is_published": 0}
