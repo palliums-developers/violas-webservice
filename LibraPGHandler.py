@@ -74,7 +74,7 @@ class LibraPGHandler():
             return False, None
 
         infoList = []
-        for i in query:
+        for i in result:
             info = {}
             info["version"] = i.id - 1
             info["type"] = i.transaction_type

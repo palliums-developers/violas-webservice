@@ -1,12 +1,18 @@
-import os, random, logging, configparser, datetime, json
+import os, random, logging, configparser, datetime, json, time
 from flask import Flask, request, send_file
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from redis import Redis
 import requests
+import nacl.signing
+import hashlib
 
-from violas import Client
+from violas import Client as ViolasClient
 from violas.error.error import ViolasError
+
+from libra_client import Client as LibraClient
+from libra_client.error.error import ViolasError as LibraError
+
 from ViolasPGHandler import ViolasPGHandler
 from LibraPGHandler import LibraPGHandler
 from PushServerHandler import PushServerHandler
@@ -37,12 +43,15 @@ pushh = PushServerHandler(pushInfo["HOST"], int(pushInfo["PORT"]))
 cachingInfo = config["CACHING SERVER"]
 rdsVerify = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["VERIFYDB"], cachingInfo["PASSWORD"])
 rdsCoinMap = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["COINMAPDB"], cachingInfo["PASSWORD"])
+rdsAuth = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["AUTH"], cachingInfo["PASSWORD"])
+
+ContractAddress = "e1be1ab8360a35a0259f1c93e3eac736"
 
 def MakeLibraClient():
-    return Client("libra_testnet")
+    return LibraClient("libra_testnet")
 
 def MakeViolasClient():
-    return Client.new(config["NODE INFO"]["VIOLAS_HOST"], int(config["NODE INFO"]["VIOLAS_PORT"]))
+    return ViolasClient.new(config["NODE INFO"]["VIOLAS_HOST"], int(config["NODE INFO"]["VIOLAS_PORT"]), faucet_file = "./mint_test.key")
 
 def MakeResp(code, data = None, exception = None):
     resp = {}
@@ -70,7 +79,7 @@ def GetLibraBalance():
         info["address"] = address
         info["balance"] = result
         return MakeResp(ErrorCode.ERR_OK, info)
-    except ViolasError as e:
+    except LibraError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
 @app.route("/1.0/libra/seqnum")
@@ -79,8 +88,8 @@ def GetLibraSequenceNumbert():
 
     cli = MakeLibraClient()
     try:
-        seqNum = cli.get_account_sequence_number(address)
-    except ViolasError as e:
+        seqNum = cli.get_sequence_number(address)
+    except LibraError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, seqNum)
@@ -93,7 +102,7 @@ def MakeLibraTransaction():
     cli = MakeLibraClient()
     try:
         cli.submit_signed_transaction(signedtxn, True)
-    except ViolasError as e:
+    except LibraError as e:
         if e.code == 6011:
             return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
         else:
@@ -113,6 +122,21 @@ def GetLibraTransactionInfo():
 
     return MakeResp(ErrorCode.ERR_OK, datas)
 
+@app.route("/1.0/libra/mint")
+def MintLibraToAccount():
+    address = request.args.get("address")
+    authKey = request.args.get("auth_key_perfix")
+
+    cli = MakeLibraClient()
+    try:
+        cli.mint_coin(address, 100, is_blocking = True, receiver_auth_key_prefix_opt = authKey)
+    except LibraError as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+    except ValueError:
+        return MakeResp(ErrorCode.ERR_INVAILED_ADDRESS)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
 # VIOLAS WALLET
 @app.route("/1.0/violas/balance")
 def GetViolasBalance():
@@ -121,25 +145,28 @@ def GetViolasBalance():
 
     cli = MakeViolasClient()
     try:
-        result = cli.get_balance(address)
+        accState = cli.get_account_state(address)
         info = {}
         info["address"] = address
-        info["balance"] = result
+        info["balance"] = accState.get_balance()
     except ViolasError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
+
     if len(modules) != 0:
+        moduleState = cli.get_account_state(ContractAddress)
+
         modulesBalance = []
         moduleList = modules.split(",")
         for i in moduleList:
             try:
-                result = cli.get_balance(address, i)
+                result = cli.get_balance(address, int(i), ContractAddress)
             except ViolasError as e:
                 return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
-            print(result)
             moduleInfo = {}
-            moduleInfo["address"] = i
+            moduleInfo["id"] = int(i)
+            moduleInfo["name"] = moduleState.get_token_data(int(i), ContractAddress)
             moduleInfo["balance"] = result
 
             modulesBalance.append(moduleInfo)
@@ -180,18 +207,23 @@ def MakeViolasTransaction():
 @app.route("/1.0/violas/transaction")
 def GetViolasTransactionInfo():
     address = request.args.get("addr")
-    module = request.args.get("modu", "0000000000000000000000000000000000000000000000000000000000000000")
+    token_id = request.args.get("modu")
     limit = request.args.get("limit", 10, int)
     offset = request.args.get("offset", 0, int)
 
-    vbtcModule = rdsCoinMap.hget("vbtc", "module").decode("utf8")
-    vlibraModule = rdsCoinMap.hget("vlibra", "module").decode("utf8")
+    if token_id is None:
+        module = "00000000000000000000000000000000"
+    else:
+        module = ContractAddress
 
-    moduleMap = {"0000000000000000000000000000000000000000000000000000000000000000": "vtoken",
-                 vbtcModule: "vbtc",
-                 vlibraModule: "vlibra"}
+    print(module)
+    vbtcTokenId = int(rdsCoinMap.hget("vbtc", "id").decode("utf8"))
+    vlibraTokenId = int(rdsCoinMap.hget("vlibra", "id").decode("utf8"))
 
-    succ, datas = HViolas.GetTransactionsForWallet(address, module, offset, limit, moduleMap)
+    moduleMap = {vbtcTokenId: "vbtc",
+                 vlibraTokenId: "vlibra"}
+
+    succ, datas = HViolas.GetTransactionsForWallet(address, module, token_id, offset, limit, moduleMap)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
@@ -199,11 +231,26 @@ def GetViolasTransactionInfo():
 
 @app.route("/1.0/violas/currency")
 def GetCurrency():
-    succ, currencies = HViolas.GetCurrencies()
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    cli = MakeViolasClient()
 
-    return MakeResp(ErrorCode.ERR_OK, currencies)
+    try:
+        info = cli.get_account_state(ContractAddress)
+    except ViolasError as e:
+        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+
+    if not info.exists():
+        return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
+
+    currencies = []
+    tokenNum = info.get_scoin_resources(ContractAddress).get_token_num()
+
+    for i in range(tokenNum):
+        name = info.get_token_data(i, ContractAddress)
+        tokenInfo = {"id": i, "name": name}
+        currencies.append(tokenInfo)
+
+    data = {"module": ContractAddress, "currencies": currencies}
+    return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/violas/module")
 def CheckMoudleExise():
@@ -219,11 +266,12 @@ def CheckMoudleExise():
     if not info.exists():
         return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
 
-    modus = []
-    for key in info.get_scoin_resources():
-        modus.append(key)
+    if info.is_published(ContractAddress):
+        data = {"is_published": 1}
+    else:
+        data = {"is_published": 0}
 
-    return MakeResp(ErrorCode.ERR_OK, modus)
+    return MakeResp(ErrorCode.ERR_OK, data)
 
 def AllowedType(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -279,6 +327,58 @@ def VerifyCodeExist(receiver, code):
     rdsVerify.delete(receiver)
 
     return True
+
+@app.route("/1.0/violas/singin", methods = ["POST"])
+def UploadWalletInfo():
+    params = request.get_json()
+
+    value = rdsAuth.get(params["session_id"])
+
+    if value is None:
+        return MakeResp(ErrorCode.ERR_SESSION_NOT_EXIST)
+
+    data = {"status": "Success", "wallets":params["wallets"]}
+
+    rdsAuth.set(params["session_id"], json.JSONEncoder().encode(data))
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/mint")
+def MintViolasToAccount():
+    address = request.args.get("address")
+    authKey = request.args.get("auth_key_perfix")
+
+    cli = MakeViolasClient()
+    try:
+        cli.mint_coin(address, 100, is_blocking = True, auth_key_prefix = authKey)
+    except ViolasError as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+    except ValueError:
+        return MakeResp(ErrorCode.ERR_INVAILED_ADDRESS)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/account/info")
+def GetAccountInfo():
+    address = request.args.get("address")
+
+    cli = MakeViolasClient()
+
+    try:
+        state = cli.get_account_state(address)
+    except ViolasError as e:
+        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+
+    data = {"balance": state.get_balance(),
+            "authentication_key": state.get_authentication_key(),
+            "sequence_number": state.get_sequence_number(),
+            "delegated_key_rotation_capability": state.get_delegated_key_rotation_capability(),
+            "delegated_withdrawal_capability": state.get_delegated_withdrawal_capability(),
+            "delegated_withdrawal_capability": state.get_delegated_withdrawal_capability(),
+            "received_events_key": state.get_received_events_key(),
+            "sent_events_key": state.get_sent_events_key()}
+
+    return MakeResp(ErrorCode.ERR_OK, data)
 
 # VBTC
 @app.route("/1.0/violas/vbtc/transaction")
@@ -472,6 +572,15 @@ def GetUnapprovalTokenDetailInfo(id):
     if info is None:
         return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
 
+    if info["account_info_photo_positive_url"] is not None:
+        info["account_info_photo_positive_url"] = PHOTO_URL + info["account_info_photo_positive_url"]
+
+    if info["account_info_photo_back_url"] is not None:
+        info["account_info_photo_back_url"] = PHOTO_URL + info["account_info_photo_back_url"]
+
+    if info["reserve_photo_url"] is not None:
+        info["reserve_photo_url"] = PHOTO_URL + info["reserve_photo_url"]
+
     return MakeResp(ErrorCode.ERR_OK, info)
 
 @app.route("/1.0/violas/sso/token/approval", methods = ["PUT"])
@@ -507,6 +616,19 @@ def SetTokenMinted():
     params = request.get_json()
 
     succ, result = HViolas.SetTokenMinted(params)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
+        return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.1/violas/sso/token/minted", methods = ["PUT"])
+def SetTokenMintedByID():
+    params = request.get_json()
+
+    succ, result = HViolas.SetTokenMintedV2(params)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
@@ -681,6 +803,83 @@ def CheckGovernorAuthority():
     data = {"authority": 1}
     return MakeResp(ErrorCode.ERR_OK, data)
 
+@app.route("/1.0/violas/governor/bind", methods = ["POST"])
+def ChairmanBindGovernor():
+    params = request.get_json()
+
+    succ, result = HViolas.ChairmanBindGovernor(params)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/governor/singin/qrcode")
+def GetSinginQRCodeInfo():
+    bSessionId = os.urandom(32)
+
+    data = {}
+    data["timestamp"] = int(time.time())
+    data["expiration_time"] = 60
+    qr = {}
+    qr["type"] = 1
+    qr["session_id"] = bSessionId.hex()
+    data["qr_code"] = qr
+    rdsAuth.setex("SessionID", 60, bSessionId.hex())
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/violas/governor/singin")
+def GetSinginStatus():
+    value = rdsAuth.get("SessionID")
+    if value is None:
+        data = {"status": 3}
+        return MakeResp(ErrorCode.ERR_OK, data)
+
+    et = rdsAuth.ttl("SessionID")
+    if et != -1:
+        data = {"status": 0}
+        return MakeResp(ErrorCode.ERR_OK, data)
+
+    if str(value, "utf-8") == "Success":
+        data = {"status": 1}
+    else:
+        data = {"status": 2}
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/violas/governor/singin", methods = ["POST"])
+def VerifySinginSessionID():
+    params = request.get_json()
+
+    succ, result = HViolas.CheckBind(params["address"])
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
+        return MakeResp(ErrorCode.ERR_CHAIRMAN_UNBIND)
+
+    succ, info = HViolas.GetGovernorInfoAboutAddress(params["address"])
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    value = rdsAuth.get("SessionID")
+
+    if value is None:
+        return MakeResp(ErrorCode.ERR_SINGIN_TIMEOUT)
+
+    data = hashlib.sha3_256()
+    data.update(value)
+
+    verify_key = nacl.signing.VerifyKey(info["violas_public_key"], encoder=nacl.encoding.HexEncoder)
+    try:
+        verify_key.verify(data.hexdigest(), params["session_id"], encoder=nacl.encoding.HexEncoder)
+    except nacl.exceptions.BadSignatureError:
+        rdsAuth.set("SessionID", "Failed")
+        return MakeResp(ErrorCode.ERR_SIG_ERROR)
+
+    rdsAuth.set("SessionID", "Success")
+    return MakeResp(ErrorCode.ERR_OK)
+
 # EXPLORER
 @app.route("/explorer/libra/recent")
 def LibraGetRecentTx():
@@ -767,18 +966,25 @@ def ViolasGetAddressInfo(address):
         return MakeResp(ErrorCode.ERR_OK, {})
 
     cli = MakeViolasClient()
-    account_state = cli.get_account_state(address)
-    info = account_state.get_scoin_resources()
+    moduleState = cli.get_account_state(ContractAddress)
 
-    module_balance = []
-    for key in info.keys():
-        item = {}
-        item["module"] = key
-        item["balance"] = cli.get_balance(address, key)
-        module_balance.append(item)
+    modulesBalance = []
+    tokenNum = moduleState.get_scoin_resources(ContractAddress).get_token_num()
+    for i in range(tokenNum):
+        try:
+            result = cli.get_balance(address, i, ContractAddress)
+        except ViolasError as e:
+            return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
-    addressInfo["balance"] = cli.get_balance()
-    addressInfo["module_balande"] = module_balance
+        moduleInfo = {}
+        moduleInfo["id"] = i
+        moduleInfo["name"] = moduleState.get_token_data(i, ContractAddress)
+        moduleInfo["balance"] = result
+
+        modulesBalance.append(moduleInfo)
+
+    addressInfo["balance"] = cli.get_balance(address)
+    addressInfo["module_balande"] = modulesBalance
 
     if module is None:
         succ, addressTransactions = HViolas.GetTransactionsByAddress(address, limit, offset)
@@ -803,6 +1009,49 @@ def ViolasGetTransactionsByVersion(version):
 
     return MakeResp(ErrorCode.ERR_OK, transInfo)
 
+@app.route("/explorer/violas/singin/qrcode")
+def GetSinginSessionID():
+    bSessionId = os.urandom(32)
+
+    data = {}
+    data["timestamp"] = int(time.time())
+    data["expiration_time"] = 60
+    qr = {}
+    qr["type"] = 2
+    qr["session_id"] = bSessionId.hex()
+    data["qr_code"] = qr
+    rdsAuth.setex(bSessionId.hex(), 60, json.JSONEncoder().encode({"status": "unknow"}))
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/explorer/violas/singin")
+def GetExplorerSinginStatus():
+    sessionid = request.args.get("session_id")
+    if sessionid is None:
+        return MakeResp(ErrorCode.ERR_NEED_REQUEST_PARAM)
+
+    value = rdsAuth.get(sessionid)
+
+    if value is None:
+        data = {"status": 3}
+        return MakeResp(ErrorCode.ERR_OK, data)
+
+    et = rdsAuth.ttl(sessionid)
+    if et != -1:
+        data = {"status": 0}
+        return MakeResp(ErrorCode.ERR_OK, data)
+
+    v = json.loads(str(value, "utf-8"))
+
+    if v["status"] == "Success":
+        data = {"status": 1, "wallets": v["wallets"]}
+        rdsAuth.delete(sessionid)
+    else:
+        data = {"status": 2}
+        rdsAuth.delete(sessionid)
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
 # corss chain
 @app.route("/1.0/crosschain/address")
 def GetAddressOfCrossChainTransaction():
@@ -815,7 +1064,7 @@ def GetAddressOfCrossChainTransaction():
 def GetModuleOfCrossChainTransaction():
     moduleName = request.args.get("type")
 
-    module = rdsCoinMap.hget(moduleName, "module").decode("utf8")
+    module = rdsCoinMap.hget(moduleName, "id").decode("utf8")
     return MakeResp(ErrorCode.ERR_OK, module)
 
 @app.route("/1.0/crosschain/rate")
@@ -834,7 +1083,7 @@ def GetCountOfCrossChainTransaction():
     address = request.args.get("address")
 
     exchangeAddress = rdsCoinMap.hget(transactionType, "address").decode("utf8")
-    exchangeModule = rdsCoinMap.hget(transactionType, "module").decode("utf8")
+    exchangeModule = int(rdsCoinMap.hget(transactionType, "id").decode("utf8"))
 
     if transactionType == "vbtc" or transactionType == "vlibra":
         succ, count = HViolas.GetExchangeTransactionCountFrom(address, exchangeAddress, exchangeModule)
@@ -846,32 +1095,6 @@ def GetCountOfCrossChainTransaction():
 
     return MakeResp(ErrorCode.ERR_OK, count)
 
-@app.route("/1.0/crosschain/module/status")
-def GetPublishStatusOfCrossChainModule():
-    address = request.args.get("address")
-    module = request.args.get("module")
-
-    cli = MakeViolasClient()
-
-    try:
-        info = cli.get_account_state(address)
-    except ViolasError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
-
-    if not info.exists():
-        return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
-
-    modus = []
-    for key in info.get_scoin_resources():
-        modus.append(key)
-
-    if module in modus:
-        status = 1
-    else:
-        status = 0
-
-    return MakeResp(ErrorCode.ERR_OK, status)
-
 @app.route("/1.0/crosschain/info")
 def GetMapInfoOfCrossChainTransaction():
     coinType = request.args.get("type")
@@ -879,7 +1102,7 @@ def GetMapInfoOfCrossChainTransaction():
     info = {}
     info["name"] = rdsCoinMap.hget(coinType, "map_name").decode("utf8")
     info["address"] = rdsCoinMap.hget(coinType, "address").decode("utf8")
-    info["module"] = rdsCoinMap.hget(coinType, "module").decode("utf8")
+    info["token_id"] = int(rdsCoinMap.hget(coinType, "id").decode("utf8"))
     info["rate"] = int(rdsCoinMap.hget(coinType, "rate").decode("utf8"))
 
     return MakeResp(ErrorCode.ERR_OK, info)
@@ -891,7 +1114,7 @@ def GetCrossChainTransactionInfo():
     offset = request.args.get("offset", 0, int)
     limit = request.args.get("limit", 10, int)
 
-    url = "http://18.136.139.151:8088/tranrecord/"
+    url = "http://18.136.139.151/?opt=record"
     if walletType == 0:
         wallet = "violas"
     elif walletType == 1:
@@ -901,38 +1124,42 @@ def GetCrossChainTransactionInfo():
     else:
         return MakeResp(ErrorCode.ERR_UNKNOW_WALLET_TYPE)
 
-    url = f"{url}{wallet}/{address}/{offset}/{limit}"
+    url = f"{url}&chain={wallet}&cursor={offset}&limt={limit}&sender={address}"
 
     resp = requests.get(url)
-    infos = resp.json()["datas"]
+    respInfos = resp.json()["datas"]
 
-    datas = []
-    for info in infos["datas"]:
-        data = {}
-        if info["state"] == "start":
-            data["status"] = 0
-        elif info["state"] == "end":
-            data["status"] = 1
+    data = {}
+    data["offset"] = respInfos["cursor"]
+    infos = []
+    for i in respInfos["datas"]:
+        info = {}
+        if i["state"] == "start":
+            info["status"] = 0
+        elif i["state"] == "end":
+            info["status"] = 1
         else:
-            data["status"] = 2
+            info["status"] = 2
 
-        data["address"] = info["to_address"]
-        data["amount"] = info["amount"]
+        info["address"] = i["to_address"]
+        info["amount"] = i["amount"]
 
-        if info["type"] == "V2B":
-            data["coin"] = "btc"
-        elif info["type"] == "V2L":
-            data["coin"] = "libra"
-        elif info["type"] == "B2V":
-            data["coin"] = "vbtc"
-        elif info["type"] == "L2V":
-            data["coin"]= "vlibra"
+        if i["type"] == "V2B":
+            info["coin"] = "btc"
+        elif i["type"] == "V2L":
+            info["coin"] = "libra"
+        elif i["type"] == "B2V":
+            info["coin"] = "vbtc"
+        elif i["type"] == "L2V":
+            info["coin"]= "vlibra"
 
-        data["date"] = 0
+        info["date"] = 1
 
-        datas.append(data)
+        infos.append(info)
 
-    return MakeResp(ErrorCode.ERR_OK, datas)
+    data["infos"] = infos
+
+    return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/crosschain/transactions/btc", methods = ["POST"])
 def ForwardBtcTransaction():
@@ -959,19 +1186,21 @@ def GetMapedCoinModules():
 
     if not info.exists():
         return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
-
     modus = []
-    for key in info.get_scoin_resources():
-        modus.append(key)
+    try:
+        for key in info.get_scoin_resources(ContractAddress).tokens:
+            modus.append(key)
+    except:
+        return MakeResp(ErrorCode.ERR_OK, [])
 
     infos = []
     coins = ["vbtc", "vlibra"]
     for coin in coins:
-        if rdsCoinMap.hget(coin, "module").decode("utf8") in modus:
+        if int(rdsCoinMap.hget(coin, "id").decode("utf8")) in modus:
             info = {}
             info["name"] = coin
             info["address"] = rdsCoinMap.hget(coin, "address").decode("utf8")
-            info["module"] = rdsCoinMap.hget(coin, "module").decode("utf8")
+            info["token_id"] = int(rdsCoinMap.hget(coin, "id").decode("utf8"))
             info["map_name"] = rdsCoinMap.hget(coin, "map_name").decode("utf8")
             info["rate"] = int(rdsCoinMap.hget(coin, "rate").decode("utf8"))
 

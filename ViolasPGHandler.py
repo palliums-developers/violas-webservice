@@ -296,6 +296,32 @@ class ViolasPGHandler():
         s.close()
         return True, True
 
+    def SetTokenMintedV2(self, data):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.id == data["id"]).first()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        if result is None:
+            s.close()
+            return True, False
+
+        result.approval_status = 4
+
+        try:
+            s.commit()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        s.close()
+        return True, True
+
     def GetGovernorInfo(self, offset, limit):
         s = self.session()
 
@@ -318,6 +344,7 @@ class ViolasPGHandler():
             info["multisig_address"] = i.multisig_address
             info["is_chairman"] = i.is_chairman
             info["subaccount_count"] = i.subaccount_count
+            info["violas_public_key"] = i.violas_public_key
 
             infos.append(info)
 
@@ -347,6 +374,7 @@ class ViolasPGHandler():
         info["is_chairman"] = govInfos.is_chairman
         info["subaccount_count"] = govInfos.subaccount_count
         info["status"] = govInfos.is_handle
+        info["violas_public_key"] = govInfos.violas_public_key
 
         return True, info
 
@@ -369,7 +397,8 @@ class ViolasPGHandler():
                     multisig_address = data["multisig_address"],
                     is_chairman = isChairman,
                     is_handle = 0,
-                    subaccount_count = data["subaccount_count"]
+                    subaccount_count = data["subaccount_count"],
+                    violas_public_key = ""
                 )
 
                 s.add(info)
@@ -398,7 +427,8 @@ class ViolasPGHandler():
                     is_chairman = False,
                     is_handle = 0,
                     subaccount_count = 1,
-                    application_date = int(time())
+                    application_date = int(time()),
+                    violas_public_key = data["public_key"]
                 )
 
                 s.add(info)
@@ -539,7 +569,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasTransaction).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            result = s.query(ViolasTransaction).filter(ViolasTransaction.token_id == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
             s.close()
         except OperationalError:
             s.close()
@@ -556,7 +586,7 @@ class ViolasPGHandler():
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
             info["status"] = i.status
-            info["module_address"] = i.module
+            info["token_id"] = i.token_id
 
             infoList.append(info)
 
@@ -798,23 +828,23 @@ class ViolasPGHandler():
 
         return True, infoList
 
-    def GetTransactionsForWallet(self, address, module, offset, limit, moduleMap):
+    def GetTransactionsForWallet(self, address, module, token_id, offset, limit, moduleMap):
         s = self.session()
 
         try:
-            result = s.query(ViolasSSOInfo.module_address, ViolasSSOInfo.token_name).all()
+            result = s.query(ViolasSSOInfo.token_id, ViolasSSOInfo.token_name).filter(ViolasSSOInfo.approval_status == 4).all()
         except OperationalError:
             s.close()
             return False, None
 
         for i in result:
-            moduleMap[i.module_address] = i.token_name
+            moduleMap[i.token_id] = i.token_name
 
         try:
-            if module == "0000000000000000000000000000000000000000000000000000000000000000":
+            if module == "00000000000000000000000000000000":
                 result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
             else:
-                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).filter(ViolasTransaction.token_id == token_id).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
         except OperationalError:
             s.close()
             return False, None
@@ -830,9 +860,8 @@ class ViolasPGHandler():
             info["expiration_time"] = i.expiration_time
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
-            info["sender_module"] = i.module
-            info["receiver_module"] = i.module
-            info["module_name"] = moduleMap.get(i.module)
+            info["token_id"] = i.token_id
+            info["module_name"] = moduleMap.get(i.token_id)
 
             infoList.append(info)
 
@@ -863,7 +892,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.receiver == exchangeAddress).filter(ViolasTransaction.module == exchangeModule).count()
+            result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.receiver == exchangeAddress).filter(ViolasTransaction.token_id == exchangeModule).count()
             s.close()
         except OperationalError:
             s.close()
@@ -875,7 +904,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == exchangeAddress).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.module == exchangeModule).count()
+            result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == exchangeAddress).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.token_id == exchangeModule).count()
             s.close()
         except OperationalError:
             s.close()
@@ -925,7 +954,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == data["wallet_address"]).first()
+            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.id == data["id"]).first()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
@@ -953,7 +982,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.governor_address == address).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
+            ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.governor_address == address).order_by(ViolasSSOInfo.id.desc()).offset(offset).limit(limit).all()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
@@ -1027,3 +1056,42 @@ class ViolasPGHandler():
 
         s.close()
         return True, info
+
+    def ChairmanBindGovernor(self, data):
+        s = self.session()
+
+        try:
+            info = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.wallet_address == data["address"]).first()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        info.bind_governor = data["governor_address"]
+
+        try:
+            s.commit()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        s.close()
+        return True, True
+
+    def CheckBind(self, address):
+        s = self.session()
+
+        try:
+            info = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.is_chairman == True).first()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        s.close()
+
+        if info.bind_governor == address:
+            return True, True
+        else:
+            return True, False
