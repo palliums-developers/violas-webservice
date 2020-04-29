@@ -892,7 +892,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.receiver == exchangeAddress).filter(ViolasTransaction.module == exchangeModule).count()
+            result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.receiver == exchangeAddress).filter(ViolasTransaction.token_id == exchangeModule).count()
             s.close()
         except OperationalError:
             s.close()
@@ -904,7 +904,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == exchangeAddress).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.module == exchangeModule).count()
+            result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == exchangeAddress).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.token_id == exchangeModule).count()
             s.close()
         except OperationalError:
             s.close()
