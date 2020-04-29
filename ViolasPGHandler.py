@@ -838,7 +838,7 @@ class ViolasPGHandler():
             return False, None
 
         for i in result:
-            moduleMap[i.tokne_id] = i.token_name
+            moduleMap[i.token_id] = i.token_name
 
         try:
             if module == "00000000000000000000000000000000":
