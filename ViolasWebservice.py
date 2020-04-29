@@ -1096,32 +1096,6 @@ def GetCountOfCrossChainTransaction():
 
     return MakeResp(ErrorCode.ERR_OK, count)
 
-@app.route("/1.0/crosschain/module/status")
-def GetPublishStatusOfCrossChainModule():
-    address = request.args.get("address")
-    module = request.args.get("module")
-
-    cli = MakeViolasClient()
-
-    try:
-        info = cli.get_account_state(address)
-    except ViolasError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
-
-    if not info.exists():
-        return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
-
-    modus = []
-    for key in info.get_scoin_resources():
-        modus.append(key)
-
-    if module in modus:
-        status = 1
-    else:
-        status = 0
-
-    return MakeResp(ErrorCode.ERR_OK, status)
-
 @app.route("/1.0/crosschain/info")
 def GetMapInfoOfCrossChainTransaction():
     coinType = request.args.get("type")
@@ -1215,17 +1189,17 @@ def GetMapedCoinModules():
         return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
 
     modus = []
-    for key in info.get_scoin_resources():
+    for key in info.get_scoin_resources(ContractAddress).tokens:
         modus.append(key)
 
     infos = []
     coins = ["vbtc", "vlibra"]
     for coin in coins:
-        if rdsCoinMap.hget(coin, "module").decode("utf8") in modus:
+        if int(rdsCoinMap.hget(coin, "id").decode("utf8")) in modus:
             info = {}
             info["name"] = coin
             info["address"] = rdsCoinMap.hget(coin, "address").decode("utf8")
-            info["module"] = rdsCoinMap.hget(coin, "module").decode("utf8")
+            info["id"] = int(rdsCoinMap.hget(coin, "id").decode("utf8"))
             info["map_name"] = rdsCoinMap.hget(coin, "map_name").decode("utf8")
             info["rate"] = int(rdsCoinMap.hget(coin, "rate").decode("utf8"))
 
