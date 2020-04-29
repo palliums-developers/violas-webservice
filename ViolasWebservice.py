@@ -1187,10 +1187,12 @@ def GetMapedCoinModules():
 
     if not info.exists():
         return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
-
     modus = []
-    for key in info.get_scoin_resources(ContractAddress).tokens:
-        modus.append(key)
+    try:
+        for key in info.get_scoin_resources(ContractAddress).tokens:
+            modus.append(key)
+    except:
+        return MakeResp(ErrorCode.ERR_OK, [])
 
     infos = []
     coins = ["vbtc", "vlibra"]
