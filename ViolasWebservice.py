@@ -1114,7 +1114,7 @@ def GetCrossChainTransactionInfo():
     offset = request.args.get("offset", 0, int)
     limit = request.args.get("limit", 10, int)
 
-    url = "http://18.136.139.151/?opt=record"
+    url = "http://52.231.52.107/?opt=record"
     if walletType == 0:
         wallet = "violas"
     elif walletType == 1:
