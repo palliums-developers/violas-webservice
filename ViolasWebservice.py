@@ -7,11 +7,11 @@ import requests
 import nacl.signing
 import hashlib
 
-from violas import Client as ViolasClient
-from violas.error.error import ViolasError
-
 from libra_client import Client as LibraClient
 from libra_client.error.error import LibraError
+
+from violas import Client as ViolasClient
+from violas.error.error import ViolasError
 
 from ViolasPGHandler import ViolasPGHandler
 from LibraPGHandler import LibraPGHandler
