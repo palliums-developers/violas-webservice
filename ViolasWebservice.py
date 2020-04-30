@@ -1141,7 +1141,7 @@ def GetCrossChainTransactionInfo():
         else:
             info["status"] = 2
 
-        info["address"] = i["to_address"]
+        info["address"] = i["to_address"][32:64]
         info["amount"] = i["amount"]
 
         if i["type"] == "V2B":
@@ -1153,7 +1153,7 @@ def GetCrossChainTransactionInfo():
         elif i["type"] == "L2V":
             info["coin"]= "vlibra"
 
-        info["date"] = 1
+        info["date"] = i.get("expiration_time") if i.get("expiration_time") is not None else 0
 
         infos.append(info)
 
