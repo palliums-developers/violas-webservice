@@ -1057,7 +1057,7 @@ def GetExplorerSinginStatus():
 @app.route("/explorer/violas/faucet")
 def FaucetCoin():
     address = request.args.get("address")
-    token_id = request.args.get("token_id")
+    token_id = request.args.get("token_id", type = int)
 
     wallet = Wallet.recover(WalletRecoverFile)
     account = wallet.accounts[0]
