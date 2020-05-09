@@ -568,8 +568,10 @@ class ViolasPGHandler():
     def GetRecentTransactionAboutModule(self, limit, offset, module):
         s = self.session()
 
+        logging.error(f"module value is {module}")
         try:
             if module == -1:
+                logging.error(f"query vtoken transactions")
                 result = s.query(ViolasTransaction).filter(ViolasTransaction.token_id == NULL).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
             else:
                 result = s.query(ViolasTransaction).filter(ViolasTransaction.token_id == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
