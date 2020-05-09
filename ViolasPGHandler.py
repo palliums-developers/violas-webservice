@@ -569,7 +569,10 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasTransaction).filter(ViolasTransaction.token_id == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            if module == -1:
+                result = s.query(ViolasTransaction).filter(ViolasTransaction.token_id == NULL).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            else:
+                result = s.query(ViolasTransaction).filter(ViolasTransaction.token_id == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
             s.close()
         except OperationalError:
             s.close()
