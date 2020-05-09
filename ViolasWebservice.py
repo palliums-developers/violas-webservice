@@ -408,6 +408,22 @@ def VerifyVBtcTransactionInfo():
     return MakeResp(ErrorCode.ERR_OK)
 
 # SSO
+@app.route("/1.0/violas/sso/user", methods = ["POST"])
+def SSOUserRegister():
+    params = request.get_json()
+
+    succ, result = HViolas.AddSSOUser(params["wallet_address"])
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    succ, result = HViolas.UpdateSSOUserInfo(params)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    if not result:
+        return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
 @app.route("/1.0/violas/sso/user")
 def GetSSOUserInfo():
     address = request.args.get("address")
@@ -426,77 +442,6 @@ def GetSSOUserInfo():
         info["id_photo_back_url"] = PHOTO_URL + info["id_photo_back_url"]
 
     return MakeResp(ErrorCode.ERR_OK, info)
-
-@app.route("/1.0/violas/sso/user", methods = ["POST"])
-def SSOUserRegister():
-    params = request.get_json()
-
-    succ, result = HViolas.AddSSOUser(params["wallet_address"])
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    succ, result = HViolas.UpdateSSOUserInfo(params)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-    if not result:
-        return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
-
-    return MakeResp(ErrorCode.ERR_OK)
-
-@app.route("/1.0/violas/sso/token")
-def GetTokenApprovalStatus():
-    address = request.args.get("address")
-
-    succ, info = HViolas.GetSSOApprovalStatus(address)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-    if info is None:
-        return MakeResp(ErrorCode.ERR_TOKEN_INFO_DOES_NOT_EXIST)
-
-    return MakeResp(ErrorCode.ERR_OK, info)
-
-@app.route("/1.0/violas/sso/token", methods = ["POST"])
-def SubmitTokenInfo():
-    params = request.get_json()
-
-    succ, userInfo = HViolas.GetSSOUserInfo(params["wallet_address"])
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    if userInfo is None:
-        return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
-
-    if userInfo["phone_number"] is None:
-        return MakeResp(ErrorCode.ERR_PHONE_NUMBER_UNBOUND)
-
-    if not VerifyCodeExist(userInfo["phone_local_number"] + userInfo["phone_number"], params["phone_verify_code"]):
-        return MakeResp(ErrorCode.ERR_VERIFICATION_CODE)
-
-    if userInfo["email_address"] is None:
-        return MakeResp(ErrorCode.ERR_EMAIL_UNBOUND)
-
-    if not VerifyCodeExist(userInfo["email_address"], params["email_verify_code"]):
-        return MakeResp(ErrorCode.ERR_VERIFICATION_CODE)
-
-    succ, result = HViolas.AddSSOInfo(params)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-    if result:
-        return MakeResp(ErrorCode.ERR_OK)
-    else:
-        return MakeResp(ErrorCode.ERR_TOKEN_NAME_DUPLICATE)
-
-@app.route("/1.0/violas/sso/token", methods = ["PUT"])
-def TokenPublish():
-    params = request.get_json()
-
-    succ, result = HViolas.SetTokenPublished(params["address"])
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-    if not result:
-        return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
-
-    return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.0/violas/sso/bind", methods = ["POST"])
 def BindUserInfo():
@@ -530,47 +475,73 @@ def BindUserInfo():
 
     return MakeResp(ErrorCode.ERR_OK)
 
-@app.route("/1.0/violas/sso/token/approval")
-def GetUnapprovalTokenInfo():
-    offset = request.args.get("offset", 0, int)
-    limit = request.args.get("limit", 10, int)
-    address = request.args.get("address")
+@app.route("/1.0/violas/sso/token", methods = ["POST"])
+def SubmitTokenInfo():
+    params = request.get_json()
 
-    succ, infos = HViolas.GetUnapprovalSSO(address, offset, limit)
+    succ, userInfo = HViolas.GetSSOUserInfo(params["wallet_address"])
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-    return MakeResp(ErrorCode.ERR_OK, infos)
-
-@app.route("/1.1/violas/sso/token/approval")
-def GetUnapprovalTokenInfoList():
-    offset = request.args.get("offset", 0, int)
-    limit = request.args.get("limit", 10, int)
-    address = request.args.get("address")
-
-    succ, info = HViolas.GetGovernorInfoAboutAddress(address)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    if info is None:
-        return MakeResp(ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST)
-
-    if info["status"] != 4:
-        return MakeResp(ErrorCode.ERR_VSTAKE)
-
-    succ, infos = HViolas.GetUnapprovalSSOList(address, limit, offset)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    return MakeResp(ErrorCode.ERR_OK, infos)
-
-@app.route("/1.0/violas/sso/token/approval/<int:id>")
-def GetUnapprovalTokenDetailInfo(id):
-    succ, info = HViolas.GetUnapprovalSSOInfo(id)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-    if info is None:
+    if userInfo is None:
         return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
+
+    if userInfo["phone_number"] is None:
+        return MakeResp(ErrorCode.ERR_PHONE_NUMBER_UNBOUND)
+
+    if not VerifyCodeExist(userInfo["phone_local_number"] + userInfo["phone_number"], params["phone_verify_code"]):
+        return MakeResp(ErrorCode.ERR_VERIFICATION_CODE)
+
+    if userInfo["email_address"] is None:
+        return MakeResp(ErrorCode.ERR_EMAIL_UNBOUND)
+
+    if not VerifyCodeExist(userInfo["email_address"], params["email_verify_code"]):
+        return MakeResp(ErrorCode.ERR_VERIFICATION_CODE)
+
+    succ, result = HViolas.AddSSOInfo(params)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    if result:
+        return MakeResp(ErrorCode.ERR_OK)
+    else:
+        return MakeResp(ErrorCode.ERR_TOKEN_NAME_DUPLICATE)
+
+@app.route("/1.0/violas/sso/token/status")
+def GetTokenApprovalStatus():
+    address = request.args.get("address")
+    offset = request.args.get("offset", 0, type = int)
+    limit = request.args.get("limit", 10, type = int)
+
+    succ, infos = HViolas.GetSSOApprovalStatus(address, offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    if info is None:
+        return MakeResp(ErrorCode.ERR_TOKEN_INFO_DOES_NOT_EXIST)
+
+    for info in infos:
+        if info["approval_status"] == 0:
+            timestamp = int(time())
+            if timestamp > info["expiration_date"]:
+                info["approval_status"] = -1
+                HViolas.SetApprovalStatus(info["id"], -1)
+
+    data = {"id": info["id"],
+            "token_name": info["token_name"] + info["token_type"],
+            "approval_status": info["approval_status"]}
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/violas/sso/token")
+def GetTokenDetailInfo():
+    address = request.args.get("address")
+    id = request.args.get("id", type = int)
+
+    succ, info = HViolas.GetTokenDetailInfo(address, id)
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    if info is None:
+        return MakeResp(ErrorCode.ERR_TOKEN_INFO_DOES_NOT_EXIST)
 
     if info["account_info_photo_positive_url"] is not None:
         info["account_info_photo_positive_url"] = PHOTO_URL + info["account_info_photo_positive_url"]
@@ -581,57 +552,21 @@ def GetUnapprovalTokenDetailInfo(id):
     if info["reserve_photo_url"] is not None:
         info["reserve_photo_url"] = PHOTO_URL + info["reserve_photo_url"]
 
+    if info["approval_status"] == 0:
+        timestamp = int(time())
+        if timestamp > info["expiration_date"]:
+            info["approval_status"] = -1
+            HViolas.SetApprovalStatus(info["id"], -1)
+
     return MakeResp(ErrorCode.ERR_OK, info)
 
-@app.route("/1.0/violas/sso/token/approval", methods = ["PUT"])
-def ModifyApprovalStatus():
-    params = request.get_json()
-    logging.debug(f"Get params: {params}")
-
-    succ, result = HViolas.SetMintInfo(params)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    if not result:
-        return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
-
-    return MakeResp(ErrorCode.ERR_OK)
-
-@app.route("/1.1/violas/sso/token/approval", methods = ["PUT"])
-def ModifyApprovalStatusV2():
-    params = request.get_json()
-    logging.debug(f"Get params: {params}")
-
-    succ, result = HViolas.SetMintInfoV2(params)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    if not result:
-        return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
-
-    return MakeResp(ErrorCode.ERR_OK)
-
-@app.route("/1.0/violas/sso/token/minted", methods = ["PUT"])
-def SetTokenMinted():
+@app.route("/1.0/violas/sso/token/status/publish", methods = ["PUT"])
+def TokenPublish():
     params = request.get_json()
 
-    succ, result = HViolas.SetTokenMinted(params)
+    succ, result = HViolas.SetTokenPublished(params["address"], params["id"])
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    if not result:
-        return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
-
-    return MakeResp(ErrorCode.ERR_OK)
-
-@app.route("/1.1/violas/sso/token/minted", methods = ["PUT"])
-def SetTokenMintedByID():
-    params = request.get_json()
-
-    succ, result = HViolas.SetTokenMintedV2(params)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
     if not result:
         return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
 
@@ -646,17 +581,6 @@ def GetGovernors():
     return MakeResp(ErrorCode.ERR_OK, infos)
 
 # GOVERNOR
-@app.route("/1.0/violas/governor")
-def GetGovernorInfo():
-    offset = request.args.get("offset", 0, int)
-    limit = request.args.get("limit", 10, int)
-
-    succ, infos = HViolas.GetGovernorInfo(offset, limit)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    return MakeResp(ErrorCode.ERR_OK, infos)
-
 @app.route("/1.0/violas/governor/<address>")
 def GetGovernorInfoAboutAddress(address):
     succ, info = HViolas.GetGovernorInfoAboutAddress(address)
@@ -667,33 +591,6 @@ def GetGovernorInfoAboutAddress(address):
         return MakeResp(ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST)
 
     return MakeResp(ErrorCode.ERR_OK, info)
-
-@app.route("/1.0/violas/governor", methods = ["POST"])
-def AddGovernorInfo():
-    params = request.get_json()
-
-    succ, result = HViolas.AddGovernorInfo(params)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    if not result:
-        return MakeResp(ErrorCode.ERR_GOV_INFO_EXISTED)
-
-    return MakeResp(ErrorCode.ERR_OK)
-
-@app.route("/1.0/violas/governor/sso", methods = ["POST"])
-def AddGovernorInfoForSSOWallet():
-    params = request.get_json()
-
-    succ, result = HViolas.AddGovernorInfoForFrontEnd(params)
-
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    if not result:
-        return MakeResp(ErrorCode.ERR_GOV_INFO_EXISTED)
-
-    return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.1/violas/governor", methods=["POST"])
 def AddGovernorInfoV2():
@@ -721,14 +618,6 @@ def ModifyGovernorInfo():
         return MakeResp(ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST)
 
     return MakeResp(ErrorCode.ERR_OK)
-
-@app.route("/1.0/violas/governor/investment")
-def GetGovernorInvestmentInfo():
-    succ, info = HViolas.GetInvestmentedGovernorInfo()
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    return MakeResp(ErrorCode.ERR_OK, info)
 
 @app.route("/1.0/violas/governor/investment", methods = ["POST"])
 def AddInvestmentInfo():
@@ -758,17 +647,80 @@ def MakeInvestmentHandled():
 
     return MakeResp(ErrorCode.ERR_OK)
 
-@app.route("/1.0/violas/governor/transactions")
-def GetTransactionsAboutGovernor():
+@app.route("/1.0/violas/governor/token/status")
+def GetUnapprovalTokenInfoList():
+    offset = request.args.get("offset", 0, int)
+    limit = request.args.get("limit", 10, int)
     address = request.args.get("address")
-    limit = request.args.get("limit", default = 10, type = int)
-    start_version = request.args.get("start_version", default = 0, type = int)
 
-    succ, datas = HViolas.GetTransactionsAboutGovernor(address, start_version, limit)
+    succ, info = HViolas.GetGovernorInfoAboutAddress(address)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-    return MakeResp(ErrorCode.ERR_OK, datas)
+    if info is None:
+        return MakeResp(ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST)
+
+    if info["status"] != 4:
+        return MakeResp(ErrorCode.ERR_VSTAKE)
+
+    succ, infos = HViolas.GetUnapprovalSSOList(address, limit, offset)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    for info in infos:
+        if info["approval_status"] == 0:
+            timestamp = int(time())
+            if timestamp > info["expiration_date"]:
+                info["approval_statsu"] = -1
+                HViolas.SetApprovalStatus(info["id"], -1)
+
+    return MakeResp(ErrorCode.ERR_OK, infos)
+
+@app.route("/1.0/violas/governor/token")
+def GetUnapprovalTokenDetailInfo():
+    address = request.args.get("address")
+    id = request.args.get("id", type = int)
+
+    succ, info = HViolas.GetUnapprovalTokenDetailInfo(address, id)
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    if info is None:
+        return MakeResp(ErrorCode.ERR_TOKEN_INFO_DOES_NOT_EXIST)
+
+    if info["account_info_photo_positive_url"] is not None:
+        info["account_info_photo_positive_url"] = PHOTO_URL + info["account_info_photo_positive_url"]
+
+    if info["account_info_photo_back_url"] is not None:
+        info["account_info_photo_back_url"] = PHOTO_URL + info["account_info_photo_back_url"]
+
+    if info["reserve_photo_url"] is not None:
+        info["reserve_photo_url"] = PHOTO_URL + info["reserve_photo_url"]
+
+    if info["approval_status"] == 0:
+        timestamp = int(time())
+        if timestamp > info["expiration_date"]:
+            info["approval_status"] = -1
+            HViolas.SetApprovalStatus(info["id"], -1)
+
+    return MakeResp(ErrorCode.ERR_OK, info)
+
+@app.route("/1.0/violas/governor/token/status", methods = ["PUT"])
+def ModifyApprovalStatusV2():
+    params = request.get_json()
+
+    if params["status"] > 0:
+        succ, info = HViolas.SetApprovalStatus(params["id"], params["status"])
+    else:
+        succ, info = HViolas.SetApprovalStatus(params["id"], params["status"], params["reason"], params["remarks"])
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
+        return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
+
+    return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.0/violas/governor/vstake/address")
 def GetVstakeAddress():
@@ -803,50 +755,6 @@ def CheckGovernorAuthority():
     data = {"authority": 1}
     return MakeResp(ErrorCode.ERR_OK, data)
 
-@app.route("/1.0/violas/governor/bind", methods = ["POST"])
-def ChairmanBindGovernor():
-    params = request.get_json()
-
-    succ, result = HViolas.ChairmanBindGovernor(params)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    return MakeResp(ErrorCode.ERR_OK)
-
-@app.route("/1.0/violas/governor/singin/qrcode")
-def GetSinginQRCodeInfo():
-    bSessionId = os.urandom(32)
-
-    data = {}
-    data["timestamp"] = int(time.time())
-    data["expiration_time"] = 60
-    qr = {}
-    qr["type"] = 1
-    qr["session_id"] = bSessionId.hex()
-    data["qr_code"] = qr
-    rdsAuth.setex("SessionID", 60, bSessionId.hex())
-
-    return MakeResp(ErrorCode.ERR_OK, data)
-
-@app.route("/1.0/violas/governor/singin")
-def GetSinginStatus():
-    value = rdsAuth.get("SessionID")
-    if value is None:
-        data = {"status": 3}
-        return MakeResp(ErrorCode.ERR_OK, data)
-
-    et = rdsAuth.ttl("SessionID")
-    if et != -1:
-        data = {"status": 0}
-        return MakeResp(ErrorCode.ERR_OK, data)
-
-    if str(value, "utf-8") == "Success":
-        data = {"status": 1}
-    else:
-        data = {"status": 2}
-
-    return MakeResp(ErrorCode.ERR_OK, data)
-
 @app.route("/1.0/violas/governor/singin", methods = ["POST"])
 def VerifySinginSessionID():
     params = request.get_json()
@@ -879,6 +787,158 @@ def VerifySinginSessionID():
 
     rdsAuth.set("SessionID", "Success")
     return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/governor/reason")
+def GetGovernorFailReason():
+    data = [
+        {-1: "其他"},
+        {0: "信息不全面"}
+    ]
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+# CHAIRMAN
+@app.route("/1.0/violas/chairman", methods = ["POST"])
+def AddGovernorInfo():
+    params = request.get_json()
+
+    succ, result = HViolas.AddGovernorInfo(params)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
+        return MakeResp(ErrorCode.ERR_GOV_INFO_EXISTED)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/chairman/governors")
+def GetGovernorInfo():
+    offset = request.args.get("offset", 0, int)
+    limit = request.args.get("limit", 10, int)
+
+    succ, infos = HViolas.GetGovernorInfoList(offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, infos)
+
+@app.route("/1.0/violas/chairman/governors/investmented")
+def GetGovernorInvestmentInfo():
+    succ, info = HViolas.GetInvestmentedGovernorInfo()
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, info)
+
+@app.route("/1.0/violas/chairman/governor/transactions")
+def GetTransactionsAboutGovernor():
+    address = request.args.get("address")
+    limit = request.args.get("limit", default = 10, type = int)
+    start_version = request.args.get("start_version", default = 0, type = int)
+
+    succ, datas = HViolas.GetTransactionsAboutGovernor(address, start_version, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, datas)
+
+@app.route("/1.0/violas/chairman/bind/governor", methods = ["POST"])
+def ChairmanBindGovernor():
+    params = request.get_json()
+
+    succ, result = HViolas.ChairmanBindGovernor(params)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/chairman/singin/qrcode")
+def GetSinginQRCodeInfo():
+    bSessionId = os.urandom(32)
+
+    data = {}
+    data["timestamp"] = int(time.time())
+    data["expiration_time"] = 60
+    qr = {}
+    qr["type"] = 1
+    qr["session_id"] = bSessionId.hex()
+    data["qr_code"] = qr
+    rdsAuth.setex("SessionID", 60, bSessionId.hex())
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/violas/chairman/singin/status")
+def GetSinginStatus():
+    value = rdsAuth.get("SessionID")
+    if value is None:
+        data = {"status": 3}
+        return MakeResp(ErrorCode.ERR_OK, data)
+
+    et = rdsAuth.ttl("SessionID")
+    if et != -1:
+        data = {"status": 0}
+        return MakeResp(ErrorCode.ERR_OK, data)
+
+    if str(value, "utf-8") == "Success":
+        data = {"status": 1}
+    else:
+        data = {"status": 2}
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/violas/chairman/token/status")
+def GetUnapprovalTokenInfoListFromGovernor():
+    offset = request.args.get("offset", 0, type = int)
+    limit = request.args.get("limit", 0, type = int)
+
+    succ, infos = HViolas.GetUnapprovalSSOListForChairman(offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, infos)
+
+@app.route("/1.0/violas/chairman/token")
+def GetUnapprovalTokenDetailInfoFromGovernor():
+    address = request.args.get("address")
+    id = request.args.get("id", type = int)
+
+    succ, info = HViolas.GetTokenDetailInfoForChairman(address, id)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if info["reserve_photo_url"] is not None:
+        info["reserve_photo_url"] = PHOTO_URL + info["reserve_photo_url"]
+
+    return MakeResp(ErrorCode.ERR_OK, info)
+
+@app.route("/1.0/violas/chairman/token/status", methods = ["PUT"])
+def ChairmanSetTokenStatus():
+    params = request.get_json()
+
+    if params["status"] > 0:
+        succ, info = HViolas.SetApprovalStatus(params["id"], params["status"])
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+        succ, info = HViolas.SetTokenID(params["id"], params["token_id"])
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    else:
+        succ, info = HViolas.SetApprovalStatus(params["id"], params["status"], params["reason"], params["remarks"])
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/chairman/reason")
+def GetGovernorFailReason():
+    data = [
+        {-1: "其他"},
+        {0: "信息不全面"}
+    ]
+
+    return MakeResp(ErrorCode.ERR_OK, data)
 
 # EXPLORER
 @app.route("/explorer/libra/recent")

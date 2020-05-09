@@ -99,6 +99,7 @@ class ViolasPGHandler():
 
         info = {}
         info["wallet_address"] = result.wallet_address
+        info["public_key"] = result.public_key
         info["name"] = result.name
         info["country"] = result.country
         info["id_number"] = result.id_number
@@ -115,23 +116,12 @@ class ViolasPGHandler():
         s = self.session()
         timestamp = int(time())
 
-        try:
-            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.token_name == (data["token_name"] + data["token_type"])).first()
-        except OperationalError:
-            logging.error(f"ERROR: Database operation failed!")
-            s.close()
-            return False, None
-
-        if result is not None:
-            s.close()
-            return True, False
-
         info = ViolasSSOInfo(
             wallet_address = data["wallet_address"],
             token_type = data["token_type"],
             amount = data["amount"],
             token_value = data["token_value"],
-            token_name = data["token_name"] + data["token_type"],
+            token_name = data["token_name"],
             application_date = timestamp,
             validity_period = 5,
             expiration_date = timestamp + 60 * 60 * 24 * 5,
@@ -153,11 +143,38 @@ class ViolasPGHandler():
         s.close()
         return True, True
 
-    def GetSSOApprovalStatus(self, address):
+    def GetSSOApprovalStatus(self, address, offset, limit):
         s = self.session()
 
         try:
-            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).order_by(ViolasSSOInfo.id.desc()).first()
+            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).order_by(ViolasSSOInfo.id.desc()).offset(offset).limit(limit).all()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        if result is None:
+            return True, None
+
+        infos = []
+        for i in result:
+            info = {}
+            info["id"] = result.id
+            info["token_type"] = result.token_type
+            info["token_name"] = result.token_name
+            info["approval_status"] = result.approval_status
+            info["expiration_date"] = result.expiration_date
+
+        return True, infos
+
+    def GetTokenDetailInfo(self, address, id):
+        s = self.session()
+
+        try:
+            userInfo = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == address).first()
+            ssoInfo = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.id == id).first()
+            governorInfo = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.wallet_address == ssoInfo.governor_address).first()
             s.close()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -168,24 +185,83 @@ class ViolasPGHandler():
             return True, None
 
         info = {}
-        info["amount"] = int(result.amount)
-        info["token_name"] = result.token_name
-        info["approval_status"] = result.approval_status
-        info["module_address"] = result.module_address
+        info["wallet_address"] = userInfo.wallet_address
+        info["public_key"] = userInfo.public_key
+        info["name"] = userInfo.name
+        info["country"] = userInfo.country
+        info["id_number"] = userInfo.id_number
+        info["phone_local_number"] = userInfo.phone_local_number
+        info["phone_number"] = userInfo.phone_number
+        info["email_address"] = userInfo.email_address
+        info["token_type"] = ssoInfo.token_type
+        info["amount"] = int(ssoInfo.amount)
+        info["token_value"] = int(ssoInfo.token_value)
+        info["token_name"] = ssoInfo.token_name
+        info["application_date"] = ssoInfo.application_date
+        info["validity_period"] = ssoInfo.validity_period
+        info["expiration_date"] = ssoInfo.expiration_date
+        info["reserve_photo_url"] = ssoInfo.reserve_photo_url
+        info["account_info_photo_positive_url"] = ssoInfo.account_info_photo_positive_url
+        info["account_info_photo_back_url"] = ssoInfo.account_info_photo_back_url
+        info["approval_status"] = ssoInfo.approval_status
+        info["failed_reason"] = ssoInfo.failed_reason
+        info["remarks"] = ssoInfo.remarks
+        info["governor_address"] = ssoInfo.governor_address
+        info["governor_name"] = governorInfo.name
 
         return True, info
 
-    def SetTokenPublished(self, address):
+    def GetUnapprovalTokenDetailInfo(self, address, id):
         s = self.session()
 
         try:
-            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).first()
+            userInfo = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == address).first()
+            ssoInfo = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.id == id).first()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        if result is None:
+            return True, None
+
+        info = {}
+        info["wallet_address"] = userInfo.wallet_address
+        info["public_key"] = userInfo.public_key
+        info["name"] = userInfo.name
+        info["country"] = userInfo.country
+        info["id_number"] = userInfo.id_number
+        info["phone_local_number"] = userInfo.phone_local_number
+        info["phone_number"] = userInfo.phone_number
+        info["email_address"] = userInfo.email_address
+        info["token_type"] = ssoInfo.token_type
+        info["amount"] = int(ssoInfo.amount)
+        info["token_value"] = int(ssoInfo.token_value)
+        info["token_name"] = ssoInfo.token_name
+        info["application_date"] = ssoInfo.application_date
+        info["validity_period"] = ssoInfo.validity_period
+        info["expiration_date"] = ssoInfo.expiration_date
+        info["reserve_photo_url"] = ssoInfo.reserve_photo_url
+        info["account_info_photo_positive_url"] = ssoInfo.account_info_photo_positive_url
+        info["account_info_photo_back_url"] = ssoInfo.account_info_photo_back_url
+        info["approval_status"] = ssoInfo.approval_status
+        info["failed_reason"] = ssoInfo.failed_reason
+        info["remarks"] = ssoInfo.remarks
+
+        return True, info
+
+    def SetTokenPublished(self, address, id):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).filter(ViolasSSOInfo.id == id).filter(ViolasSSOInfo.approval_status == 3).first()
 
             if result is None:
                 s.close()
                 return True, False
 
-            result.approval_status = 3
+            result.approval_status = 6
             s.commit()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -199,7 +275,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.governor_address == address).order_by(ViolasSSOInfo.id).offset(offset).limit(limit).all()
+            ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.governor_address == address).filter(ViolasSSOInfo.approval_status == 0).offset(offset).limit(limit).all()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
@@ -235,17 +311,19 @@ class ViolasPGHandler():
             info["account_info_photo_positive_url"] = i.account_info_photo_positive_url
             info["account_info_photo_back_url"] = i.account_info_photo_back_url
             info["approval_status"] = i.approval_status
+            info["failed_reason"] = i.failed_reason
+            info["remarks"] = i.remarks
 
             infos.append(info)
 
         s.close()
         return True, infos
 
-    def SetMintInfo(self, data):
+    def SetApprovalStatus(self, id, status, reason = None, remarks = None):
         s = self.session()
 
         try:
-            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == data["wallet_address"]).first()
+            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.id == id).first()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
@@ -255,10 +333,12 @@ class ViolasPGHandler():
             s.close()
             return True, False
 
-        result.approval_status = data["approval_status"]
-        if "module_address" in data:
-            logging.debug(f"module_address: {data['module_address']}")
-            result.module_address = data["module_address"]
+        result.approval_status = status
+
+        if reason not None:
+            result.reason = reason
+        if remarks not None:
+            result.remarks = remarks
 
         try:
             s.commit()
@@ -322,7 +402,7 @@ class ViolasPGHandler():
         s.close()
         return True, True
 
-    def GetGovernorInfo(self, offset, limit):
+    def GetGovernorInfoList(self, offset, limit):
         s = self.session()
 
         try:
@@ -338,13 +418,12 @@ class ViolasPGHandler():
             info = {}
             info["toxid"] = i.toxid
             info["name"] = i.name
-            info["public_key"] = i.public_key
+            info["public_key"] = i.btc_public_key
             info["wallet_address"] = i.wallet_address
             info["vstake_address"] = i.vstake_address
             info["multisig_address"] = i.multisig_address
             info["is_chairman"] = i.is_chairman
-            info["subaccount_count"] = i.subaccount_count
-            info["violas_public_key"] = i.violas_public_key
+            info["violas_public_key"] = i.wallet_public_key
 
             infos.append(info)
 
@@ -367,14 +446,13 @@ class ViolasPGHandler():
         info = {}
         info["toxid"] = govInfos.toxid
         info["name"] = govInfos.name
-        info["public_key"] = govInfos.public_key
+        info["btc_public_key"] = govInfos.btc_public_key
         info["wallet_address"] = govInfos.wallet_address
         info["vstake_address"] = govInfos.vstake_address
         info["multisig_address"] = govInfos.multisig_address
         info["is_chairman"] = govInfos.is_chairman
-        info["subaccount_count"] = govInfos.subaccount_count
         info["status"] = govInfos.is_handle
-        info["violas_public_key"] = govInfos.violas_public_key
+        info["wallet_public_key"] = govInfos.wallet_public_key
 
         return True, info
 
@@ -392,13 +470,13 @@ class ViolasPGHandler():
                     wallet_address = data["wallet_address"],
                     toxid = data["toxid"],
                     name = data["name"],
-                    public_key = data["public_key"],
+                    btc_public_key = data["btc_public_key"],
                     vstake_address = data["vstake_address"],
                     multisig_address = data["multisig_address"],
                     is_chairman = isChairman,
                     is_handle = 0,
                     subaccount_count = data["subaccount_count"],
-                    violas_public_key = ""
+                    wallet_public_key = data["wallet_public_key"]
                 )
 
                 s.add(info)
@@ -426,9 +504,8 @@ class ViolasPGHandler():
                     toxid = data.get("toxid"),
                     is_chairman = False,
                     is_handle = 0,
-                    subaccount_count = 1,
                     application_date = int(time()),
-                    violas_public_key = data["public_key"]
+                    wallet_public_key = data["public_key"]
                 )
 
                 s.add(info)
@@ -463,7 +540,7 @@ class ViolasPGHandler():
         if "name" in data:
             result.name = data["name"]
         if "public_key" in data:
-            result.public_key = data["public_key"]
+            result.btc_public_key = data["public_key"]
         if "vstake_address" in data:
             result.vstake_address = data["vstake_address"]
         if "multisig_address" in data:
@@ -473,8 +550,6 @@ class ViolasPGHandler():
             result.application_date = int(time())
         if "is_handle" in data:
             result.is_handle = data["is_handle"]
-        if "subaccount_count" in data:
-            result.subaccount_count = data["subaccount_count"]
 
         try:
             s.commit()
@@ -528,7 +603,7 @@ class ViolasPGHandler():
         currencies = []
         for i in ssoInfos:
             currency = {}
-            currency["name"] = i.token_name
+            currency["name"] = i.token_name + i.token_type
             currency["address"] = i.module_address
             currency["description"] = i.token_name
 
@@ -832,13 +907,13 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasSSOInfo.token_id, ViolasSSOInfo.token_name).filter(ViolasSSOInfo.approval_status == 4).all()
+            result = s.query(ViolasSSOInfo.token_id, ViolasSSOInfo.token_type, ViolasSSOInfo.token_name).filter(ViolasSSOInfo.approval_status == 4).all()
         except OperationalError:
             s.close()
             return False, None
 
         for i in result:
-            moduleMap[i.token_id] = i.token_name
+            moduleMap[i.token_id] = i.token_name + i.token_type
 
         try:
             if module == "00000000000000000000000000000000":
@@ -982,7 +1057,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.governor_address == address).order_by(ViolasSSOInfo.id.desc()).offset(offset).limit(limit).all()
+            ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.governor_address == address).filter(ViolasSSOInfo.approval_status == 0).offset(offset).limit(limit).all()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
@@ -1000,62 +1075,14 @@ class ViolasPGHandler():
             info = {}
             info["id"] = i.id
             info["name"] = userInfo.name
-            info["application_date"] = i.application_date
             info["approval_status"] = i.approval_status
+            info["application_date"] = i.application_date
             info["expiration_date"] = i.expiration_date
 
             infos.append(info)
 
         s.close()
         return True, infos
-
-    def GetUnapprovalSSOInfo(self, id):
-        s = self.session()
-
-        try:
-            ssoInfo = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.id == id).first()
-        except OperationalError:
-            logging.error(f"ERROR: Database operation failed!")
-            s.close()
-            return False, None
-
-        if ssoInfo is None:
-            return True, None
-
-        try:
-            userInfo = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == ssoInfo.wallet_address).first()
-        except OperationalError:
-            logging.error(f"ERROR: Database operation failed!")
-            s.close()
-            return False, None
-
-        info = {}
-        info["id"] = ssoInfo.id
-        info["wallet_address"] = userInfo.wallet_address
-        info["name"] = userInfo.name
-        info["country"] = userInfo.country
-        info["id_number"] = userInfo.id_number
-        info["phone_local_number"] = userInfo.phone_local_number
-        info["phone_number"] = userInfo.phone_number
-        info["email_address"] = userInfo.email_address
-        # info["id_photo_positive_url"] = userInfo.id_photo_positive_url
-        # info["id_photo_back_url"] = userInfo.id_photo_back_url
-        info["token_type"] = ssoInfo.token_type
-        info["amount"] = int(ssoInfo.amount)
-        info["token_value"] = int(ssoInfo.token_value)
-        info["token_name"] = ssoInfo.token_name
-        info["application_date"] = ssoInfo.application_date
-        info["validity_period"] = ssoInfo.validity_period
-        info["expiration_date"] = ssoInfo.expiration_date
-        info["reserve_photo_url"] = ssoInfo.reserve_photo_url
-        info["account_info_photo_positive_url"] = ssoInfo.account_info_photo_positive_url
-        info["account_info_photo_back_url"] = ssoInfo.account_info_photo_back_url
-        info["approval_status"] = ssoInfo.approval_status
-        info["subaccount_number"] = ssoInfo.subaccount_number
-        info["module_address"] = ssoInfo.module_address
-
-        s.close()
-        return True, info
 
     def ChairmanBindGovernor(self, data):
         s = self.session()
@@ -1095,3 +1122,76 @@ class ViolasPGHandler():
             return True, True
         else:
             return True, False
+
+    def GetUnapprovalSSOListForChairman(self, offset, limit):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.approval_status == 1).offset(offset).limit(limit).all()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        infos = []
+        for i in result:
+            info = {}
+            info["id"] = i.id
+            info["name"] = i.name
+            info["application_date"] = i.application_date
+            info["approval_status"] = i.approval_status
+
+            infos.append(info)
+
+        s.close()
+        return True, infos
+
+    def GetTokenDetailInfoForChairman(self, address, id):
+        s = self.session()
+
+        try:
+            ssoInfo = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.id == id).first()
+            governorInfo = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.wallet_address == ssoInfo.governor_address).first()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        info = {}
+        info["governor_name"] = governorInfo.name
+        info["txid"] = governorInfo.btc_txid
+        info["public_key"] = governorInfo.wallet_public_key
+        info["token_type"] = ssoInfo.token_type
+        info["token_amount"] = ssoInfo.amount
+        info["token_value"] = ssoInfo.token_value
+        info["token_name"] = ssoInfo.token_name
+        info["reserve_photo_url"] = ssoInfo.reserve_photo_url
+
+        return True, info
+
+    def SetTokenID(self, id, token_id):
+        s = self.session()
+
+        try:
+            ssoInfo = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.id == id).first()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        if ssoInfo is None:
+            s.close()
+            return True, False
+
+        ssoInfo.token_id = token_id
+
+        try:
+            s.commit()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        s.close()
+        return True, True
