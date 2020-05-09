@@ -570,7 +570,7 @@ class ViolasPGHandler():
 
         logging.error(f"module value is {module}")
         try:
-            if module == -1:
+            if int(module) == -1:
                 logging.error(f"query vtoken transactions")
                 result = s.query(ViolasTransaction).filter(ViolasTransaction.token_id == NULL).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
             else:
