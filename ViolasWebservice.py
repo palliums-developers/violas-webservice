@@ -7,11 +7,13 @@ import requests
 import nacl.signing
 import hashlib
 
+from libra_client import Client as LibraClient
+from libra_client.error.error import LibraError
+
 from violas import Client as ViolasClient
 from violas.error.error import ViolasError
 
-from libra_client import Client as LibraClient
-from libra_client.error.error import ViolasError as LibraError
+from violas import Wallet
 
 from ViolasPGHandler import ViolasPGHandler
 from LibraPGHandler import LibraPGHandler
@@ -46,12 +48,13 @@ rdsCoinMap = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["COINMA
 rdsAuth = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["AUTH"], cachingInfo["PASSWORD"])
 
 ContractAddress = "e1be1ab8360a35a0259f1c93e3eac736"
+WalletRecoverFile = "./account_recovery"
 
 def MakeLibraClient():
     return LibraClient("libra_testnet")
 
 def MakeViolasClient():
-    return ViolasClient.new(config["NODE INFO"]["VIOLAS_HOST"], int(config["NODE INFO"]["VIOLAS_PORT"]), faucet_file = "./mint_test.key")
+    return ViolasClient.new(config["NODE INFO"]["VIOLAS_HOST"], int(config["NODE INFO"]["VIOLAS_PORT"]), faucet_file = "./mint_external.key")
 
 def MakeResp(code, data = None, exception = None):
     resp = {}
@@ -151,7 +154,6 @@ def GetViolasBalance():
         info["balance"] = accState.get_balance()
     except ViolasError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
-
 
     if len(modules) != 0:
         moduleState = cli.get_account_state(ContractAddress)
@@ -1112,6 +1114,23 @@ def GetExplorerSinginStatus():
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
+@app.route("/explorer/violas/faucet")
+def FaucetCoin():
+    address = request.args.get("address")
+    token_id = request.args.get("token_id", type = int)
+
+    wallet = Wallet.recover(WalletRecoverFile)
+    account = wallet.accounts[0]
+
+    cli = MakeViolasClient()
+
+    if token_id is None:
+        cli.transfer_coin(account, address, 1000)
+    else:
+        cli.transfer_coin(account, address, 1000, token_id, ContractAddress)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
 # corss chain
 @app.route("/1.0/crosschain/address")
 def GetAddressOfCrossChainTransaction():
@@ -1174,7 +1193,7 @@ def GetCrossChainTransactionInfo():
     offset = request.args.get("offset", 0, int)
     limit = request.args.get("limit", 10, int)
 
-    url = "http://18.136.139.151/?opt=record"
+    url = "http://52.231.52.107/?opt=record"
     if walletType == 0:
         wallet = "violas"
     elif walletType == 1:
@@ -1201,7 +1220,7 @@ def GetCrossChainTransactionInfo():
         else:
             info["status"] = 2
 
-        info["address"] = i["to_address"]
+        info["address"] = i["to_address"][32:64]
         info["amount"] = i["amount"]
 
         if i["type"] == "V2B":
@@ -1213,7 +1232,7 @@ def GetCrossChainTransactionInfo():
         elif i["type"] == "L2V":
             info["coin"]= "vlibra"
 
-        info["date"] = 1
+        info["date"] = i.get("expiration_time") if i.get("expiration_time") is not None else 0
 
         infos.append(info)
 
