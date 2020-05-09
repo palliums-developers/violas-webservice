@@ -559,7 +559,7 @@ class ViolasPGHandler():
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
             info["status"] = i.status
-            info["module_address"] = i.module
+            info["token_id"] = i.token_id
 
             infoList.append(info)
 
@@ -655,7 +655,10 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.token_id == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            if int(module) == -1:
+                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.token_id == None).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            else:
+                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.token_id == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
             s.close()
         except OperationalError:
             s.close()
