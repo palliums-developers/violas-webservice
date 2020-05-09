@@ -934,7 +934,7 @@ def ChairmanSetTokenStatus():
     return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.0/violas/chairman/reason")
-def GetGovernorFailReason():
+def GetChairmanFailReason():
     data = [
         {-1: "其他"},
         {0: "信息不全面"}
