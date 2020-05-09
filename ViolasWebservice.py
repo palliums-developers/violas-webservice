@@ -942,7 +942,7 @@ def ViolasGetRecentTx():
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
-@app.route("/explorer/violas/recent/<module>")
+@app.route("/explorer/violas/recent/<int:module>")
 def ViolasGetRecentTxAboutToken(module):
     limit = request.args.get("limit", 30, type = int)
     offset = request.args.get("offset", 0, type = int)
