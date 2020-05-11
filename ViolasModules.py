@@ -47,7 +47,7 @@ class ViolasSSOUserInfo(Base):
 
     id = Column(BigInteger, primary_key = True, autoincrement = True)
     wallet_address = Column(String(64), nullable = False)
-    public_key = Column(String(64), nullable = False)
+    public_key = Column(String(64), nullable = True)
     name = Column(String(32), nullable = True)
     country = Column(String(32), nullable = True)
     id_number = Column(String(32), nullable = True)
