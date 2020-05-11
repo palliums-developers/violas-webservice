@@ -50,6 +50,16 @@ rdsAuth = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["AUTH"], c
 ContractAddress = "e1be1ab8360a35a0259f1c93e3eac736"
 WalletRecoverFile = "./account_recovery"
 
+GovernorFailedReason = {
+    -1: "其他",
+    0: "信息不全面"
+}
+
+ChairmanFailedReason = {
+    -1: "其他",
+    0: "信息不全面"
+}
+
 def MakeLibraClient():
     return LibraClient("libra_testnet")
 
@@ -561,6 +571,11 @@ def GetTokenDetailInfo():
             info["approval_status"] = -1
             HViolas.SetApprovalStatus(info["id"], -1)
 
+    if info["approval_status"] == -2:
+        info["failed_reason"] = GovernorFailedReason[info["failed_reason"]]
+    if info["approval_status"] == -3:
+        info["failed_reason"] = ChairmanFailedReason[info["failed_reason"]]
+
     return MakeResp(ErrorCode.ERR_OK, info)
 
 @app.route("/1.0/violas/sso/token/status/publish", methods = ["PUT"])
@@ -706,6 +721,11 @@ def GetUnapprovalTokenDetailInfo():
             info["approval_status"] = -1
             HViolas.SetApprovalStatus(info["id"], -1)
 
+    if info["approval_status"] == -2:
+        info["failed_reason"] = GovernorFailedReason[info["failed_reason"]]
+    if info["approval_status"] == -3:
+        info["failed_reason"] = ChairmanFailedReason[info["failed_reason"]]
+
     return MakeResp(ErrorCode.ERR_OK, info)
 
 @app.route("/1.0/violas/governor/token/status", methods = ["PUT"])
@@ -793,12 +813,7 @@ def VerifySinginSessionID():
 
 @app.route("/1.0/violas/governor/reason")
 def GetGovernorFailReason():
-    data = [
-        {-1: "其他"},
-        {0: "信息不全面"}
-    ]
-
-    return MakeResp(ErrorCode.ERR_OK, data)
+    return MakeResp(ErrorCode.ERR_OK, GovernorFailedReason)
 
 # CHAIRMAN
 @app.route("/1.0/violas/chairman", methods = ["POST"])
@@ -936,12 +951,7 @@ def ChairmanSetTokenStatus():
 
 @app.route("/1.0/violas/chairman/reason")
 def GetChairmanFailReason():
-    data = [
-        {-1: "其他"},
-        {0: "信息不全面"}
-    ]
-
-    return MakeResp(ErrorCode.ERR_OK, data)
+    return MakeResp(ErrorCode.ERR_OK, ChairmanFailedReason)
 
 # EXPLORER
 @app.route("/explorer/libra/recent")
