@@ -339,7 +339,7 @@ class ViolasPGHandler():
         result.approval_status = status
 
         if reason is not None:
-            result.reason = reason
+            result.failed_reason = reason
         if remarks is not None:
             result.remarks = remarks
 
