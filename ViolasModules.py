@@ -75,7 +75,7 @@ class ViolasSSOInfo(Base):
     account_info_photo_back_url = Column(String(64), nullable = False)
     governor_address = Column(String(64), nullable = False)
     approval_status = Column(SmallInteger, nullable = True) # -3: chairman failed; -2: governor failed; -1: timeout; 0: in review; 1: governor pass; 2: chairman pass; 3: Transferred 4: published; 5: minted; 
-    failed_reason = Column(String(128), nullable = True)
+    failed_reason = Column(SmallInteger, nullable = True)
     remarks = Column(String(128), nullable = True)
 
 class ViolasGovernorInfo(Base):
