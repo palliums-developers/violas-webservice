@@ -1138,9 +1138,16 @@ class ViolasPGHandler():
 
         infos = []
         for i in result:
+            try:
+                governorInfo = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.wallet_address == i.governor_address).first()
+            except OperationalError:
+                logging.error(f"ERROR: Database operation failed!")
+                s.close()
+                return False, None
+
             info = {}
             info["id"] = i.id
-            info["name"] = i.name
+            info["name"] = governorInfo.name
             info["application_date"] = i.application_date
             info["approval_status"] = i.approval_status
 
