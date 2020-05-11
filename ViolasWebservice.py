@@ -529,7 +529,8 @@ def GetTokenApprovalStatus():
 
     data = {"id": info["id"],
             "token_name": info["token_name"] + info["token_type"],
-            "approval_status": info["approval_status"]}
+            "approval_status": info["approval_status"],
+            "token_id": info["token_id"]}
 
     return MakeResp(ErrorCode.ERR_OK, data)
 

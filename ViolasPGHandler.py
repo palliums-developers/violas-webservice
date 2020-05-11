@@ -165,6 +165,7 @@ class ViolasPGHandler():
             info["token_name"] = result.token_name
             info["approval_status"] = result.approval_status
             info["expiration_date"] = result.expiration_date
+            info["token_id"] = result.token_id
 
         return True, infos
 
@@ -194,6 +195,7 @@ class ViolasPGHandler():
         info["phone_number"] = userInfo.phone_number
         info["email_address"] = userInfo.email_address
         info["token_type"] = ssoInfo.token_type
+        info["token_id"] = ssoInfo.token_id
         info["amount"] = int(ssoInfo.amount)
         info["token_value"] = int(ssoInfo.token_value)
         info["token_name"] = ssoInfo.token_name
@@ -236,6 +238,7 @@ class ViolasPGHandler():
         info["phone_number"] = userInfo.phone_number
         info["email_address"] = userInfo.email_address
         info["token_type"] = ssoInfo.token_type
+        info["token_id"] = ssoInfo.token_id
         info["amount"] = int(ssoInfo.amount)
         info["token_value"] = int(ssoInfo.token_value)
         info["token_name"] = ssoInfo.token_name
