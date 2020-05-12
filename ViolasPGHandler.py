@@ -221,7 +221,7 @@ class ViolasPGHandler():
 
         try:
             ssoInfo = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.id == id).first()
-            userInfo = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == ssuInfo.wallet_address).first()
+            userInfo = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == ssoInfo.wallet_address).first()
             s.close()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
