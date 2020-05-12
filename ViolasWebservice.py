@@ -530,6 +530,7 @@ def GetTokenApprovalStatus():
     if infos is None:
         return MakeResp(ErrorCode.ERR_TOKEN_INFO_DOES_NOT_EXIST)
 
+    datas = []
     for info in infos:
         if info["approval_status"] == 0:
             timestamp = int(time())
@@ -541,8 +542,9 @@ def GetTokenApprovalStatus():
                 "token_name": info["token_name"] + info["token_type"],
                 "approval_status": info["approval_status"],
                 "token_id": info["token_id"]}
+        datas.append(data)
 
-    return MakeResp(ErrorCode.ERR_OK, data)
+    return MakeResp(ErrorCode.ERR_OK, datas)
 
 @app.route("/1.0/violas/sso/token")
 def GetTokenDetailInfo():
