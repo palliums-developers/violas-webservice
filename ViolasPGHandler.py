@@ -1181,8 +1181,8 @@ class ViolasPGHandler():
         info["txid"] = governorInfo.btc_txid
         info["public_key"] = governorInfo.wallet_public_key
         info["token_type"] = ssoInfo.token_type
-        info["token_amount"] = ssoInfo.amount
-        info["token_value"] = ssoInfo.token_value
+        info["token_amount"] = int(ssoInfo.amount)
+        info["token_value"] = int(ssoInfo.token_value)
         info["token_name"] = ssoInfo.token_name
         info["reserve_photo_url"] = ssoInfo.reserve_photo_url
 
