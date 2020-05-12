@@ -188,6 +188,7 @@ class ViolasPGHandler():
             return True, None
 
         info = {}
+        info["id"] = ssoInfo.id
         info["wallet_address"] = userInfo.wallet_address
         info["public_key"] = userInfo.public_key
         info["name"] = userInfo.name
@@ -231,6 +232,7 @@ class ViolasPGHandler():
             return True, None
 
         info = {}
+        info["id"] = ssoInfo.id
         info["wallet_address"] = userInfo.wallet_address
         info["public_key"] = userInfo.public_key
         info["name"] = userInfo.name
