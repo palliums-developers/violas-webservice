@@ -1173,6 +1173,7 @@ class ViolasPGHandler():
             return False, None
 
         info = {}
+        info["id"] = ssoInfo.id
         info["governor_name"] = governorInfo.name
         info["txid"] = governorInfo.btc_txid
         info["public_key"] = governorInfo.wallet_public_key
