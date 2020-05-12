@@ -738,7 +738,7 @@ def ModifyApprovalStatusV2():
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-    if not result:
+    if not info:
         return MakeResp(ErrorCode.ERR_SSO_INFO_DOES_NOT_EXIST)
 
     return MakeResp(ErrorCode.ERR_OK)
