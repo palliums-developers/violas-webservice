@@ -482,7 +482,6 @@ class ViolasPGHandler():
                     multisig_address = data["multisig_address"],
                     is_chairman = isChairman,
                     is_handle = 0,
-                    subaccount_count = data["subaccount_count"],
                     wallet_public_key = data["wallet_public_key"]
                 )
 
