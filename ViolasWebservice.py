@@ -524,27 +524,24 @@ def GetTokenApprovalStatus():
     offset = request.args.get("offset", 0, type = int)
     limit = request.args.get("limit", 10, type = int)
 
-    succ, infos = HViolas.GetSSOApprovalStatus(address, offset, limit)
+    succ, info = HViolas.GetSSOApprovalStatus(address, offset, limit)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
     if infos is None:
         return MakeResp(ErrorCode.ERR_TOKEN_INFO_DOES_NOT_EXIST)
 
-    datas = []
-    for info in infos:
-        if info["approval_status"] == 0:
-            timestamp = int(time.time())
-            if timestamp > info["expiration_date"]:
-                info["approval_status"] = -1
-                HViolas.SetApprovalStatus(info["id"], -1)
+    if info["approval_status"] == 0:
+        timestamp = int(time.time())
+        if timestamp > info["expiration_date"]:
+            info["approval_status"] = -1
+            HViolas.SetApprovalStatus(info["id"], -1)
 
-        data = {"id": info["id"],
-                "token_name": info["token_name"] + info["token_type"],
-                "approval_status": info["approval_status"],
-                "token_id": info["token_id"]}
-        datas.append(data)
+    data = {"id": info["id"],
+            "token_name": info["token_name"] + info["token_type"],
+            "approval_status": info["approval_status"],
+            "token_id": info["token_id"]}
 
-    return MakeResp(ErrorCode.ERR_OK, datas)
+    return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/violas/sso/token")
 def GetTokenDetailInfo():

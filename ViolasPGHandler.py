@@ -147,7 +147,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).order_by(ViolasSSOInfo.id.desc()).offset(offset).limit(limit).all()
+            result = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).order_by(ViolasSSOInfo.id.desc()).first()
             s.close()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -157,18 +157,15 @@ class ViolasPGHandler():
         if result is None:
             return True, None
 
-        infos = []
-        for i in result:
-            info = {}
-            info["id"] = i.id
-            info["token_type"] = i.token_type
-            info["token_name"] = i.token_name
-            info["approval_status"] = i.approval_status
-            info["expiration_date"] = i.expiration_date
-            info["token_id"] = i.token_id
+        info = {}
+        info["id"] = result.id
+        info["token_type"] = result.token_type
+        info["token_name"] = result.token_name
+        info["approval_status"] = result.approval_status
+        info["expiration_date"] = result.expiration_date
+        info["token_id"] = result.token_id
 
-            infos.append(info)
-        return True, infos
+        return True, info
 
     def GetTokenDetailInfo(self, address, id):
         s = self.session()
