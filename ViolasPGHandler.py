@@ -167,12 +167,12 @@ class ViolasPGHandler():
 
         return True, info
 
-    def GetTokenDetailInfo(self, address, id):
+    def GetTokenDetailInfo(self, address):
         s = self.session()
 
         try:
             userInfo = s.query(ViolasSSOUserInfo).filter(ViolasSSOUserInfo.wallet_address == address).first()
-            ssoInfo = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.id == id).first()
+            ssoInfo = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.wallet_address == address).order_by(ViolasSSOInfo.id.desc()).first()
             governorInfo = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.wallet_address == ssoInfo.governor_address).first()
             s.close()
         except OperationalError:

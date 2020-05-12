@@ -546,9 +546,8 @@ def GetTokenApprovalStatus():
 @app.route("/1.0/violas/sso/token")
 def GetTokenDetailInfo():
     address = request.args.get("address")
-    id = request.args.get("id", type = int)
 
-    succ, info = HViolas.GetTokenDetailInfo(address, id)
+    succ, info = HViolas.GetTokenDetailInfo(address)
 
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
