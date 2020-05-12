@@ -160,12 +160,12 @@ class ViolasPGHandler():
         infos = []
         for i in result:
             info = {}
-            info["id"] = result.id
-            info["token_type"] = result.token_type
-            info["token_name"] = result.token_name
-            info["approval_status"] = result.approval_status
-            info["expiration_date"] = result.expiration_date
-            info["token_id"] = result.token_id
+            info["id"] = i.id
+            info["token_type"] = i.token_type
+            info["token_name"] = i.token_name
+            info["approval_status"] = i.approval_status
+            info["expiration_date"] = i.expiration_date
+            info["token_id"] = i.token_id
 
         return True, infos
 

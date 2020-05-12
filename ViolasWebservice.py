@@ -537,10 +537,10 @@ def GetTokenApprovalStatus():
                 info["approval_status"] = -1
                 HViolas.SetApprovalStatus(info["id"], -1)
 
-    data = {"id": info["id"],
-            "token_name": info["token_name"] + info["token_type"],
-            "approval_status": info["approval_status"],
-            "token_id": info["token_id"]}
+        data = {"id": info["id"],
+                "token_name": info["token_name"] + info["token_type"],
+                "approval_status": info["approval_status"],
+                "token_id": info["token_id"]}
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
