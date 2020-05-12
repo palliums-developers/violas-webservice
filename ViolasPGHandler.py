@@ -271,7 +271,7 @@ class ViolasPGHandler():
                 s.close()
                 return True, False
 
-            result.approval_status = 6
+            result.approval_status = 4
             s.commit()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -1179,6 +1179,7 @@ class ViolasPGHandler():
         info["id"] = ssoInfo.id
         info["governor_name"] = governorInfo.name
         info["txid"] = governorInfo.btc_txid
+        info["wallet_address"] = governorInfo.wallet_address
         info["public_key"] = governorInfo.wallet_public_key
         info["token_type"] = ssoInfo.token_type
         info["token_amount"] = int(ssoInfo.amount)
