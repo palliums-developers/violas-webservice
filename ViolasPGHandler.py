@@ -228,7 +228,10 @@ class ViolasPGHandler():
             s.close()
             return False, None
 
-        if result is None:
+        if userInfo is None:
+            return True, None
+
+        if ssoInfo is None:
             return True, None
 
         info = {}
