@@ -584,7 +584,8 @@ class ViolasPGHandler():
             info = {}
             info["toxid"] = i.toxid
             info["name"] = i.name
-            info["public_key"] = i.public_key
+            info["btc_public_key"] = i.btc_public_key
+            info["wallet_public_key"] = i.wallet_public_key
             info["wallet_address"] = i.wallet_address
             info["vstake_address"] = i.vstake_address
             info["multisig_address"] = i.multisig_address
