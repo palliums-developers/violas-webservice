@@ -1067,7 +1067,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.governor_address == address).filter(ViolasSSOInfo.approval_status == 0).offset(offset).limit(limit).all()
+            ssoInfos = s.query(ViolasSSOInfo).filter(ViolasSSOInfo.governor_address == address).offset(offset).limit(limit).all()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
