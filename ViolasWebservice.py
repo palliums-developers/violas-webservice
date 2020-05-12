@@ -527,7 +527,7 @@ def GetTokenApprovalStatus():
     succ, infos = HViolas.GetSSOApprovalStatus(address, offset, limit)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-    if info is None:
+    if infos is None:
         return MakeResp(ErrorCode.ERR_TOKEN_INFO_DOES_NOT_EXIST)
 
     for info in infos:
