@@ -167,6 +167,7 @@ class ViolasPGHandler():
             info["expiration_date"] = i.expiration_date
             info["token_id"] = i.token_id
 
+            infos.append(info)
         return True, infos
 
     def GetTokenDetailInfo(self, address, id):
