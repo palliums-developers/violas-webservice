@@ -533,7 +533,7 @@ def GetTokenApprovalStatus():
     datas = []
     for info in infos:
         if info["approval_status"] == 0:
-            timestamp = int(time())
+            timestamp = int(time.time())
             if timestamp > info["expiration_date"]:
                 info["approval_status"] = -1
                 HViolas.SetApprovalStatus(info["id"], -1)
@@ -568,7 +568,7 @@ def GetTokenDetailInfo():
         info["reserve_photo_url"] = PHOTO_URL + info["reserve_photo_url"]
 
     if info["approval_status"] == 0:
-        timestamp = int(time())
+        timestamp = int(time.time())
         if timestamp > info["expiration_date"]:
             info["approval_status"] = -1
             HViolas.SetApprovalStatus(info["id"], -1)
@@ -689,7 +689,7 @@ def GetUnapprovalTokenInfoList():
 
     for info in infos:
         if info["approval_status"] == 0:
-            timestamp = int(time())
+            timestamp = int(time.time())
             if timestamp > info["expiration_date"]:
                 info["approval_statsu"] = -1
                 HViolas.SetApprovalStatus(info["id"], -1)
@@ -718,7 +718,7 @@ def GetUnapprovalTokenDetailInfo():
         info["reserve_photo_url"] = PHOTO_URL + info["reserve_photo_url"]
 
     if info["approval_status"] == 0:
-        timestamp = int(time())
+        timestamp = int(time.time())
         if timestamp > info["expiration_date"]:
             info["approval_status"] = -1
             HViolas.SetApprovalStatus(info["id"], -1)
