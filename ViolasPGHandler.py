@@ -1214,3 +1214,29 @@ class ViolasPGHandler():
 
         s.close()
         return True, True
+    def SetGovernorStatus(self, address, is_handle):
+        s = self.session()
+
+        try:
+            governorInfo = s.query(ViolasGovernorInfo).filter(ViolasGovernorInfo.wallet_address == address).first()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        if governorInfo is None:
+            s.close()
+            return True, False
+
+        governorInfo.is_handle = is_handle
+
+        try:
+            s.commit()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False, None
+
+        s.close()
+
+        return True, True

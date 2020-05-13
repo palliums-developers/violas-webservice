@@ -846,6 +846,19 @@ def GetGovernorInvestmentInfo():
 
     return MakeResp(ErrorCode.ERR_OK, info)
 
+@app.route("/1.0/violas/chairman/investment/status", method = ["PUT"])
+def SetGovernorInvestmentStatus():
+    params = request.get_json()
+
+    succ, result = HViolas.SetGovernorStatus(params["wallet_address"], params["is_handle"])
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
+        return MakeResp(ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST)
+
+    return MakeResp(ErrorCode.ERR_OK, info)
+
 @app.route("/1.0/violas/chairman/governor/transactions")
 def GetTransactionsAboutGovernor():
     address = request.args.get("address")
