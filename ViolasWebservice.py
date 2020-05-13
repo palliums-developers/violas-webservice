@@ -846,7 +846,7 @@ def GetGovernorInvestmentInfo():
 
     return MakeResp(ErrorCode.ERR_OK, info)
 
-@app.route("/1.0/violas/chairman/investment/status", method = ["PUT"])
+@app.route("/1.0/violas/chairman/investment/status", methods = ["PUT"])
 def SetGovernorInvestmentStatus():
     params = request.get_json()
 
