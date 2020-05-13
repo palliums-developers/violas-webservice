@@ -663,6 +663,21 @@ def MakeInvestmentHandled():
 
     return MakeResp(ErrorCode.ERR_OK)
 
+@app.route("/1.0/violas/governor/status/published", methods = ["PUT"])
+def MakeGovernorStatusToPublished():
+    params = request.get_json()
+    params["is_handle"] = 3
+
+    succ, result = HViolas.ModifyGovernorInfo(params)
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if not result:
+        return MakeResp(ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
 @app.route("/1.0/violas/governor/token/status")
 def GetUnapprovalTokenInfoList():
     offset = request.args.get("offset", 0, int)
