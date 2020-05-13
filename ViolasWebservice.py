@@ -857,7 +857,7 @@ def SetGovernorInvestmentStatus():
     if not result:
         return MakeResp(ErrorCode.ERR_GOV_INFO_DOES_NOT_EXIST)
 
-    return MakeResp(ErrorCode.ERR_OK, info)
+    return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.0/violas/chairman/governor/transactions")
 def GetTransactionsAboutGovernor():
