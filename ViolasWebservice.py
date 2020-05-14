@@ -84,6 +84,7 @@ def MakeResp(code, data = None, exception = None):
 @app.route("/1.0/libra/balance")
 def GetLibraBalance():
     address = request.args.get("addr")
+    address = address.lower()
 
     cli = MakeLibraClient()
     try:
@@ -98,6 +99,7 @@ def GetLibraBalance():
 @app.route("/1.0/libra/seqnum")
 def GetLibraSequenceNumbert():
     address = request.args.get("addr")
+    address = address.lower()
 
     cli = MakeLibraClient()
     try:
@@ -128,6 +130,7 @@ def GetLibraTransactionInfo():
     address = request.args.get("addr")
     limit = request.args.get("limit", 5, int)
     offset = request.args.get("offset", 0, int)
+    address = address.lower()
 
     succ, datas = HLibra.GetTransactionsForWallet(address, offset, limit)
     if not succ:
@@ -139,6 +142,7 @@ def GetLibraTransactionInfo():
 def MintLibraToAccount():
     address = request.args.get("address")
     authKey = request.args.get("auth_key_perfix")
+    address = address.lower()
 
     cli = MakeLibraClient()
     try:
@@ -155,6 +159,7 @@ def MintLibraToAccount():
 def GetViolasBalance():
     address = request.args.get("addr")
     modules = request.args.get("modu", "")
+    address = address.lower()
 
     cli = MakeViolasClient()
     try:
@@ -190,6 +195,7 @@ def GetViolasBalance():
 @app.route("/1.0/violas/seqnum")
 def GetViolasSequenceNumbert():
     address = request.args.get("addr")
+    address = address.lower()
 
     cli = MakeViolasClient()
     try:
@@ -222,6 +228,7 @@ def GetViolasTransactionInfo():
     token_id = request.args.get("modu")
     limit = request.args.get("limit", 10, int)
     offset = request.args.get("offset", 0, int)
+    address = address.lower()
 
     if token_id is None:
         module = "00000000000000000000000000000000"
@@ -267,6 +274,7 @@ def GetCurrency():
 @app.route("/1.0/violas/module")
 def CheckMoudleExise():
     addr = request.args.get("addr")
+    addr = addr.lower()
 
     cli = MakeViolasClient()
 
@@ -311,6 +319,8 @@ def SendVerifyCode():
     address = params["address"]
     verifyCode = random.randint(100000, 999999)
     local_number = params.get("phone_local_number")
+    receiver = receiver.lower()
+    address = address.lower()
 
     succ, result = HViolas.AddSSOUser(address)
     if not succ:
@@ -343,6 +353,7 @@ def VerifyCodeExist(receiver, code):
 @app.route("/1.0/violas/singin", methods = ["POST"])
 def UploadWalletInfo():
     params = request.get_json()
+    params["wallets"] = params["wallets"].lower()
 
     value = rdsAuth.get(params["session_id"])
 
@@ -359,6 +370,8 @@ def UploadWalletInfo():
 def MintViolasToAccount():
     address = request.args.get("address")
     authKey = request.args.get("auth_key_perfix")
+    address = address.lower()
+    authKey = authKey.lower()
 
     cli = MakeViolasClient()
     try:
@@ -373,6 +386,7 @@ def MintViolasToAccount():
 @app.route("/1.0/violas/account/info")
 def GetAccountInfo():
     address = request.args.get("address")
+    address = address.lower()
 
     cli = MakeViolasClient()
 
@@ -399,6 +413,9 @@ def GetVBtcTransactionInfo():
     moduleAddress = request.args.get("module_address")
     startVersion = request.args.get("start_version", type = int)
 
+    receiverAddress = receiverAddress.lower()
+    moduleAddress = moduleAddress.lower()
+
     succ, datas = HViolas.GetTransactionsAboutVBtc(receiverAddress, moduleAddress, startVersion)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
@@ -408,7 +425,10 @@ def GetVBtcTransactionInfo():
 @app.route("/1.0/violas/vbtc/transaction", methods = ["POST"])
 def VerifyVBtcTransactionInfo():
     params = request.get_json()
-    logging.debug(f"Get params: {params}")
+
+    params["sender_address"] = params["sender_address"].lower()
+    params["receiver"] = params["receiver"].lower()
+    params["module"] = params["module"].lower()
 
     succ, result = HViolas.VerifyTransactionAboutVBtc(params)
 
@@ -423,6 +443,7 @@ def VerifyVBtcTransactionInfo():
 @app.route("/1.0/violas/sso/user", methods = ["POST"])
 def SSOUserRegister():
     params = request.get_json()
+    params["wallet_address"] = params["wallet_address"].lower()
 
     succ, result = HViolas.AddSSOUser(params["wallet_address"])
     if not succ:
@@ -439,6 +460,7 @@ def SSOUserRegister():
 @app.route("/1.0/violas/sso/user")
 def GetSSOUserInfo():
     address = request.args.get("address")
+    address = address.lower()
 
     succ, info = HViolas.GetSSOUserInfo(address)
     if not succ:
@@ -462,6 +484,9 @@ def BindUserInfo():
     verifyCode = params["code"]
     address = params["address"]
     local_number = params.get("phone_local_number")
+
+    receiver = receiver.lower()
+    address = address.lower()
 
     if receiver.find("@") >= 0:
         match = VerifyCodeExist(receiver, verifyCode)
@@ -490,6 +515,7 @@ def BindUserInfo():
 @app.route("/1.0/violas/sso/token", methods = ["POST"])
 def SubmitTokenInfo():
     params = request.get_json()
+    params["wallet_address"] = params["wallet_address"].lower()
 
     succ, userInfo = HViolas.GetSSOUserInfo(params["wallet_address"])
     if not succ:
@@ -523,6 +549,7 @@ def GetTokenApprovalStatus():
     address = request.args.get("address")
     offset = request.args.get("offset", 0, type = int)
     limit = request.args.get("limit", 10, type = int)
+    address = address.lower()
 
     succ, info = HViolas.GetSSOApprovalStatus(address, offset, limit)
     if not succ:
@@ -546,6 +573,7 @@ def GetTokenApprovalStatus():
 @app.route("/1.0/violas/sso/token")
 def GetTokenDetailInfo():
     address = request.args.get("address")
+    address = address.lower()
 
     succ, info = HViolas.GetTokenDetailInfo(address)
 
@@ -579,6 +607,7 @@ def GetTokenDetailInfo():
 @app.route("/1.0/violas/sso/token/status/publish", methods = ["PUT"])
 def TokenPublish():
     params = request.get_json()
+    params["address"] = params["address"].lower()
 
     succ, result = HViolas.SetTokenPublished(params["address"], params["id"])
     if not succ:
@@ -599,6 +628,8 @@ def GetGovernors():
 # GOVERNOR
 @app.route("/1.0/violas/governor/<address>")
 def GetGovernorInfoAboutAddress(address):
+    address = address.lower()
+
     succ, info = HViolas.GetGovernorInfoAboutAddress(address)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
@@ -611,6 +642,7 @@ def GetGovernorInfoAboutAddress(address):
 @app.route("/1.1/violas/governor", methods=["POST"])
 def AddGovernorInfoV2():
     params = request.get_json()
+    params["wallet_address"] = params["wallet_address"].lower()
 
     succ, result = HViolas.AddGovernorInfoForFrontEnd(params)
     if not succ:
@@ -624,6 +656,7 @@ def AddGovernorInfoV2():
 @app.route("/1.0/violas/governor", methods = ["PUT"])
 def ModifyGovernorInfo():
     params = request.get_json()
+    params["wallet_address"] = params["wallet_address"].lower()
 
     succ, result = HViolas.ModifyGovernorInfo(params)
 
@@ -638,6 +671,7 @@ def ModifyGovernorInfo():
 @app.route("/1.0/violas/governor/investment", methods = ["POST"])
 def AddInvestmentInfo():
     params = request.get_json()
+    params["wallet_address"] = params["wallet_address"].lower()
 
     succ, result = HViolas.ModifyGovernorInfo(params)
 
@@ -652,6 +686,7 @@ def AddInvestmentInfo():
 @app.route("/1.0/violas/governor/investment", methods = ["PUT"])
 def MakeInvestmentHandled():
     params = request.get_json()
+    params["wallet_address"] = params["wallet_address"].lower()
 
     succ, result = HViolas.ModifyGovernorInfo(params)
 
@@ -667,6 +702,7 @@ def MakeInvestmentHandled():
 def MakeGovernorStatusToPublished():
     params = request.get_json()
     params["is_handle"] = 3
+    params["wallet_address"] = params["wallet_address"].lower()
 
     succ, result = HViolas.ModifyGovernorInfo(params)
 
@@ -683,6 +719,7 @@ def GetUnapprovalTokenInfoList():
     offset = request.args.get("offset", 0, int)
     limit = request.args.get("limit", 10, int)
     address = request.args.get("address")
+    address = address.lower()
 
     succ, info = HViolas.GetGovernorInfoAboutAddress(address)
     if not succ:
@@ -711,6 +748,7 @@ def GetUnapprovalTokenInfoList():
 def GetUnapprovalTokenDetailInfo():
     address = request.args.get("address")
     id = request.args.get("id", type = int)
+    address = address.lower()
 
     succ, info = HViolas.GetUnapprovalTokenDetailInfo(address, id)
 
@@ -776,6 +814,7 @@ def GetVstakeAddress():
 def CheckGovernorAuthority():
     address = request.args.get("address")
     module = request.args.get("module")
+    address = address.lower()
 
     cli = MakeViolasClient()
 
@@ -794,6 +833,7 @@ def CheckGovernorAuthority():
 @app.route("/1.0/violas/governor/singin", methods = ["POST"])
 def VerifySinginSessionID():
     params = request.get_json()
+    params["address"] = params["address"].lower()
 
     succ, result = HViolas.CheckBind(params["address"])
     if not succ:
@@ -832,6 +872,7 @@ def GetGovernorFailReason():
 @app.route("/1.0/violas/chairman", methods = ["POST"])
 def AddGovernorInfo():
     params = request.get_json()
+    params["wallet_address"] = params["wallet_address"].lower()
 
     succ, result = HViolas.AddGovernorInfo(params)
     if not succ:
@@ -864,6 +905,7 @@ def GetGovernorInvestmentInfo():
 @app.route("/1.0/violas/chairman/investment/status", methods = ["PUT"])
 def SetGovernorInvestmentStatus():
     params = request.get_json()
+    params["wallet_address"] = params["wallet_address"].lower()
 
     succ, result = HViolas.SetGovernorStatus(params["wallet_address"], params["is_handle"])
     if not succ:
@@ -879,6 +921,7 @@ def GetTransactionsAboutGovernor():
     address = request.args.get("address")
     limit = request.args.get("limit", default = 10, type = int)
     start_version = request.args.get("start_version", default = 0, type = int)
+    address = address.lower()
 
     succ, datas = HViolas.GetTransactionsAboutGovernor(address, start_version, limit)
     if not succ:
@@ -889,6 +932,7 @@ def GetTransactionsAboutGovernor():
 @app.route("/1.0/violas/chairman/bind/governor", methods = ["POST"])
 def ChairmanBindGovernor():
     params = request.get_json()
+    params["address"] = params["address"].lower()
 
     succ, result = HViolas.ChairmanBindGovernor(params)
     if not succ:
@@ -945,6 +989,7 @@ def GetUnapprovalTokenInfoListFromGovernor():
 def GetUnapprovalTokenDetailInfoFromGovernor():
     address = request.args.get("address")
     id = request.args.get("id", type = int)
+    address = address.lower()
 
     succ, info = HViolas.GetTokenDetailInfoForChairman(address, id)
     if not succ:
@@ -995,6 +1040,7 @@ def LibraGetRecentTx():
 def LibraGetAddressInfo(address):
     limit = request.args.get("limit", 10, type = int)
     offset = request.args.get("offset", 0, type = int)
+    address = address.lower()
 
     succ, addressInfo = HLibra.GetAddressInfo(address)
     if not succ:
@@ -1055,6 +1101,7 @@ def ViolasGetAddressInfo(address):
     module = request.args.get("module")
     offset = request.args.get("offset", 0, type = int)
     limit = request.args.get("limit", 10, type = int)
+    address = address.lower()
 
     succ, addressInfo = HViolas.GetAddressInfo(address)
 
@@ -1155,6 +1202,7 @@ def GetExplorerSinginStatus():
 def FaucetCoin():
     address = request.args.get("address")
     token_id = request.args.get("token_id", type = int)
+    address = address.lower()
 
     wallet = Wallet.recover(WalletRecoverFile)
     account = wallet.accounts[0]
@@ -1197,6 +1245,7 @@ def GetRateOfCrossChainTransaction():
 def GetCountOfCrossChainTransaction():
     transactionType = request.args.get("type")
     address = request.args.get("address")
+    address = address.lower()
 
     exchangeAddress = rdsCoinMap.hget(transactionType, "address").decode("utf8")
     exchangeModule = int(rdsCoinMap.hget(transactionType, "id").decode("utf8"))
@@ -1229,6 +1278,7 @@ def GetCrossChainTransactionInfo():
     walletType = request.args.get("type", 0, int)
     offset = request.args.get("offset", 0, int)
     limit = request.args.get("limit", 10, int)
+    address = address.lower()
 
     url = "http://52.231.52.107/?opt=record"
     if walletType == 0:
@@ -1292,6 +1342,7 @@ def ForwardBtcTransaction():
 @app.route("/1.0/crosschain/modules")
 def GetMapedCoinModules():
     address = request.args.get("address")
+    address = address.lower()
 
     cli = MakeViolasClient()
 
