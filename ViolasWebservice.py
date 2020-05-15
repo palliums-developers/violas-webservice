@@ -353,14 +353,16 @@ def VerifyCodeExist(receiver, code):
 @app.route("/1.0/violas/singin", methods = ["POST"])
 def UploadWalletInfo():
     params = request.get_json()
-    params["wallets"] = params["wallets"].lower()
+    wallets = []
+    for i in params["wallets"]:
+        wallets.append(i)
 
     value = rdsAuth.get(params["session_id"])
 
     if value is None:
         return MakeResp(ErrorCode.ERR_SESSION_NOT_EXIST)
 
-    data = {"status": "Success", "wallets":params["wallets"]}
+    data = {"status": "Success", "wallets": wallets}
 
     rdsAuth.set(params["session_id"], json.JSONEncoder().encode(data))
 
