@@ -2,7 +2,7 @@ from time import time, sleep
 from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo, ViolasGovernorInfo, ViolasTransaction, ViolasAddressInfo
 import logging
 
-from sqlalchemy import create_engine, or_
+from sqlalchemy import create_engine, or_, and_
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import false
@@ -116,32 +116,36 @@ class ViolasPGHandler():
         s = self.session()
         timestamp = int(time())
 
-        info = ViolasSSOInfo(
-            wallet_address = data["wallet_address"],
-            token_type = data["token_type"],
-            amount = data["amount"],
-            token_value = data["token_value"],
-            token_name = data["token_name"],
-            application_date = timestamp,
-            validity_period = 5,
-            expiration_date = timestamp + 60 * 60 * 24 * 5,
-            reserve_photo_url = data["reserve_photo_url"],
-            account_info_photo_positive_url = data["account_info_photo_positive_url"],
-            account_info_photo_back_url = data["account_info_photo_back_url"],
-            approval_status = 0,
-            governor_address = data["governor_address"]
-        )
-        s.add(info)
-
         try:
-            s.commit()
+            if not s.query(exists().where(
+                    or_(and_(ViolasSSOInfo.wallet_address == data["wallet_address"], ViolasSSOInfo.token_name == data["token_name"], ViolasSSOInfo.token_type == data["token_type"], ViolasSSOInfo.approval_status == 5),
+                        and_(ViolasSSOInfo.wallet_address != data["wallet_address"], ViolasSSOInfo.token_name == data["token_name"], ViolasSSOInfo.token_type == data["token_type"])))).scalar():
+                info = ViolasSSOInfo(
+                    wallet_address = data["wallet_address"],
+                    token_type = data["token_type"],
+                    amount = data["amount"],
+                    token_value = data["token_value"],
+                    token_name = data["token_name"],
+                    application_date = timestamp,
+                    validity_period = 5,
+                    expiration_date = timestamp + 60 * 60 * 24 * 5,
+                    reserve_photo_url = data["reserve_photo_url"],
+                    account_info_photo_positive_url = data["account_info_photo_positive_url"],
+                    account_info_photo_back_url = data["account_info_photo_back_url"],
+                    approval_status = 0,
+                    governor_address = data["governor_address"]
+                )
+                s.add(info)
+                s.commit()
+                s.close()
+                return True, True
+            else:
+                s.close()
+                return True, False
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
             return False, None
-
-        s.close()
-        return True, True
 
     def GetSSOApprovalStatus(self, address, offset, limit):
         s = self.session()
