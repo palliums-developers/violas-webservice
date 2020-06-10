@@ -925,7 +925,7 @@ class ViolasPGHandler():
 
         return True, infoList
 
-    def GetTransactionsForWallet(self, address, module, token_id, offset, limit, moduleMap):
+    def GetTransactionsForWallet(self, address, module, token_id, flows, offset, limit, moduleMap):
         s = self.session()
 
         try:
@@ -939,9 +939,19 @@ class ViolasPGHandler():
 
         try:
             if module == "00000000000000000000000000000000":
-                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                if flows is None:
+                    result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                elif flows == 0:
+                    result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                elif flows == 1:
+                    result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
             else:
-                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).filter(ViolasTransaction.token_id == token_id).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                if flows is None:
+                    result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).filter(ViolasTransaction.token_id == token_id).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                elif flows == 0:
+                    result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.module == module).filter(ViolasTransaction.token_id == token_id).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                elif flows == 1:
+                    result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.module == module).filter(ViolasTransaction.token_id == token_id).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
         except OperationalError:
             s.close()
             return False, None

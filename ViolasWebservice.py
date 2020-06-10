@@ -1,4 +1,4 @@
-import os, random, logging, configparser, datetime, json, time
+import os, random, logging, configparser, datetime, json, time, datetime
 from flask import Flask, request, send_file
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -226,6 +226,7 @@ def MakeViolasTransaction():
 def GetViolasTransactionInfo():
     address = request.args.get("addr")
     token_id = request.args.get("modu")
+    flows = request.args.get("flows", type = int)
     limit = request.args.get("limit", 10, int)
     offset = request.args.get("offset", 0, int)
     address = address.lower()
@@ -235,14 +236,13 @@ def GetViolasTransactionInfo():
     else:
         module = ContractAddress
 
-    print(module)
     vbtcTokenId = int(rdsCoinMap.hget("vbtc", "id").decode("utf8"))
     vlibraTokenId = int(rdsCoinMap.hget("vlibra", "id").decode("utf8"))
 
     moduleMap = {vbtcTokenId: "vbtc",
                  vlibraTokenId: "vlibra"}
 
-    succ, datas = HViolas.GetTransactionsForWallet(address, module, token_id, offset, limit, moduleMap)
+    succ, datas = HViolas.GetTransactionsForWallet(address, module, token_id, flows, offset, limit, moduleMap)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
@@ -407,6 +407,18 @@ def GetAccountInfo():
             "sent_events_key": state.get_sent_events_key()}
 
     return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/violas/rates")
+def GetRates():
+    yesterday = datetime.date.fromtimestamp(time.time() - 24 * 60 * 60)
+    today = datetime.date.today()
+    start = f"{yesterday.year}-{yesterday.month if yesterday.month > 9 else '0' + str(yesterday.month)}-{yesterday.day if yesterday.day > 9 else '0' + str(yesterday.day)}"
+    end = f"{today.year}-{today.month if today.month > 9 else '0' + str(today.month)}-{today.day if today.day > 9 else '0' + str(today.day)}"
+    url = f"https://api.exchangeratesapi.io/history?base=USD&start_at={start}&end_at={end}"
+    resp = requests.get(url)
+    rates = resp.json()["rates"][start]
+
+    return MakeResp(ErrorCode.ERR_OK, rates)
 
 # VBTC
 @app.route("/1.0/violas/vbtc/transaction")
