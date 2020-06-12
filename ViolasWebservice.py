@@ -128,11 +128,12 @@ def MakeLibraTransaction():
 @app.route("/1.0/libra/transaction")
 def GetLibraTransactionInfo():
     address = request.args.get("addr")
+    flows = request.args.get("flows", type = int)
     limit = request.args.get("limit", 5, int)
     offset = request.args.get("offset", 0, int)
     address = address.lower()
 
-    succ, datas = HLibra.GetTransactionsForWallet(address, offset, limit)
+    succ, datas = HLibra.GetTransactionsForWallet(address, flows, offset, limit)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 

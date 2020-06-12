@@ -132,11 +132,17 @@ class LibraPGHandler():
 
         return True, result
 
-    def GetTransactionsForWallet(self, address, offset, limit):
+    def GetTransactionsForWallet(self, address, flows, offset, limit):
         s = self.session()
 
         try:
-            result = s.query(LibraTransaction).filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address)).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+            if flows is None:
+                result = s.query(LibraTransaction).filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address)).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+            elif flows == 0:
+                result = s.query(LibraTransaction).filter(LibraTransaction.sender == address).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+            elif flows == 1:
+                result = s.query(LibraTransaction).filter(LibraTransaction.receiver == address).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+
             s.close()
         except OperationalError:
             s.close()
