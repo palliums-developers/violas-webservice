@@ -925,33 +925,16 @@ class ViolasPGHandler():
 
         return True, infoList
 
-    def GetTransactionsForWallet(self, address, module, token_id, flows, offset, limit, moduleMap):
+    def GetTransactionsForWallet(self, address, currency, flows, offset, limit):
         s = self.session()
 
         try:
-            result = s.query(ViolasSSOInfo.token_id, ViolasSSOInfo.token_type, ViolasSSOInfo.token_name).filter(ViolasSSOInfo.approval_status == 4).all()
-        except OperationalError:
-            s.close()
-            return False, None
-
-        for i in result:
-            moduleMap[i.token_id] = i.token_name + i.token_type
-
-        try:
-            if module == "00000000000000000000000000000000":
-                if flows is None:
-                    result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-                elif flows == 0:
-                    result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-                elif flows == 1:
-                    result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-            else:
-                if flows is None:
-                    result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).filter(ViolasTransaction.token_id == token_id).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-                elif flows == 0:
-                    result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.module == module).filter(ViolasTransaction.token_id == token_id).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-                elif flows == 1:
-                    result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.module == module).filter(ViolasTransaction.token_id == token_id).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            if flows is None:
+                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.currency = currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            elif flows == 0:
+                result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.currency = currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            elif flows == 1:
+                result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.currency = currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
         except OperationalError:
             s.close()
             return False, None
@@ -963,12 +946,11 @@ class ViolasPGHandler():
             info["version"] = i.id - 1
             info["sender"] = i.sender
             info["sequence_number"] = i.sequence_number
-            info["gas"] = int(i.gas_unit_price)
+            info["gas"] = int(i.gas_used)
             info["expiration_time"] = i.expiration_time
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
-            info["token_id"] = i.token_id
-            info["module_name"] = moduleMap.get(i.token_id)
+            info["currency"] = i.currency
 
             infoList.append(info)
 

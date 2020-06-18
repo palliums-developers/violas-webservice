@@ -8,12 +8,12 @@ import nacl.signing
 import hashlib
 
 from libra_client import Client as LibraClient
-from libra_client.error.error import LibraError
+from libra_client.error import LibraError
 
-from violas import Client as ViolasClient
-from violas.error.error import ViolasError
+from violas_client import Client as ViolasClient
+from violas_client.error import LibraError as ViolasError
 
-from violas import Wallet
+from violas_client import Wallet
 
 from ViolasPGHandler import ViolasPGHandler
 from LibraPGHandler import LibraPGHandler
@@ -64,7 +64,7 @@ def MakeLibraClient():
     return LibraClient("libra_testnet")
 
 def MakeViolasClient():
-    return ViolasClient.new(config["NODE INFO"]["VIOLAS_HOST"], int(config["NODE INFO"]["VIOLAS_PORT"]), faucet_file = "./mint_test.key")
+    # return ViolasClient.new({config['NODE INFO']['VIOLAS_HOST']}, faucet_file = "./mint_test.key")
 
 def MakeResp(code, data = None, exception = None):
     resp = {}
@@ -226,16 +226,11 @@ def MakeViolasTransaction():
 @app.route("/1.0/violas/transaction")
 def GetViolasTransactionInfo():
     address = request.args.get("addr")
-    token_id = request.args.get("modu")
+    currency = request.args.get("currency")
     flows = request.args.get("flows", type = int)
     limit = request.args.get("limit", 10, int)
     offset = request.args.get("offset", 0, int)
     address = address.lower()
-
-    if token_id is None:
-        module = "00000000000000000000000000000000"
-    else:
-        module = ContractAddress
 
     vbtcTokenId = int(rdsCoinMap.hget("vbtc", "id").decode("utf8"))
     vlibraTokenId = int(rdsCoinMap.hget("vlibra", "id").decode("utf8"))
@@ -243,7 +238,7 @@ def GetViolasTransactionInfo():
     moduleMap = {vbtcTokenId: "vbtc",
                  vlibraTokenId: "vlibra"}
 
-    succ, datas = HViolas.GetTransactionsForWallet(address, module, token_id, flows, offset, limit, moduleMap)
+    succ, datas = HViolas.GetTransactionsForWallet(address, currency, flows, offset, limit, moduleMap)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
