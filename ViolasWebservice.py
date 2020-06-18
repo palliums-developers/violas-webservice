@@ -104,10 +104,10 @@ def GetLibraSequenceNumbert():
     cli = MakeLibraClient()
     try:
         seqNum = cli.get_sequence_number(address)
+        info = {"address": address, "seqnum": seqNum}
+        return MakeResp(ErrorCode.ERR_OK, info)
     except LibraError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
-
-    return MakeResp(ErrorCode.ERR_OK, seqNum)
 
 @app.route("/1.0/libra/transaction", methods = ["POST"])
 def MakeLibraTransaction():

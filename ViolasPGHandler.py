@@ -930,11 +930,11 @@ class ViolasPGHandler():
 
         try:
             if flows is None:
-                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.currency = currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.currency == currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
             elif flows == 0:
-                result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.currency = currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.currency == currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
             elif flows == 1:
-                result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.currency = currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.currency == currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
         except OperationalError:
             s.close()
             return False, None
