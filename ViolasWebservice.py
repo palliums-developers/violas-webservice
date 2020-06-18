@@ -159,39 +159,21 @@ def MintLibraToAccount():
 @app.route("/1.0/violas/balance")
 def GetViolasBalance():
     address = request.args.get("addr")
-    modules = request.args.get("modu", "")
+    currency = request.args.get("currency")
     address = address.lower()
 
     cli = MakeViolasClient()
     try:
-        accState = cli.get_account_state(address)
-        info = {}
-        info["address"] = address
-        info["balance"] = accState.get_balance()
+        if currency is None:
+            balance = cli.get_balances(address)
+            data = {"balances": balance}
+        else:
+            balance = cli.get_balance(address, currency)
+            data = {"balances": {currency: balance}}
     except ViolasError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
-    if len(modules) != 0:
-        moduleState = cli.get_account_state(ContractAddress)
-
-        modulesBalance = []
-        moduleList = modules.split(",")
-        for i in moduleList:
-            try:
-                result = cli.get_balance(address, int(i), ContractAddress)
-            except ViolasError as e:
-                return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
-
-            moduleInfo = {}
-            moduleInfo["id"] = int(i)
-            moduleInfo["name"] = moduleState.get_token_data(int(i), ContractAddress)
-            moduleInfo["balance"] = result
-
-            modulesBalance.append(moduleInfo)
-
-        info["modules"] = modulesBalance
-
-    return MakeResp(ErrorCode.ERR_OK, info)
+    return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/violas/seqnum")
 def GetViolasSequenceNumbert():
@@ -249,45 +231,30 @@ def GetCurrency():
     cli = MakeViolasClient()
 
     try:
-        info = cli.get_account_state(ContractAddress)
+        currencies = cli.get_registered_currencies()
     except ViolasError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
-    if not info.exists():
-        return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
+    return MakeResp(ErrorCode.ERR_OK, {"currencies": currencies})
 
-    currencies = []
-    tokenNum = info.get_scoin_resources(ContractAddress).get_token_num()
-
-    for i in range(tokenNum):
-        name = info.get_token_data(i, ContractAddress)
-        tokenInfo = {"id": i, "name": name}
-        currencies.append(tokenInfo)
-
-    data = {"module": ContractAddress, "currencies": currencies}
-    return MakeResp(ErrorCode.ERR_OK, data)
-
-@app.route("/1.0/violas/module")
-def CheckMoudleExise():
+@app.route("/1.0/violas/currency/published")
+def CheckCurrencyPublished():
     addr = request.args.get("addr")
     addr = addr.lower()
 
     cli = MakeViolasClient()
 
     try:
-        info = cli.get_account_state(addr)
+        balances = cli.get_balances(addr)
+        print(balances)
     except ViolasError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
-    if not info.exists():
-        return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
+    keys = []
+    for key in balances:
+        keys.append(key)
 
-    if info.is_published(ContractAddress):
-        data = {"is_published": 1}
-    else:
-        data = {"is_published": 0}
-
-    return MakeResp(ErrorCode.ERR_OK, data)
+    return MakeResp(ErrorCode.ERR_OK, {"published": keys})
 
 def AllowedType(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -394,13 +361,13 @@ def GetAccountInfo():
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
     data = {"balance": state.get_balance(),
-            "authentication_key": state.get_authentication_key(),
+            "authentication_key": state.get_account_resource().get_authentication_key(),
             "sequence_number": state.get_sequence_number(),
-            "delegated_key_rotation_capability": state.get_delegated_key_rotation_capability(),
-            "delegated_withdrawal_capability": state.get_delegated_withdrawal_capability(),
-            "delegated_withdrawal_capability": state.get_delegated_withdrawal_capability(),
-            "received_events_key": state.get_received_events_key(),
-            "sent_events_key": state.get_sent_events_key()}
+            "delegated_key_rotation_capability": state.get_account_resource().get_delegated_key_rotation_capability(),
+            "delegated_withdrawal_capability": state.get_account_resource().get_delegated_withdrawal_capability(),
+            "received_events_key": state.get_account_resource().get_received_events().get_key(),
+            "sent_events_key": state.get_account_resource().get_sent_events().get_key()}
+
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
