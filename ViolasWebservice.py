@@ -217,10 +217,7 @@ def GetViolasTransactionInfo():
     vbtcTokenId = int(rdsCoinMap.hget("vbtc", "id").decode("utf8"))
     vlibraTokenId = int(rdsCoinMap.hget("vlibra", "id").decode("utf8"))
 
-    moduleMap = {vbtcTokenId: "vbtc",
-                 vlibraTokenId: "vlibra"}
-
-    succ, datas = HViolas.GetTransactionsForWallet(address, currency, flows, offset, limit, moduleMap)
+    succ, datas = HViolas.GetTransactionsForWallet(address, currency, flows, offset, limit)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
