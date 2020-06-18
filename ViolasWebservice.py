@@ -1050,7 +1050,7 @@ def LibraGetRecentTx():
     return MakeResp(ErrorCode.ERR_OK, datas)
 
 @app.route("/explorer/libra/recent/<currency>")
-def ViolasGetRecentTxAboutToken(currency):
+def LibraGetRecentTxAboutToken(currency):
     limit = request.args.get("limit", 30, type = int)
     offset = request.args.get("offset", 0, type = int)
 
