@@ -64,7 +64,7 @@ def MakeLibraClient():
     return LibraClient("libra_testnet")
 
 def MakeViolasClient():
-    # return ViolasClient.new({config['NODE INFO']['VIOLAS_HOST']}, faucet_file = "./mint_test.key")
+    return ViolasClient.new({config['NODE INFO']['VIOLAS_HOST']}, faucet_file = "./mint_test.key")
 
 def MakeResp(code, data = None, exception = None):
     resp = {}
