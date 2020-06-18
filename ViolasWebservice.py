@@ -8,10 +8,10 @@ import nacl.signing
 import hashlib
 
 from libra_client import Client as LibraClient
-from libra_client.error import LibraError
+from libra_client.error.error import LibraError
 
 from violas_client import Client as ViolasClient
-from violas_client.error import LibraError as ViolasError
+from violas_client.error.error import LibraError as ViolasError
 
 from violas_client import Wallet
 
@@ -84,17 +84,22 @@ def MakeResp(code, data = None, exception = None):
 @app.route("/1.0/libra/balance")
 def GetLibraBalance():
     address = request.args.get("addr")
+    currency = request.args.get("currency")
     address = address.lower()
 
     cli = MakeLibraClient()
     try:
-        result = cli.get_balance(address)
-        info = {}
-        info["address"] = address
-        info["balance"] = result
-        return MakeResp(ErrorCode.ERR_OK, info)
+        if currency is None:
+            balances = cli.get_balances(address)
+            data = {"balances": balances}
+        else:
+            balance = cli.get_balance(address, currency_code=currency)
+            data = {"balances": {currency: balance}}
+
     except LibraError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/libra/seqnum")
 def GetLibraSequenceNumbert():
@@ -104,8 +109,7 @@ def GetLibraSequenceNumbert():
     cli = MakeLibraClient()
     try:
         seqNum = cli.get_sequence_number(address)
-        info = {"address": address, "seqnum": seqNum}
-        return MakeResp(ErrorCode.ERR_OK, info)
+        return MakeResp(ErrorCode.ERR_OK, {"seqnum": seqNum})
     except LibraError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
@@ -128,12 +132,13 @@ def MakeLibraTransaction():
 @app.route("/1.0/libra/transaction")
 def GetLibraTransactionInfo():
     address = request.args.get("addr")
+    currency = request.args.get("currency")
     flows = request.args.get("flows", type = int)
     limit = request.args.get("limit", 5, int)
     offset = request.args.get("offset", 0, int)
     address = address.lower()
 
-    succ, datas = HLibra.GetTransactionsForWallet(address, flows, offset, limit)
+    succ, datas = HLibra.GetTransactionsForWallet(address, currency, flows, offset, limit)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
@@ -143,11 +148,12 @@ def GetLibraTransactionInfo():
 def MintLibraToAccount():
     address = request.args.get("address")
     authKey = request.args.get("auth_key_perfix")
+    currency = request.args.get("currency")
     address = address.lower()
 
     cli = MakeLibraClient()
     try:
-        cli.mint_coin(address, 100, is_blocking = True, receiver_auth_key_prefix_opt = authKey)
+        cli.mint_coin(address, 100, auth_key_prefix = authKey, is_blocking = True, currency_code=currency)
     except LibraError as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
     except ValueError:
@@ -183,10 +189,9 @@ def GetViolasSequenceNumbert():
     cli = MakeViolasClient()
     try:
         seqNum = cli.get_account_sequence_number(address)
+        return MakeResp(ErrorCode.ERR_OK, {"seqnum": seqNum})
     except ViolasError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
-
-    return MakeResp(ErrorCode.ERR_OK, seqNum)
 
 @app.route("/1.0/violas/transaction", methods = ["POST"])
 def MakeViolasTransaction():
@@ -213,9 +218,6 @@ def GetViolasTransactionInfo():
     limit = request.args.get("limit", 10, int)
     offset = request.args.get("offset", 0, int)
     address = address.lower()
-
-    vbtcTokenId = int(rdsCoinMap.hget("vbtc", "id").decode("utf8"))
-    vlibraTokenId = int(rdsCoinMap.hget("vlibra", "id").decode("utf8"))
 
     succ, datas = HViolas.GetTransactionsForWallet(address, currency, flows, offset, limit)
     if not succ:
@@ -270,17 +272,19 @@ def UploadPhoto():
     path = os.path.join(PHOTO_FOLDER, uuid)
     photo.save(path)
 
-    return MakeResp(ErrorCode.ERR_OK, uuid)
+    return MakeResp(ErrorCode.ERR_OK, {"image": uuid})
 
 @app.route("/1.0/violas/verify_code", methods = ["POST"])
 def SendVerifyCode():
     params = request.get_json()
-    receiver = params["receiver"]
     address = params["address"]
-    verifyCode = random.randint(100000, 999999)
     local_number = params.get("phone_local_number")
+    receiver = params["receiver"]
+
     receiver = receiver.lower()
     address = address.lower()
+
+    verifyCode = random.randint(100000, 999999)
 
     succ, result = HViolas.AddSSOUser(address)
     if not succ:
@@ -297,18 +301,6 @@ def SendVerifyCode():
         return MakeResp(ErrorCode.ERR_SEND_VERIFICATION_CODE)
 
     return MakeResp(ErrorCode.ERR_OK)
-
-def VerifyCodeExist(receiver, code):
-    value = rdsVerify.get(receiver)
-
-    if value is None:
-        return False
-    elif value.decode("utf8") != str(code):
-        return False
-
-    rdsVerify.delete(receiver)
-
-    return True
 
 @app.route("/1.0/violas/singin", methods = ["POST"])
 def UploadWalletInfo():
@@ -332,12 +324,12 @@ def UploadWalletInfo():
 def MintViolasToAccount():
     address = request.args.get("address")
     authKey = request.args.get("auth_key_perfix")
+    currency = request.args.get("currency")
     address = address.lower()
-    authKey = authKey.lower()
 
     cli = MakeViolasClient()
     try:
-        cli.mint_coin(address, 100, is_blocking = True, auth_key_prefix = authKey)
+        cli.mint_coin(address, 100, auth_key_prefix = authKey, is_blocking = True, currency_code=currency)
     except ViolasError as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
     except ValueError:
@@ -365,10 +357,16 @@ def GetAccountInfo():
             "received_events_key": state.get_account_resource().get_received_events().get_key(),
             "sent_events_key": state.get_account_resource().get_sent_events().get_key()}
 
-
     return MakeResp(ErrorCode.ERR_OK, data)
 
-@app.route("/1.0/violas/rates")
+@app.route("/1.0/violas/value/btc")
+def GetBTCValue():
+    url = "https://api.coincap.io/v2/assets/bitcoin"
+    resp = requests.get(url)
+    price = resp.json()["data"]["priceUsd"]
+
+    return MakeResp(ErrorCode.ERR_OK, {"BTC": price})
+
 def GetRates():
     yesterday = datetime.date.fromtimestamp(time.time() - 24 * 60 * 60)
     today = datetime.date.today()
@@ -378,7 +376,36 @@ def GetRates():
     resp = requests.get(url)
     rates = resp.json()["rates"][start]
 
-    return MakeResp(ErrorCode.ERR_OK, rates)
+    return rates
+
+@app.route("/1.0/violas/value/violas")
+def GetViolasValue():
+    address = request.args.get("address")
+    cli = MakeViolasClient()
+
+    balances = cli.get_balances(address)
+    currencies = []
+    for currency in balances:
+        currencies.append(currency)
+
+    rates = GetRates()
+    values = {}
+    for currency in currencies:
+        values[currency] = rates.get(currency[3:]) if rates.get(currency[3:]) is not None else 0
+
+    return MakeResp(ErrorCode.ERR_OK, values)
+
+@app.route("/1.0/violas/value/libra")
+def GetLibraValue():
+    currencies = request.args.get("currencies")
+    currencyList = currencies.split(',')
+
+    rates = GetRates()
+    values = {}
+    for currency in currencyList:
+        values[currency] = rates.get(currency[3:]) if rates.get(currency[3:]) is not None else 0
+
+    return MakeResp(ErrorCode.ERR_OK, values)
 
 # VBTC
 @app.route("/1.0/violas/vbtc/transaction")
@@ -450,6 +477,18 @@ def GetSSOUserInfo():
         info["id_photo_back_url"] = PHOTO_URL + info["id_photo_back_url"]
 
     return MakeResp(ErrorCode.ERR_OK, info)
+
+def VerifyCodeExist(receiver, code):
+    value = rdsVerify.get(receiver)
+
+    if value is None:
+        return False
+    elif value.decode("utf8") != str(code):
+        return False
+
+    rdsVerify.delete(receiver)
+
+    return True
 
 @app.route("/1.0/violas/sso/bind", methods = ["POST"])
 def BindUserInfo():
@@ -1010,8 +1049,20 @@ def LibraGetRecentTx():
 
     return MakeResp(ErrorCode.ERR_OK, datas)
 
+@app.route("/explorer/libra/recent/<currency>")
+def ViolasGetRecentTxAboutToken(currency):
+    limit = request.args.get("limit", 30, type = int)
+    offset = request.args.get("offset", 0, type = int)
+
+    succ, data = HLibra.GetRecentTransactionAboutCurrency(limit, offset, module)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
 @app.route("/explorer/libra/address/<address>")
 def LibraGetAddressInfo(address):
+    currency = request.args.get("currency")
     limit = request.args.get("limit", 10, type = int)
     offset = request.args.get("offset", 0, type = int)
     address = address.lower()
@@ -1020,19 +1071,27 @@ def LibraGetAddressInfo(address):
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
+    if addressInfo is None:
+        return MakeResp(ErrorCode.ERR_OK, {})
+
     cli = MakeLibraClient()
     finish = 0
     while finish < 3:
         try:
-            result = cli.get_balance(address)
+            result = cli.get_balances(address)
             addressInfo["balance"] = result
             finish = 3
-        except ViolasError as e:
+        except LibraError as e:
             finish += 1
 
-    succ, addressTransactions = HLibra.GetTransactionsByAddress(address, limit, offset)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    if currency is None:
+        succ, addressTransactions = HLibra.GetTransactionsByAddress(address, limit, offset)
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    else:
+        succ, addressTransactions = HLibra.GetTransactionsByAddressAboutCurrency(address, limit, offset, currency)
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     data = {}
     data["status"] = addressInfo
@@ -1059,12 +1118,12 @@ def ViolasGetRecentTx():
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
-@app.route("/explorer/violas/recent/<module>")
-def ViolasGetRecentTxAboutToken(module):
+@app.route("/explorer/violas/recent/<currency>")
+def ViolasGetRecentTxAboutToken(currency):
     limit = request.args.get("limit", 30, type = int)
     offset = request.args.get("offset", 0, type = int)
 
-    succ, data = HViolas.GetRecentTransactionAboutModule(limit, offset, module)
+    succ, data = HViolas.GetRecentTransactionAboutCurrency(limit, offset, currency)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
@@ -1072,13 +1131,12 @@ def ViolasGetRecentTxAboutToken(module):
 
 @app.route("/explorer/violas/address/<address>")
 def ViolasGetAddressInfo(address):
-    module = request.args.get("module")
+    currency = request.args.get("currency")
     offset = request.args.get("offset", 0, type = int)
     limit = request.args.get("limit", 10, type = int)
     address = address.lower()
 
     succ, addressInfo = HViolas.GetAddressInfo(address)
-
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
@@ -1086,32 +1144,21 @@ def ViolasGetAddressInfo(address):
         return MakeResp(ErrorCode.ERR_OK, {})
 
     cli = MakeViolasClient()
-    moduleState = cli.get_account_state(ContractAddress)
-
-    modulesBalance = []
-    tokenNum = moduleState.get_scoin_resources(ContractAddress).get_token_num()
-    for i in range(tokenNum):
+    finish = 0
+    while finish < 3:
         try:
-            result = cli.get_balance(address, i, ContractAddress)
+            result = cli.get_balances(address)
+            addressInfo["balance"] = result
+            finish = 3
         except ViolasError as e:
-            return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+            finish += 1
 
-        moduleInfo = {}
-        moduleInfo["id"] = i
-        moduleInfo["name"] = moduleState.get_token_data(i, ContractAddress)
-        moduleInfo["balance"] = result
-
-        modulesBalance.append(moduleInfo)
-
-    addressInfo["balance"] = cli.get_balance(address)
-    addressInfo["module_balande"] = modulesBalance
-
-    if module is None:
+    if currency is None:
         succ, addressTransactions = HViolas.GetTransactionsByAddress(address, limit, offset)
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
     else:
-        succ, addressTransactions = HViolas.GetTransactionsByAddressAboutModule(address, limit, offset, module)
+        succ, addressTransactions = HViolas.GetTransactionsByAddressAboutCurrency(address, limit, offset, currency)
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
@@ -1175,18 +1222,16 @@ def GetExplorerSinginStatus():
 @app.route("/explorer/violas/faucet")
 def FaucetCoin():
     address = request.args.get("address")
-    token_id = request.args.get("token_id", type = int)
+    authKey = request.args.get("auth_key_prefix")
+    currency = request.args.get("currency")
     address = address.lower()
 
-    wallet = Wallet.recover(WalletRecoverFile)
-    account = wallet.accounts[0]
+    # wallet = Wallet.recover(WalletRecoverFile)
+    # account = wallet.accounts[0]
 
     cli = MakeViolasClient()
 
-    if token_id is None:
-        cli.transfer_coin(account, address, 1000)
-    else:
-        cli.transfer_coin(account, address, 1000, token_id, ContractAddress)
+    cli.mint_coin(address, 100000, is_blocking = True, auth_key_prefix = authKey ,currency_code = currency)
 
     return MakeResp(ErrorCode.ERR_OK)
 
