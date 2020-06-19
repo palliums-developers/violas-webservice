@@ -12,6 +12,7 @@ from libra_client.error.error import LibraError
 
 from violas_client import Client as ViolasClient
 from violas_client.error.error import LibraError as ViolasError
+from violas_client.lbrtypes.account_config.constants.lbr import CORE_CODE_ADDRESS
 
 from violas_client import Wallet
 
@@ -30,6 +31,7 @@ CORS(app, resources = r"/*")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 PHOTO_FOLDER = os.path.abspath("/var/www/violas_wallet/photo")
 PHOTO_URL = f"{config['IMAGE SERVER']['HOST']}/1.0/violas/photo/"
+ICON_URL = f"{config['IMAGE SERVER']['HOST']}/1.0/violas/icon/"
 
 libraDBInfo = config["LIBRA DB INFO"]
 libraDBUrl = f"{libraDBInfo['DBTYPE']}+{libraDBInfo['DRIVER']}://{libraDBInfo['USERNAME']}:{libraDBInfo['PASSWORD']}@{libraDBInfo['HOSTNAME']}:{libraDBInfo['PORT']}/{libraDBInfo['DATABASE']}"
