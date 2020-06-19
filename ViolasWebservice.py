@@ -234,7 +234,23 @@ def GetCurrency():
     except ViolasError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
-    return MakeResp(ErrorCode.ERR_OK, {"currencies": currencies})
+    filtered = []
+    for i in currencies:
+        if i[0:3] != "LBR" and i != "BTCBTC":
+            filtered.append(i)
+
+    data = []
+    for i in filtered:
+        cInfo = {}
+        cInfo["name"] = i
+        cInfo["module"] = i
+        cInfo["address"] = CORE_CODE_ADDRESS.hex()
+        cInfo["show_icon"] = f"{ICON_URL}violas.png"
+        cInfo["show_name"] = i[3:] if i[0:4] != "Coin" else i
+
+        data.append(cInfo)
+
+    return MakeResp(ErrorCode.ERR_OK, {"currencies": data})
 
 @app.route("/1.0/violas/currency/published")
 def CheckCurrencyPublished():

@@ -230,6 +230,7 @@ class LibraPGHandler():
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
             info["currency"] = i.currency
+            info["status"] = i.status
 
             infoList.append(info)
 
