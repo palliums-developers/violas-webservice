@@ -484,7 +484,7 @@ def GetViolasValue():
 
 @app.route("/1.0/violas/value/libra")
 def GetLibraValue():
-    currencies = request.args.get("address")
+    address = request.args.get("address")
     cli = MakeLibraClient()
 
     balances = cli.get_balances(address)
