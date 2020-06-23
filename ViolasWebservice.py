@@ -9,10 +9,11 @@ import hashlib
 
 from libra_client import Client as LibraClient
 from libra_client.error.error import LibraError
+from libra_client.lbrtypes.account_config.constants.lbr import CORE_CODE_ADDRESS as LIBRA_CORE_CODE_ADDRESS
 
 from violas_client import Client as ViolasClient
 from violas_client.error.error import LibraError as ViolasError
-from violas_client.lbrtypes.account_config.constants.lbr import CORE_CODE_ADDRESS
+from violas_client.lbrtypes.account_config.constants.lbr import CORE_CODE_ADDRESS as VIOLAS_CORE_CODE_ADDRESS
 
 from violas_client import Wallet
 
@@ -94,14 +95,38 @@ def GetLibraBalance():
         if currency is None:
             balances = cli.get_balances(address)
             data = {"balances": balances}
+            data = []
+            for key, value in balances.items():
+                item = {}
+                item["name"] = key
+                item["balance"] = value
+
+                if key == "Coin1":
+                    showName = "USD"
+                elif key == "Coin2":
+                    showName = "EUR"
+                else:
+                    showName = key
+
+                item["show_name"] = showName
+                item["show_icon"] = f"{ICON_URL}libra.png"
+
+                data.append(item)
         else:
-            balance = cli.get_balance(address, currency_code=currency)
-            data = {"balances": {currency: balance}}
+            balance = cli.get_balance(address, currency_code = currency)
+            if currency == "Coin1":
+                showName = "USD"
+            elif currency == "Coin2":
+                showName = "EUR"
+            else:
+                showName = currency
+
+            data = [{currency: balance, "name": currency, "show_name": showName, "show_icon": f"{ICON_URL}libra.png"}]
 
     except LibraError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
-    return MakeResp(ErrorCode.ERR_OK, data)
+    return MakeResp(ErrorCode.ERR_OK, {"balances": data})
 
 @app.route("/1.0/libra/seqnum")
 def GetLibraSequenceNumbert():
@@ -163,6 +188,33 @@ def MintLibraToAccount():
 
     return MakeResp(ErrorCode.ERR_OK)
 
+@app.route("/1.0/libra/currency")
+def GetLibraCurrency():
+    cli = MakeLibraClient()
+
+    try:
+        currencies = cli.get_registered_currencies()
+    except ViolasError as e:
+        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+
+    data = []
+    for i in currencies:
+        cInfo = {}
+        cInfo["name"] = i
+        cInfo["module"] = i
+        cInfo["address"] = LIBRA_CORE_CODE_ADDRESS.hex()
+        cInfo["show_icon"] = f"{ICON_URL}libra.png"
+        if i == "Coin1":
+            cInfo["show_name"] = "USD"
+        elif i == "Coin2":
+            cInfo["show_name"] = "EUR"
+        else:
+            cInfo["show_name"] = i
+
+        data.append(cInfo)
+
+    return MakeResp(ErrorCode.ERR_OK, {"currencies": data})
+
 # VIOLAS WALLET
 @app.route("/1.0/violas/balance")
 def GetViolasBalance():
@@ -173,15 +225,26 @@ def GetViolasBalance():
     cli = MakeViolasClient()
     try:
         if currency is None:
-            balance = cli.get_balances(address)
-            data = {"balances": balance}
+            balances = cli.get_balances(address)
+            data = {"balances": balances}
+            data = []
+            for key, value in balances.items():
+                item = {}
+                item["name"] = key
+                item["balance"] = value
+                item["show_name"] = key[3:] if len(key) > 3 else key
+                item["show_icon"] = f"{ICON_URL}violas.png"
+
+                data.append(item)
         else:
-            balance = cli.get_balance(address, currency)
-            data = {"balances": {currency: balance}}
-    except ViolasError as e:
+            balance = cli.get_balance(address, currency_code = currency)
+            showName = currency[3:] if len(currency) > 3 else currency
+            data = [{currency: balance, "name": currency, "show_name": showName, "show_icon": f"{ICON_URL}violas.png"}]
+
+    except LibraError as e:
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
-    return MakeResp(ErrorCode.ERR_OK, data)
+    return MakeResp(ErrorCode.ERR_OK, {"balances": data})
 
 @app.route("/1.0/violas/seqnum")
 def GetViolasSequenceNumbert():
@@ -228,7 +291,7 @@ def GetViolasTransactionInfo():
     return MakeResp(ErrorCode.ERR_OK, datas)
 
 @app.route("/1.0/violas/currency")
-def GetCurrency():
+def GetViolasCurrency():
     cli = MakeViolasClient()
 
     try:
@@ -238,7 +301,7 @@ def GetCurrency():
 
     filtered = []
     for i in currencies:
-        if i[0:3] != "LBR" and i != "BTCBTC":
+        if i == "LBR" or i[0:3] == "VLS":
             filtered.append(i)
 
     data = []
@@ -246,9 +309,9 @@ def GetCurrency():
         cInfo = {}
         cInfo["name"] = i
         cInfo["module"] = i
-        cInfo["address"] = CORE_CODE_ADDRESS.hex()
+        cInfo["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
         cInfo["show_icon"] = f"{ICON_URL}violas.png"
-        cInfo["show_name"] = i[3:] if i[0:4] != "Coin" else i
+        cInfo["show_name"] = i[3:] if i != "LBR" else i
 
         data.append(cInfo)
 
