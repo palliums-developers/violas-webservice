@@ -1519,3 +1519,28 @@ def GetMapedCoinModules():
             infos.append(info)
 
     return MakeResp(ErrorCode.ERR_OK, infos)
+
+# BTC
+@app.route("/1.0/btc/balance")
+def GetBtcBalance():
+    address = request.args.get("address")
+
+    reqUrl = f"https://chain.api.btc.com/v3/address/{address}"
+    resp = requests.get(reqUrl)
+
+    balance = resp.json()["data"]["banlance"]
+
+    data = [{"BTC": balance, "name": "BTC", "show_name": "BTC", "show_icon": f"{ICON_URL}btc.png"}]
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/btc/transaction", methods = ["POST"])
+def ForwardBtcTransaction():
+    params = request.get_json()
+    rawHex = params["rawhex"]
+
+    resp = requests.post("https://tchain.api.btc.com/v3/tools/tx-publish", params = {"rawhex": rawHex})
+    if resp.json()["err_no"] != 0:
+        logging.error(f"ERROR: Forward BTC request failed, msg: {resp.json()['error_msg']}")
+        return MakeResp(ErrorCode.ERR_BTC_FORWARD_REQUEST)
+
+    return MakeResp(ErrorCode.ERR_OK)
