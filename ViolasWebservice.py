@@ -226,7 +226,7 @@ def GetViolasBalance():
     try:
         if currency is None:
             balances = cli.get_balances(address)
-            data = {"balances": balances}
+
             data = []
             for key, value in balances.items():
                 item = {}
@@ -444,9 +444,11 @@ def GetAccountInfo():
 def GetBTCValue():
     url = "https://api.coincap.io/v2/assets/bitcoin"
     resp = requests.get(url)
-    price = resp.json()["data"]["priceUsd"]
+    rate = resp.json()["data"]["priceUsd"]
 
-    return MakeResp(ErrorCode.ERR_OK, {"BTC": price})
+    data = [{"name": "BTC", "rate": rate}]
+
+    return MakeResp(ErrorCode.ERR_OK, data)
 
 def GetRates():
     yesterday = datetime.date.fromtimestamp(time.time() - 24 * 60 * 60)
@@ -466,25 +468,45 @@ def GetViolasValue():
 
     balances = cli.get_balances(address)
     currencies = []
-    for currency in balances:
+    for currency in balances.keys():
         currencies.append(currency)
 
     rates = GetRates()
-    values = {}
+    values = []
     for currency in currencies:
-        values[currency] = rates.get(currency[3:]) if rates.get(currency[3:]) is not None else 0
+        item = {}
+        item["name"] = currency
+        item["rate"] = rates.get(currency[3:]) if rates.get(currency[3:]) is not None else 0
+
+        values.append(item)
 
     return MakeResp(ErrorCode.ERR_OK, values)
 
 @app.route("/1.0/violas/value/libra")
 def GetLibraValue():
-    currencies = request.args.get("currencies")
-    currencyList = currencies.split(',')
+    currencies = request.args.get("address")
+    cli = MakeLibraClient()
+
+    balances = cli.get_balances(address)
+    currencies = []
+    for currency in balances.keys():
+        currencies.append(currency)
 
     rates = GetRates()
-    values = {}
-    for currency in currencyList:
-        values[currency] = rates.get(currency[3:]) if rates.get(currency[3:]) is not None else 0
+    values = []
+    for currency in currencies:
+        item = {}
+        if currency == "Coin1":
+            name = "USD"
+        elif currency == "Coin2":
+            name = "EUR"
+        else:
+            name = currency
+
+        item["name"] = currency
+        item["rate"] = rates.get(name) if rates.get(name) is not None else 0
+
+        values.append(item)
 
     return MakeResp(ErrorCode.ERR_OK, values)
 
@@ -1156,14 +1178,29 @@ def LibraGetAddressInfo(address):
         return MakeResp(ErrorCode.ERR_OK, {})
 
     cli = MakeLibraClient()
-    finish = 0
-    while finish < 3:
-        try:
-            result = cli.get_balances(address)
-            addressInfo["balance"] = result
-            finish = 3
-        except LibraError as e:
-            finish += 1
+    try:
+        result = cli.get_balances(address)
+        print(result)
+        balances = []
+        for key, value in result.items():
+            item = {}
+            item["name"] = key
+            item["balance"] = value
+            if key == "Coin1":
+                showName = "USD"
+            elif key == "Coin2":
+                showName = "EUR"
+            else:
+                showName = key
+
+            item["show_name"] = key
+            item["show_icon"] = f"{ICON_URL}libra.png"
+
+            balances.append(item)
+
+        addressInfo["balance"] = balances
+    except ViolasError as e:
+        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
     if currency is None:
         succ, addressTransactions = HLibra.GetTransactionsByAddress(address, limit, offset)
@@ -1225,14 +1262,22 @@ def ViolasGetAddressInfo(address):
         return MakeResp(ErrorCode.ERR_OK, {})
 
     cli = MakeViolasClient()
-    finish = 0
-    while finish < 3:
-        try:
-            result = cli.get_balances(address)
-            addressInfo["balance"] = result
-            finish = 3
-        except ViolasError as e:
-            finish += 1
+    try:
+        result = cli.get_balances(address)
+        print(result)
+        balances = []
+        for key, value in result.items():
+            item = {}
+            item["name"] = key
+            item["balance"] = value
+            item["show_name"] = key[3:] if len(key) > 3 else key
+            item["show_icon"] = f"{ICON_URL}violas.png"
+
+            balances.append(item)
+
+        addressInfo["balance"] = balances
+    except ViolasError as e:
+        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
     if currency is None:
         succ, addressTransactions = HViolas.GetTransactionsByAddress(address, limit, offset)
