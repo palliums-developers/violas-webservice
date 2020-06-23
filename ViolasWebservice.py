@@ -1534,7 +1534,7 @@ def GetBtcBalance():
     return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/btc/transaction", methods = ["POST"])
-def ForwardBtcTransaction():
+def BroadcastBtcTransaction():
     params = request.get_json()
     rawHex = params["rawhex"]
 
