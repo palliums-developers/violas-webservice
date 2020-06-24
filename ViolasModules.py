@@ -11,6 +11,7 @@ class ViolasTransaction(Base):
     sender = Column(String(64), nullable = False)
     receiver = Column(String(64), nullable = True)
     currency = Column(String(16), nullable = True)
+    gas_currency = Column(String(16), nullable = True)
     amount = Column(Numeric, nullable = False)
     gas_used = Column(Numeric, nullable = False)
     gas_unit_price = Column(Numeric, nullable = False)

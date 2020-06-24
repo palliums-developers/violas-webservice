@@ -731,7 +731,6 @@ class ViolasPGHandler():
             info["amount"] = int(i.amount)
             info["status"] = i.status
             info["currency"] = i.currency
-            info["gas_currency"] = i.currency
 
             infoList.append(info)
 
@@ -760,7 +759,6 @@ class ViolasPGHandler():
             info["amount"] = int(i.amount)
             info["status"] = i.status
             info["currency"] = i.currency
-            info["gas_currency"] = i.currency
 
             infoList.append(info)
 
@@ -783,7 +781,7 @@ class ViolasPGHandler():
         info["sender"] = result.sender
         info["receiver"] = result.receiver
         info["currency"] = result.currency
-        info["gas_currency"] = result.currency
+        info["gas_currency"] = result.gas_currency
         info["amount"] = int(result.amount)
         info["gas"] = int(result.gas_used)
         info["gas_unit_price"] = int(result.gas_unit_price)
@@ -957,7 +955,7 @@ class ViolasPGHandler():
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
             info["currency"] = i.currency
-            info["gas_currency"] = i.currency
+            info["gas_currency"] = i.gas_currency
             info["status"] = i.status
 
             infoList.append(info)
