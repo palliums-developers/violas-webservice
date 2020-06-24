@@ -5,6 +5,8 @@ from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError
 
+from TransferType import TransferType
+
 class LibraPGHandler():
     def __init__(self, dbUrl):
         self.engine = create_engine(dbUrl)
