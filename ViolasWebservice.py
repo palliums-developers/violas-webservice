@@ -431,12 +431,12 @@ def GetAccountInfo():
         return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
 
     data = {"balance": state.get_balance(),
-            "authentication_key": state.get_account_resource().get_authentication_key(),
+            "authentication_key": state.get_account_resource().authentication_key.hex(),
             "sequence_number": state.get_sequence_number(),
-            "delegated_key_rotation_capability": state.get_account_resource().get_delegated_key_rotation_capability(),
-            "delegated_withdrawal_capability": state.get_account_resource().get_delegated_withdrawal_capability(),
-            "received_events_key": state.get_account_resource().get_received_events().get_key(),
-            "sent_events_key": state.get_account_resource().get_sent_events().get_key()}
+            "delegated_key_rotation_capability": state.get_account_resource().key_rotation_capability.value.account_address.hex(),
+            "delegated_withdrawal_capability": state.get_account_resource().withdrawal_capability.value.account_address.hex(),
+            "received_events_key": state.get_account_resource().received_events.get_key(),
+            "sent_events_key": state.get_account_resource().sent_events.get_key()}
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
