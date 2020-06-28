@@ -311,7 +311,7 @@ def GetViolasCurrency():
         cInfo["module"] = i
         cInfo["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
         cInfo["show_icon"] = f"{ICON_URL}violas.png"
-        cInfo["show_name"] = i[3:] if i != "LBR" else i
+        cInfo["show_name"] = i[3:] if i != "LBR" else "VLS"
 
         data.append(cInfo)
 
@@ -451,13 +451,14 @@ def GetBTCValue():
     return MakeResp(ErrorCode.ERR_OK, data)
 
 def GetRates():
-    yesterday = datetime.date.fromtimestamp(time.time() - 24 * 60 * 60)
-    today = datetime.date.today()
-    start = f"{yesterday.year}-{yesterday.month if yesterday.month > 9 else '0' + str(yesterday.month)}-{yesterday.day if yesterday.day > 9 else '0' + str(yesterday.day)}"
-    end = f"{today.year}-{today.month if today.month > 9 else '0' + str(today.month)}-{today.day if today.day > 9 else '0' + str(today.day)}"
-    url = f"https://api.exchangeratesapi.io/history?base=USD&start_at={start}&end_at={end}"
+    # yesterday = datetime.date.fromtimestamp(time.time() - 24 * 60 * 60)
+    # today = datetime.date.today()
+    # start = f"{yesterday.year}-{yesterday.month if yesterday.month > 9 else '0' + str(yesterday.month)}-{yesterday.day if yesterday.day > 9 else '0' + str(yesterday.day)}"
+    # end = f"{today.year}-{today.month if today.month > 9 else '0' + str(today.month)}-{today.day if today.day > 9 else '0' + str(today.day)}"
+    # url = f"https://api.exchangeratesapi.io/history?base=USD&start_at={start}&end_at={end}"
+    url = f"https://api.exchangeratesapi.io/latest?base=USD"
     resp = requests.get(url)
-    rates = resp.json()["rates"][start]
+    rates = resp.json()["rates"]
 
     return rates
 
