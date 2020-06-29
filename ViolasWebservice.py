@@ -1527,10 +1527,10 @@ def GetMapedCoinModules():
 def GetBtcBalance():
     address = request.args.get("address")
 
-    reqUrl = f"https://chain.api.btc.com/v3/address/{address}"
+    reqUrl = f"https://btc1.trezor.io/api/v2/address/{address}"
     resp = requests.get(reqUrl)
 
-    balance = resp.json()["data"]["banlance"]
+    balance = resp.json()["balance"]
 
     data = [{"BTC": balance, "name": "BTC", "show_name": "BTC", "show_icon": f"{ICON_URL}btc.png"}]
     return MakeResp(ErrorCode.ERR_OK, data)
@@ -1540,9 +1540,10 @@ def BroadcastBtcTransaction():
     params = request.get_json()
     rawHex = params["rawhex"]
 
-    resp = requests.post("https://tchain.api.btc.com/v3/tools/tx-publish", params = {"rawhex": rawHex})
-    if resp.json()["err_no"] != 0:
-        logging.error(f"ERROR: Forward BTC request failed, msg: {resp.json()['error_msg']}")
+    resp = requests.post("https://btc1.trezor.io/api/v2/sendtx", params = {"rawhex": rawHex})
+    if resp.json().get("error") is not None:
+        logging.error(f"ERROR: Forward BTC request failed, msg: {resp.json()['error']['message']}")
         return MakeResp(ErrorCode.ERR_BTC_FORWARD_REQUEST)
 
     return MakeResp(ErrorCode.ERR_OK)
+
