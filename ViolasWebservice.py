@@ -232,8 +232,9 @@ def GetViolasBalance():
                 item = {}
                 item["name"] = key
                 item["balance"] = value
-                item["show_name"] = key[3:] if len(key) > 3 else key
+                item["show_name"] = key[3:] if len(key) > 3 else "VLS"
                 item["show_icon"] = f"{ICON_URL}violas.png"
+                item["address"] = address
 
                 data.append(item)
         else:
