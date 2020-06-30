@@ -110,6 +110,7 @@ def GetLibraBalance():
 
                 item["show_name"] = showName
                 item["show_icon"] = f"{ICON_URL}libra.png"
+                item["address"] = address
 
                 data.append(item)
         else:
@@ -214,6 +215,28 @@ def GetLibraCurrency():
         data.append(cInfo)
 
     return MakeResp(ErrorCode.ERR_OK, {"currencies": data})
+
+@app.route("/1.0/libra/account/info")
+def GetLibraAccountInfo():
+    address = request.args.get("address")
+    address = address.lower()
+
+    cli = MakeLibraClient()
+
+    try:
+        state = cli.get_account_state(address)
+    except ViolasError as e:
+        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+
+    data = {"balance": state.get_balance(),
+            "authentication_key": state.get_account_resource().authentication_key.hex(),
+            "sequence_number": state.get_sequence_number(),
+            "delegated_key_rotation_capability": state.get_account_resource().key_rotation_capability.value.account_address.hex(),
+            "delegated_withdrawal_capability": state.get_account_resource().withdrawal_capability.value.account_address.hex(),
+            "received_events_key": state.get_account_resource().received_events.get_key(),
+            "sent_events_key": state.get_account_resource().sent_events.get_key()}
+
+    return MakeResp(ErrorCode.ERR_OK, data)
 
 # VIOLAS WALLET
 @app.route("/1.0/violas/balance")
@@ -1546,4 +1569,12 @@ def BroadcastBtcTransaction():
         return MakeResp(ErrorCode.ERR_BTC_FORWARD_REQUEST)
 
     return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/btc/utxo")
+def GetBtcUTXO():
+    address = request.args.get("address")
+    reqUrl = f"https://btc1.trezor.io/api/v2/utxo/{address}"
+    resp = requests.get(reqUrl)
+
+    return MakeResp(ErrorCode.ERR_OK, resp.json())
 
