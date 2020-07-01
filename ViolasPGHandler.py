@@ -946,7 +946,7 @@ class ViolasPGHandler():
         infoList = []
         for i in result:
             info = {}
-            info["type"] = TransferType[i.transaction_type]
+            info["type"] = TransferType.get(i.transaction_type)
             info["version"] = i.id - 1
             info["sender"] = i.sender
             info["sequence_number"] = i.sequence_number
