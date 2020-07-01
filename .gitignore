@@ -6,3 +6,4 @@ Pipfile.lock
 /canoser
 /libra_client
 /violas_client
+/test/
