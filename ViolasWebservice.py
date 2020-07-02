@@ -470,7 +470,7 @@ def GetBTCValue():
     resp = requests.get(url)
     rate = resp.json()["data"]["priceUsd"]
 
-    data = [{"name": "BTC", "rate": rate}]
+    data = [{"name": "BTC", "rate": float(rate)}]
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
