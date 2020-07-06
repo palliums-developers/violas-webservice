@@ -643,27 +643,23 @@ class ViolasPGHandler():
             info["version"] = i.id - 1
             info["type"] = i.transaction_type
             info["sender"] = i.sender
-            info["gas"] = int(i.gas_unit_price)
+            info["gas"] = int(i.gas_used)
             info["expiration_time"] = i.expiration_time
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
             info["status"] = i.status
-            info["token_id"] = i.token_id
+            info["currency"] = i.currency
 
             infoList.append(info)
 
         return True, infoList
 
-    def GetRecentTransactionAboutModule(self, limit, offset, module):
+    def GetRecentTransactionAboutCurrency(self, limit, offset, currency):
         s = self.session()
 
-        logging.error(f"module value is {module}")
         try:
-            if int(module) == -1:
-                logging.error(f"query vtoken transactions")
-                result = s.query(ViolasTransaction).filter(ViolasTransaction.token_id == None).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-            else:
-                result = s.query(ViolasTransaction).filter(ViolasTransaction.token_id == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            result = s.query(ViolasTransaction).filter(ViolasTransaction.currency == currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+
             s.close()
         except OperationalError:
             s.close()
@@ -675,12 +671,12 @@ class ViolasPGHandler():
             info["version"] = i.id - 1
             info["type"] = i.transaction_type
             info["sender"] = i.sender
-            info["gas"] = int(i.gas_unit_price)
+            info["gas"] = int(i.gas_used)
             info["expiration_time"] = i.expiration_time
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
             info["status"] = i.status
-            info["token_id"] = i.token_id
+            info["currency"] = i.currency
 
             infoList.append(info)
 
@@ -729,25 +725,23 @@ class ViolasPGHandler():
             info["version"] = i.id - 1
             info["type"] = i.transaction_type
             info["sender"] = i.sender
-            info["gas"] = int(i.gas_unit_price)
+            info["gas"] = int(i.gas_used)
             info["expiration_time"] = i.expiration_time
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
             info["status"] = i.status
-            info["token_id"] = i.token_id
+            info["currency"] = i.currency
 
             infoList.append(info)
 
         return True, infoList
 
-    def GetTransactionsByAddressAboutModule(self, address, limit, offset, module):
+    def GetTransactionsByAddressAboutCurrency(self, address, limit, offset, currency):
         s = self.session()
 
         try:
-            if int(module) == -1:
-                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.token_id == None).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-            else:
-                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.token_id == module).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.currency == currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+
             s.close()
         except OperationalError:
             s.close()
@@ -759,12 +753,12 @@ class ViolasPGHandler():
             info["version"] = i.id - 1
             info["type"] = i.transaction_type
             info["sender"] = i.sender
-            info["gas"] = int(i.gas_unit_price)
+            info["gas"] = int(i.gas_used)
             info["expiration_time"] = i.expiration_time
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
             info["status"] = i.status
-            info["token_id"] = i.token_id
+            info["currency"] = i.currency
 
             infoList.append(info)
 
@@ -786,8 +780,10 @@ class ViolasPGHandler():
         info["sequence_number"] = result.sequence_number
         info["sender"] = result.sender
         info["receiver"] = result.receiver
-        info["module_address"] = result.module
+        info["currency"] = result.currency
+        info["gas_currency"] = result.gas_currency
         info["amount"] = int(result.amount)
+        info["gas"] = int(result.gas_used)
         info["gas_unit_price"] = int(result.gas_unit_price)
         info["max_gas_amount"] = int(result.max_gas_amount)
         info["expiration_time"] = result.expiration_time
@@ -925,23 +921,24 @@ class ViolasPGHandler():
 
         return True, infoList
 
-    def GetTransactionsForWallet(self, address, module, token_id, offset, limit, moduleMap):
+    def GetTransactionsForWallet(self, address, currency, flows, offset, limit):
         s = self.session()
 
         try:
-            result = s.query(ViolasSSOInfo.token_id, ViolasSSOInfo.token_type, ViolasSSOInfo.token_name).filter(ViolasSSOInfo.approval_status == 4).all()
-        except OperationalError:
-            s.close()
-            return False, None
-
-        for i in result:
-            moduleMap[i.token_id] = i.token_name + i.token_type
-
-        try:
-            if module == "00000000000000000000000000000000":
-                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            if currency is None:
+                if flows is None:
+                    result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                elif flows == 0:
+                    result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                elif flows == 1:
+                    result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
             else:
-                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.module == module).filter(ViolasTransaction.token_id == token_id).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                if flows is None:
+                    result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.currency == currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                elif flows == 0:
+                    result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.currency == currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                elif flows == 1:
+                    result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.currency == currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
         except OperationalError:
             s.close()
             return False, None
@@ -949,16 +946,17 @@ class ViolasPGHandler():
         infoList = []
         for i in result:
             info = {}
-            info["type"] = TransferType[i.transaction_type]
+            info["type"] = TransferType.get(i.transaction_type)
             info["version"] = i.id - 1
             info["sender"] = i.sender
             info["sequence_number"] = i.sequence_number
-            info["gas"] = int(i.gas_unit_price)
+            info["gas"] = int(i.gas_used)
             info["expiration_time"] = i.expiration_time
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
-            info["token_id"] = i.token_id
-            info["module_name"] = moduleMap.get(i.token_id)
+            info["currency"] = i.currency
+            info["gas_currency"] = i.gas_currency
+            info["status"] = i.status
 
             infoList.append(info)
 

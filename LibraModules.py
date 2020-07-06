@@ -1,5 +1,5 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, SmallInteger, Integer, BigInteger, String, Numeric
+from sqlalchemy import Column, SmallInteger, Integer, BigInteger, String, Numeric, Text
 
 Base = declarative_base()
 
@@ -7,19 +7,22 @@ class LibraTransaction(Base):
     __tablename__ = "transactions"
 
     id = Column(BigInteger, primary_key = True, autoincrement = True)
-    sender = Column(String(64), nullable = True)
-    receiver = Column(String(64), nullable = True)
     sequence_number = Column(Integer, nullable = False)
-    max_gas_amount = Column(Numeric, nullable = False)
+    sender = Column(String(64), nullable = False)
+    receiver = Column(String(64), nullable = True)
+    currency = Column(String(16), nullable = True)
+    gas_currency = Column(String(16), nullable = True)
+    amount = Column(Numeric, nullable = False)
+    gas_used = Column(Numeric, nullable = False)
     gas_unit_price = Column(Numeric, nullable = False)
+    max_gas_amount = Column(Numeric, nullable = False)
     expiration_time = Column(Integer, nullable = False)
     transaction_type = Column(String(64), nullable = False)
-    amount = Column(Numeric, nullable = False)
-    public_key = Column(String(64), nullable = True)
-    signature = Column(String(128), nullable = True)
+    data = Column(Text(), nullable = True)
+    public_key = Column(Text(), nullable = True)
     script_hash = Column(String(64), nullable = True)
+    signature = Column(Text(), nullable = True)
     signature_scheme = Column(String(32), nullable = True)
-    gas_used = Column(Numeric, nullable = False)
     status = Column(SmallInteger, nullable = False)
 
 class LibraAddressInfo(Base):
