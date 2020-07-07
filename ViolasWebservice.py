@@ -1573,19 +1573,19 @@ def GetBtcUTXO():
 
     return MakeResp(ErrorCode.ERR_OK, resp.json())
 
-@app.route("/1.0/exchange/currency")
-def GetExchangeCurrencies():
+# MARKET
+@app.route("/1.0/market/currency")
+def GetMarketCurrencies():
     cli = MakeExchangeClient()
 
     try:
-        cli.set_exchange_module_address("7ddeda49cd4e719d668db0f2372db7bc")
         currencies = cli.swap_get_registered_currencies()
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception=e)
 
     filtered = []
     for i in currencies:
-        if i == "LBR" or i[0:3] == "VLS":
+        if i != "Coin1" and i != "Coin2":
             filtered.append(i)
 
     data = []
@@ -1594,20 +1594,39 @@ def GetExchangeCurrencies():
         cInfo["name"] = i
         cInfo["module"] = i
         cInfo["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
-        cInfo["show_name"] = i[3:] if i != "LBR" else "VLS"
+        cInfo["show_name"] = i
 
         data.append(cInfo)
 
     return MakeResp(ErrorCode.ERR_OK, {"currencies": data})
 
-@app.route("/1.0/exchange/pool/info")
-def GetExchangeAccountInfo():
+@app.route("/1.0/market/exchange/trial")
+def GetExchangeTrial():
+    amount = request.args.get("amount", type = int)
+    currencyIn = request.args.get("currencyIn")
+    currencyOut = request.args.get("currencyOut")
+
+    cli = MakeExchangeClient()
+    try:
+        cli.set_exchange_module_address("6b0706424ca3a263dc0286b03d6b5ccb")
+        amountOut = cli.swap_get_swap_output_amount(currencyIn, currencyOut, amount)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+
+    print(amountOut)
+    data = {"amount": amountOut[0],
+            "fee": amountOut[1],
+            "rate": amount / amountOut[0]}
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/market/pool/info")
+def GetPoolInfoAboutAccount():
     address = request.args.get("address")
 
     cli = MakeExchangeClient()
 
     try:
-        cli.set_exchange_module_address("7ddeda49cd4e719d668db0f2372db7bc")
         currencies = cli.swap_get_registered_currencies()
         balance = cli.swap_get_liquidity_balances(address)
     except Exception as e:
@@ -1623,15 +1642,13 @@ def GetExchangeAccountInfo():
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
-@app.route("/1.0/exchange/pool/rate")
-def GetExchangePoolRate():
+@app.route("/1.0/market/pool/deposit/trial")
+def GetPoolCurrencyRate():
     amount = request.args.get("amount", type = int)
     currency = request.args.get("currency")
 
     cli = MakeExchangeClient()
     try:
-        cli.set_exchange_module_address("7ddeda49cd4e719d668db0f2372db7bc")
-
         currencies = cli.swap_get_registered_currencies()
         resources = cli.swap_get_reserves_resource()
     except Exception as e:
@@ -1654,3 +1671,37 @@ def GetExchangePoolRate():
         currencyRate.append(rateInfo)
 
     return MakeResp(ErrorCode.ERR_OK, currencyRate)
+
+@app.route("/1.0/market/pool/withdrawal/trial")
+def GetPoolWithdrawalTrial():
+    address = request.args.get("address")
+    tokenAmount = request.args.get("amount", type = int)
+
+    cli = MakeExchangeClient()
+    try:
+        balance = cli.swap_get_liquidity_balances(address)
+
+        currPairs = []
+        for b in balance:
+            currPair = []
+            for k, v in b.items():
+                if k == "liquidity":
+                    if tokenAmount > v:
+                        currPair.clear()
+                        break
+                else:
+                    currPair.append(k)
+
+            if len(currPair) > 0:
+                currPairs.append(currPair)
+
+        data = []
+        for c in currPairs:
+            trialResult = cli.swap_get_liquidity_out_amounts(c[0], c[1], tokenAmount)
+            item = {c[0]: trialResult[0], c[1]: trialResult[1]}
+            data.append(item)
+
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+
+    return MakeResp(ErrorCode.ERR_OK, data)
