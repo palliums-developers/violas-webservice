@@ -1608,7 +1608,6 @@ def GetExchangeTrial():
 
     cli = MakeExchangeClient()
     try:
-        cli.set_exchange_module_address("6b0706424ca3a263dc0286b03d6b5ccb")
         amountOut = cli.swap_get_swap_output_amount(currencyIn, currencyOut, amount)
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
