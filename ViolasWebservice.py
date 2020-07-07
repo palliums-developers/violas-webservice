@@ -8,18 +8,17 @@ import nacl.signing
 import hashlib
 
 from libra_client import Client as LibraClient
-from libra_client.error.error import LibraError
 from libra_client.lbrtypes.account_config.constants.lbr import CORE_CODE_ADDRESS as LIBRA_CORE_CODE_ADDRESS
 
 from violas_client import Client as ViolasClient
-from violas_client.error.error import LibraError as ViolasError
 from violas_client.lbrtypes.account_config.constants.lbr import CORE_CODE_ADDRESS as VIOLAS_CORE_CODE_ADDRESS
 
-from violas_client import Wallet
+from violas_client import exchange_client
 
 from ViolasPGHandler import ViolasPGHandler
 from LibraPGHandler import LibraPGHandler
 from PushServerHandler import PushServerHandler
+
 from ErrorCode import ErrorCode, ErrorMsg
 
 logging.basicConfig(filename = "ViolasWebservice.log", level = logging.DEBUG)
@@ -51,7 +50,6 @@ rdsCoinMap = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["COINMA
 rdsAuth = Redis(cachingInfo["HOST"], cachingInfo["PORT"], cachingInfo["AUTH"], cachingInfo["PASSWORD"])
 
 ContractAddress = "e1be1ab8360a35a0259f1c93e3eac736"
-WalletRecoverFile = "./account_recovery"
 
 GovernorFailedReason = {
     -1: "其他",
@@ -67,14 +65,17 @@ def MakeLibraClient():
     return LibraClient("libra_testnet")
 
 def MakeViolasClient():
-    return ViolasClient.new(config['NODE INFO']['VIOLAS_HOST'], faucet_file = "./mint_test.key")
+    return ViolasClient.new(config['NODE INFO']['VIOLAS_HOST'], faucet_file = config['NODE INFO']['VIOLAS_MINT_KEY'])
+
+def MakeExchangeClient():
+    return exchange_client.Client.new(config['NODE INFO']['VIOLAS_HOST'], faucet_file = config['NODE INFO']['VIOLAS_MINT_KEY'])
 
 def MakeResp(code, data = None, exception = None):
     resp = {}
 
     resp["code"] = code
     if exception is not None:
-        resp["message"] = f"Node runtime error: {exception.msg}"
+        resp["message"] = f"{exception.msg}"
     else:
         resp["message"] = ErrorMsg[code]
 
@@ -124,8 +125,8 @@ def GetLibraBalance():
 
             data = [{currency: balance, "name": currency, "show_name": showName, "show_icon": f"{ICON_URL}libra.png"}]
 
-    except LibraError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     return MakeResp(ErrorCode.ERR_OK, {"balances": data})
 
@@ -138,8 +139,8 @@ def GetLibraSequenceNumbert():
     try:
         seqNum = cli.get_sequence_number(address)
         return MakeResp(ErrorCode.ERR_OK, {"seqnum": seqNum})
-    except LibraError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
 @app.route("/1.0/libra/transaction", methods = ["POST"])
 def MakeLibraTransaction():
@@ -149,11 +150,8 @@ def MakeLibraTransaction():
     cli = MakeLibraClient()
     try:
         cli.submit_signed_transaction(signedtxn, True)
-    except LibraError as e:
-        if e.code == 6011:
-            return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
-        else:
-            return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     return MakeResp(ErrorCode.ERR_OK)
 
@@ -182,10 +180,10 @@ def MintLibraToAccount():
     cli = MakeLibraClient()
     try:
         cli.mint_coin(address, 100, auth_key_prefix = authKey, is_blocking = True, currency_code=currency)
-    except LibraError as e:
-        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
     except ValueError:
         return MakeResp(ErrorCode.ERR_INVAILED_ADDRESS)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     return MakeResp(ErrorCode.ERR_OK)
 
@@ -195,8 +193,8 @@ def GetLibraCurrency():
 
     try:
         currencies = cli.get_registered_currencies()
-    except ViolasError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     data = []
     for i in currencies:
@@ -225,8 +223,8 @@ def GetLibraAccountInfo():
 
     try:
         state = cli.get_account_state(address)
-    except ViolasError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     data = {"balance": state.get_balance(),
             "authentication_key": state.get_account_resource().authentication_key.hex(),
@@ -255,7 +253,7 @@ def GetViolasBalance():
                 item = {}
                 item["name"] = key
                 item["balance"] = value
-                item["show_name"] = key[3:] if len(key) > 3 else "VLS"
+                item["show_name"] = key
                 item["show_icon"] = f"{ICON_URL}violas.png"
                 item["address"] = address
 
@@ -263,10 +261,10 @@ def GetViolasBalance():
         else:
             balance = cli.get_balance(address, currency_code = currency)
             showName = currency[3:] if len(currency) > 3 else currency
-            data = [{currency: balance, "name": currency, "show_name": showName, "show_icon": f"{ICON_URL}violas.png"}]
+            data = [{currency: balance, "name": currency, "show_name": currency, "show_icon": f"{ICON_URL}violas.png"}]
 
-    except LibraError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     return MakeResp(ErrorCode.ERR_OK, {"balances": data})
 
@@ -279,8 +277,8 @@ def GetViolasSequenceNumbert():
     try:
         seqNum = cli.get_account_sequence_number(address)
         return MakeResp(ErrorCode.ERR_OK, {"seqnum": seqNum})
-    except ViolasError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
 @app.route("/1.0/violas/transaction", methods = ["POST"])
 def MakeViolasTransaction():
@@ -291,11 +289,8 @@ def MakeViolasTransaction():
 
     try:
         cli.submit_signed_transaction(signedtxn, True)
-    except ViolasError as e:
-        if e.code == 6011:
-            return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
-        else:
-            return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     return MakeResp(ErrorCode.ERR_OK)
 
@@ -320,12 +315,12 @@ def GetViolasCurrency():
 
     try:
         currencies = cli.get_registered_currencies()
-    except ViolasError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     filtered = []
     for i in currencies:
-        if i == "LBR" or i[0:3] == "VLS":
+        if i != "Coin1" and i != "Coin2":
             filtered.append(i)
 
     data = []
@@ -335,7 +330,7 @@ def GetViolasCurrency():
         cInfo["module"] = i
         cInfo["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
         cInfo["show_icon"] = f"{ICON_URL}violas.png"
-        cInfo["show_name"] = i[3:] if i != "LBR" else "VLS"
+        cInfo["show_name"] = i
 
         data.append(cInfo)
 
@@ -351,8 +346,8 @@ def CheckCurrencyPublished():
     try:
         balances = cli.get_balances(addr)
         print(balances)
-    except ViolasError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     keys = []
     for key in balances:
@@ -435,10 +430,10 @@ def MintViolasToAccount():
     cli = MakeViolasClient()
     try:
         cli.mint_coin(address, 100, auth_key_prefix = authKey, is_blocking = True, currency_code=currency)
-    except ViolasError as e:
-        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
     except ValueError:
         return MakeResp(ErrorCode.ERR_INVAILED_ADDRESS)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     return MakeResp(ErrorCode.ERR_OK)
 
@@ -451,8 +446,8 @@ def GetAccountInfo():
 
     try:
         state = cli.get_account_state(address)
-    except ViolasError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     data = {"balance": state.get_balance(),
             "authentication_key": state.get_account_resource().authentication_key.hex(),
@@ -961,8 +956,8 @@ def CheckGovernorAuthority():
 
     try:
         result = cli.get_balance(address, module)
-    except ViolasError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     if result != 1:
         data = {"authority": 0}
@@ -1224,8 +1219,8 @@ def LibraGetAddressInfo(address):
             balances.append(item)
 
         addressInfo["balance"] = balances
-    except ViolasError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     if currency is None:
         succ, addressTransactions = HLibra.GetTransactionsByAddress(address, limit, offset)
@@ -1301,8 +1296,8 @@ def ViolasGetAddressInfo(address):
             balances.append(item)
 
         addressInfo["balance"] = balances
-    except ViolasError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     if currency is None:
         succ, addressTransactions = HViolas.GetTransactionsByAddress(address, limit, offset)
@@ -1518,8 +1513,8 @@ def GetMapedCoinModules():
 
     try:
         info = cli.get_account_state(address)
-    except ViolasError as e:
-        return MakeResp(ErrorCode.ERR_GRPC_CONNECT)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     if not info.exists():
         return MakeResp(ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST)
@@ -1578,3 +1573,84 @@ def GetBtcUTXO():
 
     return MakeResp(ErrorCode.ERR_OK, resp.json())
 
+@app.route("/1.0/exchange/currency")
+def GetExchangeCurrencies():
+    cli = MakeExchangeClient()
+
+    try:
+        cli.set_exchange_module_address("7ddeda49cd4e719d668db0f2372db7bc")
+        currencies = cli.swap_get_registered_currencies()
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception=e)
+
+    filtered = []
+    for i in currencies:
+        if i == "LBR" or i[0:3] == "VLS":
+            filtered.append(i)
+
+    data = []
+    for i in filtered:
+        cInfo = {}
+        cInfo["name"] = i
+        cInfo["module"] = i
+        cInfo["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
+        cInfo["show_name"] = i[3:] if i != "LBR" else "VLS"
+
+        data.append(cInfo)
+
+    return MakeResp(ErrorCode.ERR_OK, {"currencies": data})
+
+@app.route("/1.0/exchange/pool/info")
+def GetExchangeAccountInfo():
+    address = request.args.get("address")
+
+    cli = MakeExchangeClient()
+
+    try:
+        cli.set_exchange_module_address("7ddeda49cd4e719d668db0f2372db7bc")
+        currencies = cli.swap_get_registered_currencies()
+        balance = cli.swap_get_liquidity_balances(address)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+
+    data = {}
+    for b in balance:
+        for k, v in b.items():
+            if k == "liquidity":
+                data["TOKEN"] = v + data["TOKEN"] if data.get("TOKEN") is not None else 0
+            else:
+                data[k] = v + data[k] if data.get(k) is not None else 0
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/exchange/pool/rate")
+def GetExchangePoolRate():
+    amount = request.args.get("amount", type = int)
+    currency = request.args.get("currency")
+
+    cli = MakeExchangeClient()
+    try:
+        cli.set_exchange_module_address("7ddeda49cd4e719d668db0f2372db7bc")
+
+        currencies = cli.swap_get_registered_currencies()
+        resources = cli.swap_get_reserves_resource()
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+
+    index = currencies.index(currency)
+
+    currencyRate = []
+    for r in resources:
+        if r.coina.index == index:
+            curr = currencies[r.coinb.index]
+        elif r.coinb.index == index:
+            curr = currencies[r.coina.index]
+        else:
+            continue
+
+        amou = cli.swap_get_liquidity_output_amount(currency, curr, amount)
+
+        rateInfo = {"currency": curr, "amount": amou , "rate": amount/amou}
+        currencyRate.append(rateInfo)
+
+    return MakeResp(ErrorCode.ERR_OK, currencyRate)
