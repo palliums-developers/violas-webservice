@@ -72,12 +72,14 @@ def MakeExchangeClient():
     cli.set_exchange_module_address(VIOLAS_CORE_CODE_ADDRESS)
     return cli
 
-def MakeResp(code, data = None, exception = None):
+def MakeResp(code, data = None, exception = None, message = None):
     resp = {}
 
     resp["code"] = code
     if exception is not None:
         resp["message"] = f"{exception.msg}"
+    elif message is not None:
+        resp["message"] = message
     else:
         resp["message"] = ErrorMsg[code]
 
@@ -1585,6 +1587,9 @@ def GetMarketCurrencies():
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception=e)
 
+    if currencies is None:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, message = "There is no currency has registered!")
+
     filtered = []
     for i in currencies:
         if i != "Coin1" and i != "Coin2":
@@ -1630,6 +1635,8 @@ def GetPoolInfoAboutAccount():
     try:
         currencies = cli.swap_get_registered_currencies()
         balance = cli.swap_get_liquidity_balances(address)
+    except AttributeError as e:
+        return MakeResp(ErrorCode.ERR_OK, {})
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
@@ -1651,25 +1658,27 @@ def GetPoolCurrencyRate():
     cli = MakeExchangeClient()
     try:
         currencies = cli.swap_get_registered_currencies()
+        if currencies is None:
+            return MakeResp(ErrorCode.ERR_NODE_RUNTIME, message = "There is no currency has registered!")
+
         resources = cli.swap_get_reserves_resource()
+        index = currencies.index(currency)
+
+        currencyRate = []
+        for r in resources:
+            if r.coina.index == index:
+                curr = currencies[r.coinb.index]
+            elif r.coinb.index == index:
+                curr = currencies[r.coina.index]
+            else:
+                continue
+
+            amou = cli.swap_get_liquidity_output_amount(currency, curr, amount)
+
+            rateInfo = {"currency": curr, "amount": amou , "rate": amount/amou}
+            currencyRate.append(rateInfo)
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
-
-    index = currencies.index(currency)
-
-    currencyRate = []
-    for r in resources:
-        if r.coina.index == index:
-            curr = currencies[r.coinb.index]
-        elif r.coinb.index == index:
-            curr = currencies[r.coina.index]
-        else:
-            continue
-
-        amou = cli.swap_get_liquidity_output_amount(currency, curr, amount)
-
-        rateInfo = {"currency": curr, "amount": amou , "rate": amount/amou}
-        currencyRate.append(rateInfo)
 
     return MakeResp(ErrorCode.ERR_OK, currencyRate)
 
@@ -1702,6 +1711,8 @@ def GetPoolWithdrawalTrial():
             item = {c[0]: trialResult[0], c[1]: trialResult[1]}
             data.append(item)
 
+    except AttributeError as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, message = "No funds in pool!")
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
