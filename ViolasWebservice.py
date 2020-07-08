@@ -68,7 +68,9 @@ def MakeViolasClient():
     return ViolasClient.new(config['NODE INFO']['VIOLAS_HOST'], faucet_file = config['NODE INFO']['VIOLAS_MINT_KEY'])
 
 def MakeExchangeClient():
-    return exchange_client.Client.new(config['NODE INFO']['VIOLAS_HOST'], faucet_file = config['NODE INFO']['VIOLAS_MINT_KEY'])
+    cli = exchange_client.Client.new(config['NODE INFO']['VIOLAS_HOST'], faucet_file = config['NODE INFO']['VIOLAS_MINT_KEY'])
+    cli.set_exchange_module_address(VIOLAS_CORE_CODE_ADDRESS)
+    return cli
 
 def MakeResp(code, data = None, exception = None):
     resp = {}
