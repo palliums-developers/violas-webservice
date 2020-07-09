@@ -1628,6 +1628,18 @@ def GetExchangeTrial():
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
+@app.route("/1.0/market/exchange/transaction")
+def GetMarketExchangeTransactions():
+    address = request.args.get("address")
+    offset = request.args.get("offset", type = int, default = 0)
+    limit = request.args.get("limit", type = int, default = 5)
+
+    succ, infos = HViolas.GetMarketExchangeTransaction(address, offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, infos)
+
 @app.route("/1.0/market/pool/info")
 def GetPoolInfoAboutAccount():
     address = request.args.get("address")
@@ -1719,3 +1731,15 @@ def GetPoolWithdrawalTrial():
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/market/pool/transaction")
+def GetMarketPoolTransactions():
+    address = request.args.get("address")
+    offset = request.args.get("offset", type = int, default = 0)
+    limit = request.args.get("limit", type = int, default = 5)
+
+    succ, infos = HViolas.GetMarketPoolTransaction(address, offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, infos)

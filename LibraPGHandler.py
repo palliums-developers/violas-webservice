@@ -30,7 +30,7 @@ class LibraPGHandler():
             info["version"] = i.id - 1
             info["type"] = i.transaction_type
             info["sender"] = i.sender
-            info["gas"] = int(i.gas_used)
+            info["gas"] = int(i.gas_used * i.gas_unit_price)
             info["expiration_time"] = i.expiration_time
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
@@ -59,7 +59,7 @@ class LibraPGHandler():
             info["version"] = i.id - 1
             info["type"] = i.transaction_type
             info["sender"] = i.sender
-            info["gas"] = int(i.gas_used)
+            info["gas"] = int(i.gas_used * i.gas_unit_price)
             info["expiration_time"] = i.expiration_time
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
@@ -111,7 +111,7 @@ class LibraPGHandler():
             info["version"] = i.id - 1
             info["type"] = i.transaction_type
             info["sender"] = i.sender
-            info["gas"] = int(i.gas_used)
+            info["gas"] = int(i.gas_used * i.gas_unit_price)
             info["expiration_time"] = i.expiration_time
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
@@ -139,7 +139,7 @@ class LibraPGHandler():
             info["version"] = i.id - 1
             info["type"] = i.transaction_type
             info["sender"] = i.sender
-            info["gas"] = int(i.gas_used)
+            info["gas"] = int(i.gas_used * i.gas_unit_price)
             info["expiration_time"] = i.expiration_time
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
@@ -169,7 +169,7 @@ class LibraPGHandler():
         info["currency"] = result.currency
         info["gas_currency"] = result.gas_currency
         info["amount"] = int(result.amount)
-        info["gas"] = int(result.gas_used)
+        info["gas"] = int(result.gas_used * i.gas_unit_price)
         info["gas_unit_price"] = int(result.gas_unit_price)
         info["max_gas_amount"] = int(result.max_gas_amount)
         info["expiration_time"] = result.expiration_time
@@ -228,7 +228,7 @@ class LibraPGHandler():
             info["version"] = i.id - 1
             info["sender"] = i.sender
             info["sequence_number"] = i.sequence_number
-            info["gas"] = int(i.gas_used)
+            info["gas"] = int(i.gas_used * i.gas_unit_price)
             info["expiration_time"] = i.expiration_time
             info["receiver"] = i.receiver
             info["amount"] = int(i.amount)
