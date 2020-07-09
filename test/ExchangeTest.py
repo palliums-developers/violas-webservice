@@ -5,6 +5,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from time import sleep
 from violas_client.exchange_client import Wallet, Client
+from violas_client.lbrtypes.account_config.constants.lbr import CORE_CODE_ADDRESS
+from violas_client.lbrtypes.account_config import association_address
 
 filename = "./account_recovery"
 
@@ -59,8 +61,13 @@ print(f"module account balance: {cli.get_balances(moduleAccount.address)}")
 print(f"liquidity account balance: {cli.get_balances(liquidityAccount.address)}")
 print(f"swap account balance: {cli.get_balances(swapAccount.address)}")
 
-cli.set_exchange_module_address(moduleAccount.address)
-print(f"set exchange module address to: {cli.get_exchange_module_address().hex()}")
+# print(f"set exchange module address to: {moduleAccount.address_hex}")
+# cli.set_exchange_module_address(moduleAccount.address)
+print(f"set exchange module address to: {CORE_CODE_ADDRESS.hex()}")
+cli.set_exchange_module_address(CORE_CODE_ADDRESS)
+print(f"set exchange owner address to: {association_address().hex()}")
+cli.set_exchange_owner_address(association_address())
+
 
 # print("add LBR to swap")
 # cli.swap_add_currency(moduleAccount, "LBR")
@@ -74,7 +81,7 @@ print(f"set exchange module address to: {cli.get_exchange_module_address().hex()
 # cli.swap_add_liquidity(liquidityAccount, "LBR", "VLSEUR", 1000000, 6000000)
 # cli.swap_add_liquidity(liquidityAccount, "VLSEUR", "VLSUSD", 3000000, 1000000)
 
-#print("make swap")
+# print("make swap")
 # cli.swap(swapAccount, "VLSUSD", "VLSEUR", 10000)
 
 

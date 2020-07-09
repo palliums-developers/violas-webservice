@@ -12,6 +12,7 @@ from libra_client.lbrtypes.account_config.constants.lbr import CORE_CODE_ADDRESS
 
 from violas_client import Client as ViolasClient
 from violas_client.lbrtypes.account_config.constants.lbr import CORE_CODE_ADDRESS as VIOLAS_CORE_CODE_ADDRESS
+from violas_client.lbrtypes.account_config import association_address
 
 from violas_client import exchange_client
 
@@ -70,6 +71,7 @@ def MakeViolasClient():
 def MakeExchangeClient():
     cli = exchange_client.Client.new(config['NODE INFO']['VIOLAS_HOST'], faucet_file = config['NODE INFO']['VIOLAS_MINT_KEY'])
     cli.set_exchange_module_address(VIOLAS_CORE_CODE_ADDRESS)
+    cli.set_exchange_owner_address(association_address())
     return cli
 
 def MakeResp(code, data = None, exception = None, message = None):
