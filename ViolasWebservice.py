@@ -1642,7 +1642,7 @@ def GetExchangeTrial():
 
     data = {"amount": amountOut[0],
             "fee": amountOut[1],
-            "rate": amount / amountOut[0],
+            "rate": amount / amountOut[0] if amountOut[0] > 0 else 0,
             "path": path}
 
     return MakeResp(ErrorCode.ERR_OK, data)
