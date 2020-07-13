@@ -1637,6 +1637,8 @@ def GetExchangeTrial():
     try:
         amountOut = cli.swap_get_swap_output_amount(currencyIn, currencyOut, amount)
         path = cli.get_currency_max_output_path(currencyIn, currencyOut, amount)
+    except AssertionError:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, message = "Exchange path too deep!")
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
