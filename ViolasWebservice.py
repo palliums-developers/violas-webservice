@@ -1580,7 +1580,7 @@ def GetBtcUTXO():
     return MakeResp(ErrorCode.ERR_OK, resp.json())
 
 # MARKET
-@app.route("/1.0/market/currency/violas")
+@app.route("/1.0/market/exchange/currency")
 def GetMarketViolasCurrencies():
     cli = MakeExchangeClient()
 
@@ -1592,83 +1592,40 @@ def GetMarketViolasCurrencies():
     if currencies is None:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, message = "There is no currency has registered!")
 
-    filtered = []
+    filtered = {}
+    filtered["violas"] = []
+    filtered["libra"] = []
+    filtered["btc"] = []
     for i in currencies:
-        if i != "Coin1" and i != "Coin2":
-            if i[0:3] == "VLS":
-                filtered.append(i)
+        if i[0:3] == "VLS":
+            cInfo = {}
+            cInfo["name"] = i
+            cInfo["module"] = i
+            cInfo["address"] = association_address().hex()
+            cInfo["show_name"] = i
+            cInfo["index"] = currencies.index(i)
+            cInfo["icon"] = f"{ICON_URL}violas.png"
+            filtered["violas"].append(cInfo)
+        elif i == "BTC":
+            cInfo = {}
+            cInfo["name"] = i
+            cInfo["module"] = i
+            cInfo["address"] = association_address().hex()
+            cInfo["show_name"] = i
+            cInfo["index"] = currencies.index(i)
+            cInfo["icon"] = f"{ICON_URL}btc.png"
+            filtered["btc"].append(cInfo)
+        else:
+            cInfo = {}
+            cInfo["name"] = i
+            cInfo["module"] = i
+            cInfo["address"] = association_address().hex()
+            cInfo["show_name"] = i
+            cInfo["index"] = currencies.index(i)
+            cInfo["icon"] = f"{ICON_URL}libra.png"
+            filtered["libra"].append(cInfo)
 
-    data = []
-    for i in filtered:
-        cInfo = {}
-        cInfo["name"] = i
-        cInfo["module"] = i
-        cInfo["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
-        cInfo["show_name"] = i
-
-        data.append(cInfo)
-
-    return MakeResp(ErrorCode.ERR_OK, {"currencies": data})
-
-@app.route("/1.0/market/currency/libra")
-def GetMarketLibraCurrencies():
-    cli = MakeExchangeClient()
-
-    try:
-        currencies = cli.swap_get_registered_currencies()
-    except Exception as e:
-        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception=e)
-
-    if currencies is None:
-        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, message = "There is no currency has registered!")
-
-    filtered = []
-    for i in currencies:
-        if i != "Coin1" and i != "Coin2":
-            if i[0:3] != "VLS" and i != "BTC":
-                filtered.append(i)
-
-    data = []
-    for i in filtered:
-        cInfo = {}
-        cInfo["name"] = i
-        cInfo["module"] = i
-        cInfo["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
-        cInfo["show_name"] = i
-
-        data.append(cInfo)
-
-    return MakeResp(ErrorCode.ERR_OK, {"currencies": data})
-
-@app.route("/1.0/market/currency/btc")
-def GetMarketBTCCurrencies():
-    cli = MakeExchangeClient()
-
-    try:
-        currencies = cli.swap_get_registered_currencies()
-    except Exception as e:
-        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception=e)
-
-    if currencies is None:
-        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, message = "There is no currency has registered!")
-
-    filtered = []
-    for i in currencies:
-        if i != "Coin1" and i != "Coin2":
-            if i == "BTC":
-                filtered.append(i)
-
-    data = []
-    for i in filtered:
-        cInfo = {}
-        cInfo["name"] = i
-        cInfo["module"] = i
-        cInfo["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
-        cInfo["show_name"] = i
-
-        data.append(cInfo)
-
-    return MakeResp(ErrorCode.ERR_OK, {"currencies": data})
+    return MakeResp(ErrorCode.ERR_OK, filtered)
 
 @app.route("/1.0/market/exchange/trial")
 def GetExchangeTrial():
