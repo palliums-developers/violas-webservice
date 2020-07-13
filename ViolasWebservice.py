@@ -1673,14 +1673,22 @@ def GetPoolInfoAboutAccount():
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
-    data = {}
-    for b in balance:
-        for k, v in b.items():
+    total = 0
+    balancePair = []
+    for i in balance:
+        item = {}
+        for k, v in i.items():
             if k == "liquidity":
-                data["TOKEN"] = v + data["TOKEN"] if data.get("TOKEN") is not None else 0
+                item["token"] = v
+                total += v
             else:
-                data[k] = v + data[k] if data.get(k) is not None else 0
+                item[k] = currencies.index(k)
 
+        balancePair.append(item)
+
+    data = {}
+    data["total_token"] = total
+    data["balance"] = balancePair
     return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/market/pool/deposit/trial")
