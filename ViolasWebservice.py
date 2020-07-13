@@ -1636,13 +1636,14 @@ def GetExchangeTrial():
     cli = MakeExchangeClient()
     try:
         amountOut = cli.swap_get_swap_output_amount(currencyIn, currencyOut, amount)
+        path = cli.get_currency_max_output_path(currencyIn, currencyOut, amount)
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
-    print(amountOut)
     data = {"amount": amountOut[0],
             "fee": amountOut[1],
-            "rate": amount / amountOut[0]}
+            "rate": amount / amountOut[0],
+            "path": path}
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
