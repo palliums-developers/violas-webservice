@@ -1265,6 +1265,7 @@ class ViolasPGHandler():
         infos = []
         for i in transactions:
             info = {}
+            event = {}
             if i.event is not None:
                 event = json.loads(i.event)
 
