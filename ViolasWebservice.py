@@ -1581,7 +1581,7 @@ def GetBtcUTXO():
 
 # MARKET
 @app.route("/1.0/market/exchange/currency")
-def GetMarketViolasCurrencies():
+def GetMarketExchangeCurrencies():
     cli = MakeExchangeClient()
 
     try:
@@ -1756,7 +1756,8 @@ def GetPoolWithdrawalTrial():
         data = []
         for c in currPairs:
             trialResult = cli.swap_get_liquidity_out_amounts(c[0], c[1], tokenAmount)
-            item = {c[0]: trialResult[0], c[1]: trialResult[1]}
+            item = {"coin_a_name": c[0], "coin_a_value": trialResult[0],
+                    "coin_b_name": c[1], "coin_b_value": trialResult[1]}
             data.append(item)
 
     except AttributeError as e:
