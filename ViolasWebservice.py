@@ -1734,38 +1734,30 @@ def GetPoolCurrencyRate():
 def GetPoolWithdrawalTrial():
     address = request.args.get("address")
     tokenAmount = request.args.get("amount", type = int)
+    coinA = request.args.get("coin_a")
+    coinB = request.args.get("coin_b")
 
     cli = MakeExchangeClient()
     try:
         balance = cli.swap_get_liquidity_balances(address)
-
-        currPairs = []
-        for b in balance:
-            currPair = []
-            for k, v in b.items():
-                if k == "liquidity":
-                    if tokenAmount > v:
-                        currPair.clear()
-                        break
+        for i in balance:
+            if coinA in i and coinB in i:
+                if tokenAmount > i["liquidity"]:
+                    return MakeResp(ErrorCode.ERR_OK, {})
                 else:
-                    currPair.append(k)
+                    break
+            else:
+                continue
 
-            if len(currPair) > 0:
-                currPairs.append(currPair)
-
-        data = []
-        for c in currPairs:
-            trialResult = cli.swap_get_liquidity_out_amounts(c[0], c[1], tokenAmount)
-            item = {"coin_a_name": c[0], "coin_a_value": trialResult[0],
-                    "coin_b_name": c[1], "coin_b_value": trialResult[1]}
-            data.append(item)
-
+        trialResult = cli.swap_get_liquidity_out_amounts(coinA, coinB, tokenAmount)
+        item = {"coin_a_name": coinA, "coin_a_value": trialResult[0],
+                "coin_b_name": coinB, "coin_b_value": trialResult[1]}
     except AttributeError as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, message = "No funds in pool!")
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
-    return MakeResp(ErrorCode.ERR_OK, data)
+    return MakeResp(ErrorCode.ERR_OK, item)
 
 @app.route("/1.0/market/pool/transaction")
 def GetMarketPoolTransactions():
