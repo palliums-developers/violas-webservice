@@ -1686,9 +1686,11 @@ def GetPoolInfoAboutAccount():
             else:
                 if item.get("coin_a_name") is None:
                     item["coin_a_name"] = k
+                    item["coin_a_value"] = v
                     item["coin_a_index"] = currencies.index(k)
                 else:
                     item["coin_b_name"] = k
+                    item["coin_b_value"] = v
                     item["coin_b_index"] = currencies.index(k)
 
         balancePair.append(item)
