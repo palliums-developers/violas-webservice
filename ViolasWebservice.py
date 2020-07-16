@@ -1703,34 +1703,16 @@ def GetPoolInfoAboutAccount():
 @app.route("/1.0/market/pool/deposit/trial")
 def GetPoolCurrencyRate():
     amount = request.args.get("amount", type = int)
-    currency = request.args.get("currency")
+    coinA = request.args.get("coin_a")
+    coinB = request.args.get("coin_b")
 
     cli = MakeExchangeClient()
     try:
-        currencies = cli.swap_get_registered_currencies()
-        if currencies is None:
-            return MakeResp(ErrorCode.ERR_NODE_RUNTIME, message = "There is no currency has registered!")
-
-        resources = cli.swap_get_reserves_resource()
-        index = currencies.index(currency)
-
-        currencyRate = []
-        for r in resources:
-            if r.coina.index == index:
-                curr = currencies[r.coinb.index]
-            elif r.coinb.index == index:
-                curr = currencies[r.coina.index]
-            else:
-                continue
-
-            amou = cli.swap_get_liquidity_output_amount(currency, curr, amount)
-
-            rateInfo = {"currency": curr, "amount": amou , "rate": amount/amou}
-            currencyRate.append(rateInfo)
+        amountB = cli.swap_get_liquidity_output_amount(coinA, coinB, amount)
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
-    return MakeResp(ErrorCode.ERR_OK, currencyRate)
+    return MakeResp(ErrorCode.ERR_OK, {"amount": amountB, "rate": float(amount) / amountB})
 
 @app.route("/1.0/market/pool/withdrawal/trial")
 def GetPoolWithdrawalTrial():
