@@ -1601,7 +1601,7 @@ def GetMarketExchangeCurrencies():
             cInfo = {}
             cInfo["name"] = i
             cInfo["module"] = i
-            cInfo["address"] = association_address().hex()
+            cInfo["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
             cInfo["show_name"] = i
             cInfo["index"] = currencies.index(i)
             cInfo["icon"] = f"{ICON_URL}violas.png"
@@ -1610,7 +1610,7 @@ def GetMarketExchangeCurrencies():
             cInfo = {}
             cInfo["name"] = i
             cInfo["module"] = i
-            cInfo["address"] = association_address().hex()
+            cInfo["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
             cInfo["show_name"] = i
             cInfo["index"] = currencies.index(i)
             cInfo["icon"] = f"{ICON_URL}btc.png"
@@ -1619,7 +1619,7 @@ def GetMarketExchangeCurrencies():
             cInfo = {}
             cInfo["name"] = i
             cInfo["module"] = i
-            cInfo["address"] = association_address().hex()
+            cInfo["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
             cInfo["show_name"] = i
             cInfo["index"] = currencies.index(i)
             cInfo["icon"] = f"{ICON_URL}libra.png"
