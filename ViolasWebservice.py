@@ -1734,9 +1734,6 @@ def GetMarketCrosschainMapInfo():
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
-@app.route("/1.0/market/exchange/crosschain/map/info")
-def GetExchangeCrosschainMapInfo():
-    
 @app.route("/1.0/market/pool/info")
 def GetPoolInfoAboutAccount():
     address = request.args.get("address")
