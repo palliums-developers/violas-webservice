@@ -1661,48 +1661,48 @@ def GetMarketExchangeTransactions():
 
     return MakeResp(ErrorCode.ERR_OK, infos)
 
+BASEMAPINFOS = [
+    {
+        "type": "v2b",
+        "chain": "violas",
+        "address": "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
+    },
+    {
+        "type": "v2lusd",
+        "chain": "violas",
+        "address": "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
+    },
+    {
+        "type": "v2leur",
+        "chain": "violas",
+        "address": "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
+    },
+    {
+        "type": "l2vusd",
+        "chain": "libra",
+        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+    },
+    {
+        "type": "l2veur",
+        "chain": "libra",
+        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+    },
+    {
+        "type": "l2vgbp",
+        "chain": "libra",
+        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+    },
+    {
+        "type": "l2vsgd",
+        "chain": "libra",
+        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+    }
+]
+
 @app.route("/1.0/market/exchange/crosschain/address/info")
 def GetMarketCrosschainMapInfo():
-    baseMapInfos = [
-        {
-            "type": "v2b",
-            "chain": "violas",
-            "address": "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
-        },
-        {
-            "type": "v2lusd",
-            "chain": "violas",
-            "address": "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
-        },
-        {
-            "type": "v2leur",
-            "chain": "violas",
-            "address": "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
-        },
-        {
-            "type": "l2vusd",
-            "chain": "libra",
-            "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-        },
-        {
-            "type": "l2veur",
-            "chain": "libra",
-            "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-        },
-        {
-            "type": "l2vgbp",
-            "chain": "libra",
-            "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-        },
-        {
-            "type": "l2vsgd",
-            "chain": "libra",
-            "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-        }
-    ]
-
     data = []
-    for i in baseMapInfos:
+    for i in BASEMAPINFOS:
         flow = i["type"][0:3]
         cIn, cOut = flow.split("2")
         currency = i["type"][3:] if len(i["type"]) > 3 else None
@@ -1710,7 +1710,7 @@ def GetMarketCrosschainMapInfo():
         item = {}
         item["lable"] = i["type"]
         item["input_coin_type"] = i["chain"]
-        item["receiver_address"] = i["address"]
+        item["receiver_address"] = i["address"][33:]
 
         if cOut == "v":
             coinType = "violas"
@@ -1733,6 +1733,52 @@ def GetMarketCrosschainMapInfo():
         data.append(item)
 
     return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/market/exchange/crosschain/map/relation")
+def GetExchangeCrosschainMapInfo():
+    cli = MakeExchangeClient()
+    libCli = MakeLibraClient()
+
+    try:
+        currencies = cli.swap_get_registered_currencies()
+        libCurrencies = libCli.get_registered_currencies()
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+
+    libraCurrency = []
+    for i in libCurrencies:
+        item = {}
+        if i == "Coin1":
+            item["name"] = "USD"
+        elif i == "Coin2":
+            item["name"] = "EUR"
+        else:
+            continue
+
+        item["module"] = i
+        libraCurrency.append(item)
+
+    relation = []
+    for i in libraCurrency:
+        item = {}
+        try:
+            item["map_name"] = i["module"]
+            item["module"] = i["name"]
+            item["module_address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
+            item["name"] = i["name"]
+            item["index"] = currencies.index(i["name"])
+
+            if i == "BTC":
+                item["chain"] = "BTC"
+            else:
+                item["chain"] = "libra"
+            print(item)
+        except Exception as e:
+            continue
+
+        relation.append(item)
+
+    return MakeResp(ErrorCode.ERR_OK, relation)
 
 @app.route("/1.0/market/pool/info")
 def GetPoolInfoAboutAccount():
