@@ -1831,7 +1831,7 @@ def GetPoolCurrencyRate():
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
-    return MakeResp(ErrorCode.ERR_OK, {"amount": amountB, "rate": float(amount) / amountB})
+    return MakeResp(ErrorCode.ERR_OK, amountB)
 
 @app.route("/1.0/market/pool/withdrawal/trial")
 def GetPoolWithdrawalTrial():
