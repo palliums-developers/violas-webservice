@@ -41,6 +41,10 @@ else:
     cli.mint_coin(liquidityAccount.address, 100000000, auth_key_prefix=liquidityAccount.auth_key_prefix, currency_code="VLSUSD")
     cli.add_currency_to_account(liquidityAccount, "VLSEUR")
     cli.mint_coin(liquidityAccount.address, 100000000, auth_key_prefix=liquidityAccount.auth_key_prefix, currency_code="VLSEUR")
+    cli.add_currency_to_account(liquidityAccount, "VLSGBP")
+    cli.mint_coin(liquidityAccount.address, 100000000, auth_key_prefix=liquidityAccount.auth_key_prefix, currency_code="VLSGBP")
+    cli.add_currency_to_account(liquidityAccount, "VLSSGD")
+    cli.mint_coin(liquidityAccount.address, 100000000, auth_key_prefix=liquidityAccount.auth_key_prefix, currency_code="VLSSGD")
 
     cli.mint_coin(swapAccount.address, 100000000, auth_key_prefix=swapAccount.auth_key_prefix)
     cli.add_currency_to_account(swapAccount, "VLSUSD")
@@ -48,17 +52,16 @@ else:
     cli.add_currency_to_account(swapAccount, "VLSEUR")
     cli.mint_coin(swapAccount.address, 100000000, auth_key_prefix=swapAccount.auth_key_prefix, currency_code="VLSEUR")
 
-    print("publish contract")
-    cli.swap_publish_contract(moduleAccount)
-    print("initialize swap")
-    cli.swap_initialize(moduleAccount)
+    # print("publish contract")
+    # cli.swap_publish_contract(moduleAccount)
+    # print("initialize swap")
+    # cli.swap_initialize(moduleAccount)
 
 print(f"module account address: {moduleAccount.address_hex}")
-print(f"liquidity account address: {liquidityAccount.address_hex}")
-print(f"swap account address: {swapAccount.address_hex}")
-print(f"swap account prefix auth key: {swapAccount.auth_key_prefix.hex()}")
 print(f"module account balance: {cli.get_balances(moduleAccount.address)}")
+print(f"liquidity account address: {liquidityAccount.address_hex}")
 print(f"liquidity account balance: {cli.get_balances(liquidityAccount.address)}")
+print(f"swap account address: {swapAccount.address_hex}")
 print(f"swap account balance: {cli.get_balances(swapAccount.address)}")
 
 # print(f"set exchange module address to: {moduleAccount.address_hex}")
@@ -77,15 +80,17 @@ cli.set_exchange_owner_address(association_address())
 # cli.swap_add_currency(moduleAccount, "VLSEUR")
 
 # print("make liquidity")
-# cli.swap_add_liquidity(liquidityAccount, "LBR", "VLSUSD", 1000000, 2000000)
-# cli.swap_add_liquidity(liquidityAccount, "LBR", "VLSEUR", 1000000, 6000000)
-# cli.swap_add_liquidity(liquidityAccount, "VLSEUR", "VLSUSD", 3000000, 1000000)
+
+# cli.swap_add_liquidity(liquidityAccount, "VLSUSD", "VLSEUR", 10000, 5318)
+# cli.swap_add_liquidity(liquidityAccount, "", "VLSEUR", 10000, 5318)
+# cli.swap_remove_liquidity(liquidityAccount, "VLSUSD", "VLSEUR", 9000)
+# cli.swap_remove_liquidity(liquidityAccount, "VLSUSD", "VLSEUR", 999)
 
 # print("make swap")
-# cli.swap(swapAccount, "VLSUSD", "VLSEUR", 10000)
+# cli.swap(liquidityAccount, "VLSUSD", "VLSEUR", 10000)
 
 
 print(f"swap registered currencies: {cli.swap_get_registered_currencies()}")
 print(f"reserver info: {cli.swap_get_reserves_resource()}")
 print(f"liquidity account balance: {cli.swap_get_liquidity_balances(liquidityAccount.address_hex)}")
-print(f"get liquidity rate: {1000000 / cli.swap_get_liquidity_output_amount('VLSEUR', 'VLSUSD', 1000000)}")
+# print(f"get liquidity rate: {1000000 / cli.swap_get_liquidity_output_amount('VLSEUR', 'VLSUSD', 1000000)}")
