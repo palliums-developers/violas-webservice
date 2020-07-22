@@ -147,7 +147,7 @@ def GetMarketCrosschainMapInfo():
         item = {}
         item["lable"] = i["type"]
         item["input_coin_type"] = i["chain"]
-        item["receiver_address"] = i["address"][33:]
+        item["receiver_address"] = i["address"][32:]
 
         if cOut == "v":
             coinType = "violas"
