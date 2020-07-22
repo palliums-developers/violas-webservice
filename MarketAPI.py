@@ -156,13 +156,18 @@ def GetMarketCrosschainMapInfo():
                       "name": "VLS" + currency.upper()}
         elif cOut == "l":
             coinType = "libra"
-            assets = {"module": currency.upper(),
-                      "address": VIOLAS_CORE_CODE_ADDRESS.hex(),
-                      "name": currency.upper()}
+            if currency == "usd":
+                module = "Coin1"
+            elif currency == "eur":
+                module = "Coin2"
+
+            assets = {"module": module,
+                      "address": LIBRA_CORE_CODE_ADDRESS.hex(),
+                      "name": module}
         elif cOut == "b":
             coinType = "btc"
-            assets = {"module": "BTC",
-                      "address": VIOLAS_CORE_CODE_ADDRESS.hex(),
+            assets = {"module": "",
+                      "address": "",
                       "name": "BTC"}
 
         item["to_coin"] = {"coin_type": coinType,
