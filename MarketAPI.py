@@ -247,10 +247,11 @@ def GetPoolInfoAboutAccount():
             else:
                 coin = {}
                 coin["name"] = k
+                coin["module"] = k
                 coin["show_name"] = k
                 coin["value"] = v
                 coin["index"] = currencies.index(k)
-                coin["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
+                coin["module_address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
                 if item.get("coin_a") is None:
                     item["coin_a"] = coin
                 else:
