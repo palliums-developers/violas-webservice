@@ -340,3 +340,23 @@ def GetReserve():
     reserve["coinb"]["name"] = currencies[reserve["coinb"]["index"]]
 
     return MakeResp(ErrorCode.ERR_OK, reserve)
+
+@app.route("/1.0/market/pool/reserve/infos")
+def GetAllReserve():
+    cli = MakeExchangeClient()
+    try:
+        currencies = cli.swap_get_registered_currencies()
+        reserves = cli.swap_get_reserves_resource()
+    except ValueError:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, message = "Coin not exist.")
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception=e)
+
+    data = []
+    for r in reserves:
+        r = json.loads(r.to_json())
+        r["coina"]["name"] = currencies[r["coina"]["index"]]
+        r["coinb"]["name"] = currencies[r["coinb"]["index"]]
+        data.append(r)
+
+    return MakeResp(ErrorCode.ERR_OK, data)

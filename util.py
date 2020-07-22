@@ -10,11 +10,9 @@ def MakeLibraClient():
     return LibraClient("libra_testnet")
 
 def MakeViolasClient():
-    #return ViolasClient()
     return ViolasClient.new(config['NODE INFO']['VIOLAS_HOST'], faucet_file = config['NODE INFO']['VIOLAS_MINT_KEY'])
 
 def MakeExchangeClient():
-    #return exchange_client.Client()
     cli = exchange_client.Client.new(config['NODE INFO']['VIOLAS_HOST'], faucet_file = config['NODE INFO']['VIOLAS_MINT_KEY'])
     cli.set_exchange_module_address(VIOLAS_CORE_CODE_ADDRESS)
     cli.set_exchange_owner_address(association_address())
