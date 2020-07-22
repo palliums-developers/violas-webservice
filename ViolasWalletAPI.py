@@ -85,7 +85,9 @@ def GetViolasCurrency():
 
     filtered = []
     for i in currencies:
-        if i != "Coin1" and i != "Coin2":
+        if i == "VLS":
+            filtered.append(i)
+        elif i != "Coin1" and i != "Coin2" and len(i) > 3:
             filtered.append(i)
 
     data = []
