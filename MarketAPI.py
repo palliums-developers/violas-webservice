@@ -182,45 +182,54 @@ def GetExchangeCrosschainMapInfo():
     libCli = MakeLibraClient()
 
     try:
-        currencies = cli.swap_get_registered_currencies()
-        libCurrencies = libCli.get_registered_currencies()
+        violasCurr = cli.swap_get_registered_currencies()
+        libraCurr = libCli.get_registered_currencies()
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
-    libraCurrency = []
-    for i in libCurrencies:
-        item = {}
-        if i == "Coin1":
-            item["name"] = "USD"
-        elif i == "Coin2":
-            item["name"] = "EUR"
-        else:
+    filteredCurr = []
+    for i in violasCurr:
+        if i[:3] == "VLS":
             continue
-
-        item["module"] = i
-        libraCurrency.append(item)
-
-    relation = []
-    for i in libraCurrency:
-        item = {}
-        try:
-            item["map_name"] = i["module"]
-            item["module"] = i["name"]
-            item["module_address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
-            item["name"] = i["name"]
-            item["index"] = currencies.index(i["name"])
-
+        else:
+            item = {}
             if i == "BTC":
                 item["chain"] = "BTC"
+                item["index"] = violasCurr.index(i)
+                item["map_name"] = "BTC"
+                item["module"] = "BTC"
+                item["module_address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
+                item["name"] = "BTC"
+                filteredCurr.append(item)
+            elif i == "USD":
+                if "Coin1" in libraCurr:
+                    item["chain"] = "libra"
+                    item["index"] = violasCurr.index(i)
+                    item["map_name"] = "Coin1"
+                    item["module"] = i
+                    item["module_address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
+                    item["name"] = i
+                    filteredCurr.append(item)
+            elif i == "EUR":
+                if "Coin2" in libraCurr:
+                    item["chain"] = "libra"
+                    item["index"] = violasCurr.index(i)
+                    item["map_name"] = "Coin2"
+                    item["module"] = i
+                    item["module_address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
+                    item["name"] = i
+                    filteredCurr.append(item)
             else:
-                item["chain"] = "libra"
-            print(item)
-        except Exception as e:
-            continue
+                if i in libraCurr:
+                    item["chain"] = "libra"
+                    item["index"] = violasCurr.index(i)
+                    item["map_name"] = i
+                    item["module"] = i
+                    item["module_address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
+                    item["name"] = i
+                    filteredCurr.append(item)
 
-        relation.append(item)
-
-    return MakeResp(ErrorCode.ERR_OK, relation)
+    return MakeResp(ErrorCode.ERR_OK, filteredCurr)
 
 @app.route("/1.0/market/pool/info")
 def GetPoolInfoAboutAccount():
