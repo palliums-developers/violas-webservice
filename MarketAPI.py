@@ -98,44 +98,6 @@ def GetMarketExchangeTransactions():
 
     return MakeResp(ErrorCode.ERR_OK, infos)
 
-BASEMAPINFOS = [
-    {
-        "type": "v2b",
-        "chain": "violas",
-        "address": "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
-    },
-    {
-        "type": "v2lusd",
-        "chain": "violas",
-        "address": "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
-    },
-    {
-        "type": "v2leur",
-        "chain": "violas",
-        "address": "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
-    },
-    {
-        "type": "l2vusd",
-        "chain": "libra",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-    },
-    {
-        "type": "l2veur",
-        "chain": "libra",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-    },
-    {
-        "type": "l2vgbp",
-        "chain": "libra",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-    },
-    {
-        "type": "l2vsgd",
-        "chain": "libra",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-    }
-]
-
 @app.route("/1.0/market/exchange/crosschain/address/info")
 def GetMarketCrosschainMapInfo():
     data = []
@@ -145,21 +107,28 @@ def GetMarketCrosschainMapInfo():
         currency = i["type"][3:] if len(i["type"]) > 3 else None
 
         item = {}
-        item["lable"] = i["type"]
+        if cIn == "b":
+            item["lable"] = i["lable"]
+            item["receiver_address"] = i["address"]
+        else:
+            item["lable"] = i["type"]
+            item["receiver_address"] = i["address"][32:]
+
         item["input_coin_type"] = i["chain"]
-        item["receiver_address"] = i["address"][32:]
 
         if cOut == "v":
             coinType = "violas"
-            assets = {"module": "VLS" + currency.upper(),
+            assets = {"module": "VLS" + (currency.upper() if currency is not None else ""),
                       "address": VIOLAS_CORE_CODE_ADDRESS.hex(),
-                      "name": "VLS" + currency.upper()}
+                      "name": "VLS" + (currency.upper() if currency is not None else "")}
         elif cOut == "l":
             coinType = "libra"
             if currency == "usd":
                 module = "Coin1"
             elif currency == "eur":
                 module = "Coin2"
+            else:
+                continue
 
             assets = {"module": module,
                       "address": LIBRA_CORE_CODE_ADDRESS.hex(),
