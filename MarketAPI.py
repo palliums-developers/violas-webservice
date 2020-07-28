@@ -9,9 +9,15 @@ def GetMarketExchangeCurrencies():
 
     try:
         currencies = cli.swap_get_registered_currencies()
+    except Exception as e:
+        logging.error(f"When get violas echange registered currencies: {e}")
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME)
+
+    try:
         libraCurrencies = libraCli.get_registered_currencies()
     except Exception as e:
-        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception=e)
+        logging.error(f"When get libra registered currencies: {e}")
+        libraCurrencies = []
 
     if currencies is None:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, message = "There is no currency has registered!")
@@ -57,7 +63,6 @@ def GetMarketExchangeCurrencies():
                 cInfo["icon"] = f"{ICON_URL}libra.png"
                 filtered["libra"].append(cInfo)
 
-    print(filtered)
     return MakeResp(ErrorCode.ERR_OK, filtered)
 
 @app.route("/1.0/market/exchange/currency/available")
@@ -152,9 +157,13 @@ def GetExchangeCrosschainMapInfo():
 
     try:
         violasCurr = cli.swap_get_registered_currencies()
-        libraCurr = libCli.get_registered_currencies()
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+    try:
+        libraCurr = libCli.get_registered_currencies()
+    except Exception as e:
+        logging.error(f"When get libra registered currencies: {e}")
+        libraCurr = []
 
     filteredCurr = []
     for i in violasCurr:
