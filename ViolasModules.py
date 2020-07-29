@@ -1,5 +1,5 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, SmallInteger, Integer, BigInteger, String, Numeric, Boolean, Text
+from sqlalchemy import Column, SmallInteger, Integer, BigInteger, String, Numeric, Boolean, Text, Index
 
 Base = declarative_base()
 
@@ -24,6 +24,7 @@ class ViolasTransaction(Base):
     signature = Column(Text(), nullable = True)
     signature_scheme = Column(String(32), nullable = True)
     status = Column(SmallInteger, nullable = False)
+    event = Column(Text(), nullable = True)
 
 class ViolasAddressInfo(Base):
     __tablename__ = "address_info"
@@ -40,6 +41,17 @@ class ViolasAddressInfo(Base):
     received_minted_tx_count = Column(BigInteger, nullable = False)
     sent_failed_tx_count = Column(BigInteger, nullable = False)
     received_failed_tx_count = Column(BigInteger, nullable = False)
+
+class ViolasSignedTransaction(Base):
+    __tablename__ = "signed_transactions"
+
+    id = Column(BigInteger, primary_key = True, autoincrement = True)
+    sender = Column(String(64), nullable = False)
+    sequence_number = Column(Integer, nullable = False)
+    time = Column(Integer, nullable = False)
+    sigtxn = Column(Text(), nullable = True)
+
+Index("sender_seqnum_index", ViolasSignedTransaction.sender, ViolasSignedTransaction.sequence_number)
 
 class ViolasSSOUserInfo(Base):
     __tablename__ = "sso_user_info"
