@@ -1,6 +1,7 @@
 from ViolasWebservice import app
 from common import *
 from util import MakeLibraClient, MakeViolasClient, MakeResp, AllowedType, GetRates
+from violas_client.lbrtypes.transaction import SignedTransaction
 
 @app.route("/1.0/violas/balance")
 def GetViolasBalance():
@@ -51,12 +52,20 @@ def MakeViolasTransaction():
     signedtxn = params["signedtxn"]
 
     cli = MakeViolasClient()
+    transactionInfo = bytes.fromhex(signedtxn)
+    transactionInfo = SignedTransaction.deserialize(transactionInfo)
+    sender = transactionInfo.get_sender()
+    seqNum = transactionInfo.get_sequence_number()
+    timestamp = int(time.time())
 
     try:
         cli.submit_signed_transaction(signedtxn, True)
     except Exception as e:
-        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+        if not e.on_chain:
+            return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+        return MakeResp(ErrorCode.ERR_CLIENT_UNKNOW_ERROR)
 
+    HViolas.AddTransactionInfo(sender, seqNum, timestamp, transactionInfo.to_json())
     return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.0/violas/transaction")

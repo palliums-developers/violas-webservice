@@ -217,11 +217,15 @@ def GetPoolInfoAboutAccount():
 
     try:
         currencies = cli.swap_get_registered_currencies()
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+
+    try:
         balance = cli.swap_get_liquidity_balances(address)
     except AttributeError as e:
         return MakeResp(ErrorCode.ERR_OK, {})
     except Exception as e:
-        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+        balance = []
 
     total = 0
     balancePair = []

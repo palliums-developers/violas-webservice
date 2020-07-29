@@ -11,7 +11,7 @@ from violas_client.lbrtypes.account_config import association_address
 filename = "./account_recovery"
 
 cli = Client.new("http://52.27.228.84:50001", faucet_file = "../mint_test.key")
-#cli = Client()
+# cli = Client()
 
 if os.path.exists(filename):
     print(f"Wallet already created!")
@@ -81,16 +81,16 @@ cli.set_exchange_owner_address(association_address())
 
 # print("make liquidity")
 
-# cli.swap_add_liquidity(liquidityAccount, "VLSUSD", "VLSEUR", 10000, 5318)
+# cli.swap_add_liquidity(liquidityAccount, "VLSEUR", "VLSUSD", 5318, 10000)
 # cli.swap_add_liquidity(liquidityAccount, "", "VLSEUR", 10000, 5318)
 # cli.swap_remove_liquidity(liquidityAccount, "VLSUSD", "VLSEUR", 9000)
 # cli.swap_remove_liquidity(liquidityAccount, "VLSUSD", "VLSEUR", 999)
 
 # print("make swap")
-# cli.swap(liquidityAccount, "VLSUSD", "VLSEUR", 10000)
+cli.swap(liquidityAccount, "VLSUSD", "VLSEUR", 88888)
 
 
-print(f"swap registered currencies: {cli.swap_get_registered_currencies()}")
-print(f"reserver info: {cli.swap_get_reserves_resource()}")
-print(f"liquidity account balance: {cli.swap_get_liquidity_balances(liquidityAccount.address_hex)}")
+# print(f"swap registered currencies: {cli.swap_get_registered_currencies()}")
+# print(f"reserver info: {cli.swap_get_reserves_resource()}")
+# print(f"liquidity account balance: {cli.swap_get_liquidity_balances(liquidityAccount.address_hex)}")
 # print(f"get liquidity rate: {1000000 / cli.swap_get_liquidity_output_amount('VLSEUR', 'VLSUSD', 1000000)}")

@@ -1,5 +1,5 @@
 from time import time, sleep
-from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo, ViolasGovernorInfo, ViolasTransaction, ViolasAddressInfo
+from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo, ViolasGovernorInfo, ViolasTransaction, ViolasAddressInfo, ViolasSignedTransaction
 import logging
 import json
 
@@ -1266,16 +1266,23 @@ class ViolasPGHandler():
         for i in transactions:
             info = {}
             event = {}
-            if i.event is not None:
-                event = json.loads(i.event)
-
             info["version"] = i.id - 1
             info["date"] = i.expiration_time
             info["status"] = i.status
-            info["input_name"] = event.get("input_name")
-            info["output_name"] = event.get("output_name")
-            info["input_amount"] = event.get("input_amount")
-            info["output_amount"] = event.get("output_amount")
+
+            if i.event is not None:
+                event = json.loads(i.event)
+                info["input_name"] = event.get("input_name")
+                info["output_name"] = event.get("output_name")
+                info["input_amount"] = event.get("input_amount")
+                info["output_amount"] = event.get("output_amount")
+            else:
+                txnInfo = s.query(ViolasSignedTransaction).filter(ViolasSignedTransaction.sender == address).filter(ViolasSignedTransaction.sequence_number == i.sequence_number).first()
+                sigTxn = json.loads(txnInfo.sigtxn)
+                info["input_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
+                info["output_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][1]["Struct"]["module"]
+                info["input_amount"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
+                info["output_amount"] = 0
 
             infos.append(info)
 
@@ -1295,27 +1302,60 @@ class ViolasPGHandler():
         for i in transactions:
             info = {}
             event = {}
-            if i.event is not None:
-                event = json.loads(i.event)
-
             info["version"] = i.id - 1
             info["date"] = i.expiration_time
             info["status"] = i.status
             info["transaction_type"] = i.transaction_type
 
-            if i.transaction_type == "REMOVE_LIQUIDITY":
-                info["coina"] = event.get("coina")
-                info["coinb"] = event.get("coinb")
-                info["amounta"] = event.get("withdraw_amounta")
-                info["amountb"] = event.get("withdraw_amountb")
-                info["token"] = event.get("burn_amount")
+            if i.event is not None:
+                event = json.loads(i.event)
+                if i.transaction_type == "REMOVE_LIQUIDITY":
+                    info["coina"] = event.get("coina")
+                    info["coinb"] = event.get("coinb")
+                    info["amounta"] = event.get("withdraw_amounta")
+                    info["amountb"] = event.get("withdraw_amountb")
+                    info["token"] = event.get("burn_amount")
+                else:
+                    info["coina"] = event.get("coina")
+                    info["coinb"] = event.get("coinb")
+                    info["amounta"] = event.get("deposit_amounta")
+                    info["amountb"] = event.get("deposit_amountb")
+                    info["token"] = event.get("mint_amount")
             else:
-                info["coina"] = event.get("coina")
-                info["coinb"] = event.get("coinb")
-                info["amounta"] = event.get("deposit_amounta")
-                info["amountb"] = event.get("deposit_amountb")
-                info["token"] = event.get("mint_amount")
+                txnInfo = s.query(ViolasSignedTransaction).filter(ViolasSignedTransaction.sender == address).filter(ViolasSignedTransaction.sequence_number == i.sequence_number).first()
+                sigTxn = json.loads(txnInfo.sigtxn)
+                if i.transaction_type == "REMOVE_LIQUIDITY":
+                    info["coina"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
+                    info["coinb"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
+                    info["amounta"] = 0
+                    info["amountb"] = 0
+                    info["token"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][0]["U64"]
+                else:
+                    info["coina"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
+                    info["coinb"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][1]["Struct"]["module"]
+                    info["amounta"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][0]["U64"]
+                    info["amountb"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
+                    info["token"] = 0
 
             infos.append(info)
 
         return True, infos
+
+    def AddTransactionInfo(self, sender, seqNum, timestamp, sigtxn):
+        s = self.session()
+
+        try:
+            info = ViolasSignedTransaction(
+                sender = sender,
+                sequence_number = seqNum,
+                time = timestamp,
+                sigtxn = sigtxn)
+
+            s.add(info)
+            s.commit()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        return True

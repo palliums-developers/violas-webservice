@@ -32,6 +32,8 @@ class ErrorCode(IntEnum):
 
     ERR_BTC_FORWARD_REQUEST = 5000
 
+    ERR_CLIENT_UNKNOW_ERROR = 9000
+
 ErrorMsg = {
     ErrorCode.ERR_OK: "ok",
     ErrorCode.ERR_ACCOUNT_DOES_NOT_EXIST: "Account does not exist.",
@@ -62,5 +64,7 @@ ErrorMsg = {
 
     ErrorCode.ERR_NODE_RUNTIME: "Node runtime error.",
 
-    ErrorCode.ERR_BTC_FORWARD_REQUEST: "Forward BTC request failed."
+    ErrorCode.ERR_BTC_FORWARD_REQUEST: "Forward BTC request failed.",
+
+    ErrorCode.ERR_CLIENT_UNKNOW_ERROR: "Client unknow error."
 }
