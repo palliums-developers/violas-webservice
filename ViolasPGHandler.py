@@ -1278,11 +1278,12 @@ class ViolasPGHandler():
                 info["output_amount"] = event.get("output_amount")
             else:
                 txnInfo = s.query(ViolasSignedTransaction).filter(ViolasSignedTransaction.sender == address).filter(ViolasSignedTransaction.sequence_number == i.sequence_number).first()
-                sigTxn = json.loads(txnInfo.sigtxn)
-                info["input_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
-                info["output_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][1]["Struct"]["module"]
-                info["input_amount"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
-                info["output_amount"] = 0
+                if txnInfo is nott None:
+                    sigTxn = json.loads(txnInfo.sigtxn)
+                    info["input_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
+                    info["output_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][1]["Struct"]["module"]
+                    info["input_amount"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
+                    info["output_amount"] = 0
 
             infos.append(info)
 
@@ -1323,19 +1324,20 @@ class ViolasPGHandler():
                     info["token"] = event.get("mint_amount")
             else:
                 txnInfo = s.query(ViolasSignedTransaction).filter(ViolasSignedTransaction.sender == address).filter(ViolasSignedTransaction.sequence_number == i.sequence_number).first()
-                sigTxn = json.loads(txnInfo.sigtxn)
-                if i.transaction_type == "REMOVE_LIQUIDITY":
-                    info["coina"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
-                    info["coinb"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
-                    info["amounta"] = 0
-                    info["amountb"] = 0
-                    info["token"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][0]["U64"]
-                else:
-                    info["coina"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
-                    info["coinb"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][1]["Struct"]["module"]
-                    info["amounta"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][0]["U64"]
-                    info["amountb"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
-                    info["token"] = 0
+                if txnInfo is not None:
+                    sigTxn = json.loads(txnInfo.sigtxn)
+                    if i.transaction_type == "REMOVE_LIQUIDITY":
+                        info["coina"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
+                        info["coinb"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
+                        info["amounta"] = 0
+                        info["amountb"] = 0
+                        info["token"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][0]["U64"]
+                    else:
+                        info["coina"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
+                        info["coinb"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][1]["Struct"]["module"]
+                        info["amounta"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][0]["U64"]
+                        info["amountb"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
+                        info["token"] = 0
 
             infos.append(info)
 
