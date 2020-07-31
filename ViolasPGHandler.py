@@ -1278,7 +1278,7 @@ class ViolasPGHandler():
                 info["output_amount"] = event.get("output_amount")
             else:
                 txnInfo = s.query(ViolasSignedTransaction).filter(ViolasSignedTransaction.sender == address).filter(ViolasSignedTransaction.sequence_number == i.sequence_number).first()
-                if txnInfo is nott None:
+                if txnInfo is not None:
                     sigTxn = json.loads(txnInfo.sigtxn)
                     info["input_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
                     info["output_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][1]["Struct"]["module"]
