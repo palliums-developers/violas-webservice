@@ -63,9 +63,9 @@ def MakeViolasTransaction():
     except Exception as e:
         if not e.on_chain:
             return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+        HViolas.AddTransactionInfo(sender, seqNum, timestamp, transactionInfo.to_json())
         return MakeResp(ErrorCode.ERR_CLIENT_UNKNOW_ERROR)
 
-    HViolas.AddTransactionInfo(sender, seqNum, timestamp, transactionInfo.to_json())
     return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.0/violas/transaction")
