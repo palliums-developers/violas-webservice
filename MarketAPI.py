@@ -8,6 +8,7 @@ def GetMarketExchangeCurrencies():
     libraCli = MakeLibraClient()
 
     try:
+        # to be confirmed
         currencies = cli.swap_get_registered_currencies(update=True)
     except Exception as e:
         logging.error(f"When get violas echange registered currencies: {e}")
@@ -42,6 +43,7 @@ def GetMarketExchangeCurrencies():
             cInfo["module"] = ""
             cInfo["address"] = ""
             cInfo["show_name"] = i
+            #to be confirmed
             cInfo["index"] = currencies.index(i)
             cInfo["icon"] = f"{ICON_URL}btc.png"
             filtered["btc"].append(cInfo)
