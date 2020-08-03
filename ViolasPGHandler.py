@@ -1285,6 +1285,7 @@ class ViolasPGHandler():
                     info["input_amount"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
                     info["output_amount"] = 0
             info["gas_used"] = int(i.gas_used * i.gas_unit_price)
+            info["gas_currency"] = i.gas_currency
 
             infos.append(info)
 
@@ -1340,6 +1341,8 @@ class ViolasPGHandler():
                         info["amountb"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
                         info["token"] = 0
             info["gas_used"] = int(i.gas_used * i.gas_unit_price)
+            info["gas_currency"] = i.gas_currency
+
 
             infos.append(info)
 
