@@ -17,7 +17,7 @@ from violas_client.error.error import LibraError as ViolasError
 from ViolasPGHandler import ViolasPGHandler
 from LibraPGHandler import LibraPGHandler
 from PushServerHandler import PushServerHandler
-
+from CrossChainHandler import CrossChainHandler
 from ErrorCode import ErrorCode
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
@@ -32,6 +32,9 @@ HLibra = LibraPGHandler(libraDBUrl)
 violasDBInfo = config["VIOLAS DB INFO"]
 violasDBUrl = f"{violasDBInfo['DBTYPE']}+{violasDBInfo['DRIVER']}://{violasDBInfo['USERNAME']}:{violasDBInfo['PASSWORD']}@{violasDBInfo['HOSTNAME']}:{violasDBInfo['PORT']}/{violasDBInfo['DATABASE']}"
 HViolas = ViolasPGHandler(violasDBUrl)
+
+crosschainInfo = config["CROSSCHAIN SERVER"]
+HCrossChain = CrossChainHandler(crosschainInfo["HOST"])
 
 pushInfo = config["PUSH SERVER"]
 pushh = PushServerHandler(pushInfo["HOST"], int(pushInfo["PORT"]))

@@ -31,5 +31,7 @@ import BtcAPI
 # MARKET
 import MarketAPI
 
+import CrossChainWalletApi
+
 # test
 import index
