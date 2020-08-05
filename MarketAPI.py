@@ -232,6 +232,8 @@ def GetPoolInfoAboutAccount():
     total = 0
     balancePair = []
     for i in balance:
+        if i.get("liquidity") == 0:
+            continue
         item = {}
         for k, v in i.items():
             if k == "liquidity":
