@@ -117,6 +117,7 @@ class LibraPGHandler():
             info["amount"] = int(i.amount)
             info["currency"] = i.currency
             info["status"] = i.status
+            info["confirmed_time"] = i.confirmed_time
 
             infoList.append(info)
 
@@ -145,6 +146,7 @@ class LibraPGHandler():
             info["amount"] = int(i.amount)
             info["status"] = i.status
             info["currency"] = i.currency
+            info["confirmed_time"] = i.confirmed_time
 
             infoList.append(info)
 
@@ -177,6 +179,7 @@ class LibraPGHandler():
         info["signature"] = result.signature
         info["status"] = result.status
         info["data"] = result.data
+        info["confirmed_time"] = result.confirmed_time
 
         return True, info
 
@@ -235,6 +238,7 @@ class LibraPGHandler():
             info["currency"] = i.currency
             info["gas_currency"] = i.gas_currency
             info["status"] = i.status
+            info["confirmed_time"] = i.confirmed_time
 
             infoList.append(info)
 

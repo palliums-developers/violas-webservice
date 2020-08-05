@@ -732,6 +732,7 @@ class ViolasPGHandler():
             info["amount"] = int(i.amount)
             info["status"] = i.status
             info["currency"] = i.currency
+            info["confirmed_time"] = i.confirmed_time
 
             infoList.append(info)
 
@@ -760,6 +761,7 @@ class ViolasPGHandler():
             info["amount"] = int(i.amount)
             info["status"] = i.status
             info["currency"] = i.currency
+            info["confirmed_time"] = i.confirmed_time
 
             infoList.append(info)
 
@@ -792,6 +794,7 @@ class ViolasPGHandler():
         info["signature"] = result.signature
         info["status"] = result.status
         info["data"] = result.data
+        info["confirmed_time"] = result.confirmed_time
 
         return True, info
 
@@ -958,6 +961,7 @@ class ViolasPGHandler():
             info["currency"] = i.currency
             info["gas_currency"] = i.gas_currency
             info["status"] = i.status
+            info["confirmed_time"] = i.confirmed_time
 
             infoList.append(info)
 
@@ -1269,6 +1273,8 @@ class ViolasPGHandler():
             info["version"] = i.id - 1
             info["date"] = i.expiration_time
             info["status"] = i.status
+            info["confirmed_time"] = i.confirmed_time
+
 
             if i.event is not None:
                 event = json.loads(i.event)
@@ -1310,6 +1316,7 @@ class ViolasPGHandler():
             info["date"] = i.expiration_time
             info["status"] = i.status
             info["transaction_type"] = i.transaction_type
+            info["confirmed_time"] = i.confirmed_time
 
             if i.event is not None:
                 event = json.loads(i.event)
