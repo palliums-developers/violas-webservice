@@ -25,6 +25,8 @@ class ViolasTransaction(Base):
     signature_scheme = Column(String(32), nullable = True)
     status = Column(SmallInteger, nullable = False)
     event = Column(Text(), nullable = True)
+    confirmed_time = Column(Integer, nullable = True)
+
 
 class ViolasAddressInfo(Base):
     __tablename__ = "address_info"
