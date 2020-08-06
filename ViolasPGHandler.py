@@ -1300,14 +1300,12 @@ class ViolasPGHandler():
 
     def GetMarketPoolTransaction(self, address, offset, limit):
         s = self.session()
-
         try:
             transactions = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(or_(ViolasTransaction.transaction_type == "REMOVE_LIQUIDITY", ViolasTransaction.transaction_type == "ADD_LIQUIDITY")).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
             return False, None
-
         infos = []
         for i in transactions:
             info = {}
