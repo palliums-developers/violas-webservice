@@ -41,7 +41,6 @@ def ViolasGetAddressInfo(address):
     cli = MakeViolasClient()
     try:
         result = cli.get_balances(address)
-        print(result)
         balances = []
         for key, value in result.items():
             item = {}

@@ -35,6 +35,20 @@ class CrossChainHandler():
             tr["coina"] = data.get("in_token")
             tr["coinb"] = data.get("out_token")
             tr["version"] = data.get("version")
+            if tr["coina"] == "Coin1":
+                tr["coina_shown_name"] = "USD"
+            elif tr["coina"] == "Coin2":
+                tr["coina_shown_name"] = "EUR"
+            else:
+                tr["coina_shown_name"] = tr["coina"]
+
+            if tr["coinb"] == "Coin1":
+                tr["coinb_shown_name"] = "USD"
+            elif tr["coinb"] == "Coin2":
+                tr["coinb_shown_name"] = "EUR"
+            else:
+                tr["coinb_shown_name"] = tr["coinb"]
+
             state = data.get("state")
             if state == "end":
                 tr["status"] = CrossChainState.SUCESSED
