@@ -24,6 +24,8 @@ class LibraTransaction(Base):
     signature = Column(Text(), nullable = True)
     signature_scheme = Column(String(32), nullable = True)
     status = Column(SmallInteger, nullable = False)
+    confirmed_time = Column(Integer, nullable = True)
+
 
 class LibraAddressInfo(Base):
     __tablename__ = "address_info"
