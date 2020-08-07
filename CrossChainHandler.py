@@ -1,6 +1,7 @@
 import requests
 import logging
 from enum import IntEnum
+from util import get_show_name
 
 class CrossChainState(IntEnum):
     SUCESSED = 4001
@@ -30,24 +31,15 @@ class CrossChainHandler():
         for data in res.get("datas").get("datas"):
             tr = dict()
             tr["data"] = data.get("expiration_time")
-            tr["amounta"] = data.get("in_amount")
-            tr["amountb"] = data.get("out_amount")
-            tr["coina"] = data.get("in_token")
-            tr["coinb"] = data.get("out_token")
+            tr["input_amount"] = data.get("in_amount")
+            tr["output_amount"] = data.get("out_amount")
+            tr["input_name"] = data.get("in_token")
+            tr["output_name"] = data.get("out_token")
             tr["version"] = data.get("version")
-            if tr["coina"] == "Coin1":
-                tr["coina_shown_name"] = "USD"
-            elif tr["coina"] == "Coin2":
-                tr["coina_shown_name"] = "EUR"
-            else:
-                tr["coina_shown_name"] = tr["coina"]
-
-            if tr["coinb"] == "Coin1":
-                tr["coinb_shown_name"] = "USD"
-            elif tr["coinb"] == "Coin2":
-                tr["coinb_shown_name"] = "EUR"
-            else:
-                tr["coinb_shown_name"] = tr["coinb"]
+            tr["input_shown_name"] = get_show_name(tr["input_name"])
+            tr["output_shown_name"] = get_show_name(tr["output_name"])
+            tr["from_chain"] = data.get("from_chain")
+            tr["to_chain"] = data.get("to_chain")
 
             state = data.get("state")
             if state == "end":

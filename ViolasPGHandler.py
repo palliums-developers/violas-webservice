@@ -10,7 +10,7 @@ from sqlalchemy.sql.expression import false
 from sqlalchemy.exc import OperationalError
 
 from TransferType import TransferType
-
+from util import get_show_name
 class ViolasPGHandler():
     def __init__(self, dbUrl):
         self.engine = create_engine(dbUrl)
@@ -1282,6 +1282,9 @@ class ViolasPGHandler():
                 info["output_name"] = event.get("output_name")
                 info["input_amount"] = event.get("input_amount")
                 info["output_amount"] = event.get("output_amount")
+                info["input_show_name"] = get_show_name(info["input_name"])
+                info["output_show_name"] = get_show_name(info["output_name"])
+
             else:
                 txnInfo = s.query(ViolasSignedTransaction).filter(ViolasSignedTransaction.sender == address).filter(ViolasSignedTransaction.sequence_number == i.sequence_number).first()
                 if txnInfo is not None:
@@ -1290,6 +1293,8 @@ class ViolasPGHandler():
                     info["output_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][1]["Struct"]["module"]
                     info["input_amount"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
                     info["output_amount"] = 0
+                    info["input_show_name"] = get_show_name(info["input_name"])
+                    info["output_show_name"] = get_show_name(info["output_name"])
 
             info["gas_used"] = int(i.gas_used * i.gas_unit_price)
             info["gas_currency"] = i.gas_currency
@@ -1324,12 +1329,16 @@ class ViolasPGHandler():
                     info["amounta"] = event.get("withdraw_amounta")
                     info["amountb"] = event.get("withdraw_amountb")
                     info["token"] = event.get("burn_amount")
+                    info["coina_show_name"] = get_show_name(info["coina"])
+                    info["coinb_show_name"] = get_show_name(info["coinb"])
                 else:
                     info["coina"] = event.get("coina")
                     info["coinb"] = event.get("coinb")
                     info["amounta"] = event.get("deposit_amounta")
                     info["amountb"] = event.get("deposit_amountb")
                     info["token"] = event.get("mint_amount")
+                    info["coina_show_name"] = get_show_name(info["coina"])
+                    info["coinb_show_name"] = get_show_name(info["coinb"])
             else:
                 txnInfo = s.query(ViolasSignedTransaction).filter(ViolasSignedTransaction.sender == address).filter(ViolasSignedTransaction.sequence_number == i.sequence_number).first()
                 if txnInfo is not None:
@@ -1340,11 +1349,15 @@ class ViolasPGHandler():
                         info["amounta"] = 0
                         info["amountb"] = 0
                         info["token"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][0]["U64"]
+                        info["coina_show_name"] = get_show_name(info["coina"])
+                        info["coinb_show_name"] = get_show_name(info["coinb"])
                     else:
                         info["coina"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
                         info["coinb"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][1]["Struct"]["module"]
                         info["amounta"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][0]["U64"]
                         info["amountb"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
+                        info["coina_show_name"] = get_show_name(info["coina"])
+                        info["coinb_show_name"] = get_show_name(info["coinb"])
                         info["token"] = 0
             info["gas_used"] = int(i.gas_used * i.gas_unit_price)
             info["gas_currency"] = i.gas_currency

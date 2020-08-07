@@ -60,3 +60,11 @@ def VerifyCodeExist(receiver, code):
     rdsVerify.delete(receiver)
 
     return True
+
+
+def get_show_name(name):
+    if name == "Coin1":
+        return "USD"
+    if name == "Coin2":
+        return "EUR"
+    return name
