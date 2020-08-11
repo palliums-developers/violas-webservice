@@ -162,12 +162,6 @@ MAPPING_ADDRESS_INFOS = [
         "address": "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
     },
 
-    # {
-    #     "type": "l2b",
-    #     "chain": "libra",
-    #     "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-    # },
-
     {
         "type": "b2vbtc",
         "lable": "0x2000",
@@ -178,8 +172,19 @@ MAPPING_ADDRESS_INFOS = [
         "type": "l2vusd",
         "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
     },
+
     {
         "type": "l2veur",
+        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+    },
+
+    {
+        "type": "v2lusd",
+        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+    },
+
+    {
+        "type": "v2leur",
         "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
     },
 ]
