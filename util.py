@@ -68,3 +68,96 @@ def get_show_name(name):
     if name == "Coin2":
         return "EUR"
     return name
+
+
+class AddressInfo():
+    BTC_CHAIN_NAME = "btc"
+    LIBRA_CHAIN_NAME = "libra"
+    VIOLAS_CHAIN_NAME = "violas"
+
+    def __init__(self, type, address, lable=None):
+        self.type = type
+        flow = type[0:3]
+        chain_in, chain_out = flow.split("2")
+        self.schain = self._parse_chain_name(chain_in)
+        self.rchain = self._parse_chain_name(chain_out)
+        self.lable = lable
+
+        self.type = type
+        self.address = address
+
+    def get_lable(self):
+        if self.schain != self.BTC_CHAIN_NAME:
+            return self.type[0:3] + "m"
+        return self.lable
+
+    def get_receiver_address(self):
+        if self.rchain == self.BTC_CHAIN_NAME:
+            return self.address
+        return self.address[32:]
+
+    def get_smodule_address(self):
+        if self.schain == self.BTC_CHAIN_NAME:
+            return ""
+        if self.schain == self.LIBRA_CHAIN_NAME:
+            return LIBRA_CORE_CODE_ADDRESS.hex()
+        if self.schain == self.VIOLAS_CHAIN_NAME:
+            return VIOLAS_CORE_CODE_ADDRESS.hex()
+
+    def get_rmodule_address(self):
+        if self.rchain == self.BTC_CHAIN_NAME:
+            return ""
+        if self.rchain == self.LIBRA_CHAIN_NAME:
+            return LIBRA_CORE_CODE_ADDRESS.hex()
+        if self.rchain == self.VIOLAS_CHAIN_NAME:
+            return VIOLAS_CORE_CODE_ADDRESS.hex()
+
+    def get_smapping_module(self):
+        if self.schain == self.BTC_CHAIN_NAME:
+            return ""
+        return self.type[3:].upper()
+
+    def get_rmapping_module(self):
+        if self.rchain == self.BTC_CHAIN_NAME:
+            return ""
+        return self.type[3:].upper()
+
+    def get_smapping_name(self):
+        if self.schain == self.BTC_CHAIN_NAME:
+            return "BTC"
+        return self.type[3:].upper()
+
+    def get_rmapping_name(self):
+        if self.rchain == self.BTC_CHAIN_NAME:
+            return "BTC"
+        return self.type[3:].upper()
+
+    def to_mapping_json(self):
+        return {
+            "from_coin": {
+                "assert": {
+                    "address": self.get_smodule_address(),
+                    "module": self.get_smapping_module(),
+                    "name": self.get_smapping_name()
+                },
+                "coin_type": self.schain
+            },
+            "to_coin": {
+                "assert": {
+                    "address": self.get_rmodule_address(),
+                    "module": self.get_rmapping_module(),
+                    "name": self.get_rmapping_name()
+                },
+                "coin_type": self.rchain
+            },
+            "lable": self.get_lable()
+        }
+
+    def _parse_chain_name(self, v):
+        if v == "b":
+            return "btc"
+        if v == "l":
+            return "libra"
+        if v == "v":
+            return "violas"
+

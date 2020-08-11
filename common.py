@@ -58,7 +58,7 @@ ChairmanFailedReason = {
 
 BASEMAPINFOS = [
     {
-        "type": "v2b",
+        "type": "v2bbtc",
         "chain": "violas",
         "address": "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
     },
@@ -73,7 +73,7 @@ BASEMAPINFOS = [
         "address": "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
     },
     {
-        "type": "l2b",
+        "type": "l2bbtc",
         "chain": "libra",
         "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
     },
@@ -98,8 +98,8 @@ BASEMAPINFOS = [
         "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
     },
     {
-        "type": "b2v",
-        "lable": "",
+        "type": "b2vbtc",
+        "lable": "0x3000",
         "chain": "btc",
         "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
     },
@@ -152,3 +152,35 @@ BASEMAPINFOS = [
         "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
     }
 ]
+
+
+
+
+MAPPING_ADDRESS_INFOS = [
+    {
+        "type": "v2bbtc",
+        "address": "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
+    },
+
+    # {
+    #     "type": "l2b",
+    #     "chain": "libra",
+    #     "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+    # },
+
+    {
+        "type": "b2vbtc",
+        "lable": "0x2000",
+        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+    },
+
+    {
+        "type": "l2vusd",
+        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+    },
+    {
+        "type": "l2veur",
+        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+    },
+]
+
