@@ -58,97 +58,76 @@ ChairmanFailedReason = {
 
 BASEMAPINFOS = [
     {
-        "type": "v2b",
-        "chain": "violas",
-        "address": "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
-    },
-    {
         "type": "v2lusd",
         "chain": "violas",
-        "address": "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
+        "address": "8b4ff62db5b643571507f732ae5c710068e830016798aaa8f27daf1abd5f3c4c"
     },
     {
         "type": "v2leur",
         "chain": "violas",
-        "address": "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
+        "address": "e20124639b047de7285d8b733279c4750ef253cace5bf9505658a7b904a0a2c1"
     },
-    {
-        "type": "l2b",
-        "chain": "libra",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-    },
+
     {
         "type": "l2vusd",
         "chain": "libra",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+        "address": "9da9b3888a469223005830a81624882456dfe238b35e1cb468d6e98a70252c00"
     },
     {
         "type": "l2veur",
         "chain": "libra",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+        "address": "9da9b3888a469223005830a81624882456dfe238b35e1cb468d6e98a70252c00"
     },
     {
         "type": "l2vgbp",
         "chain": "libra",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+        "address": "9da9b3888a469223005830a81624882456dfe238b35e1cb468d6e98a70252c00"
     },
     {
         "type": "l2vsgd",
         "chain": "libra",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+        "address": "9da9b3888a469223005830a81624882456dfe238b35e1cb468d6e98a70252c00"
     },
-    {
-        "type": "b2v",
-        "lable": "",
-        "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-    },
+    # {
+    #     "type": "b2v",
+    #     "lable": "",
+    #     "chain": "btc",
+    #     "address": "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
+    # },
     {
         "type": "b2vusd",
         "lable": "0x4000",
         "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        "address": "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
     },
     {
         "type": "b2veur",
         "lable": "0x4010",
         "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        "address": "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
     },
     {
         "type": "b2vsgd",
         "lable": "0x4020",
         "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        "address": "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
     },
     {
         "type": "b2vgbp",
         "lable": "0x4030",
         "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        "address": "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
     },
     {
         "type": "b2lusd",
         "lable": "0x5000",
         "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        "address": "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
     },
     {
         "type": "b2leur",
         "lable": "0x5010",
         "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        "address": "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
     },
-    {
-        "type": "b2lsgd",
-        "lable": "0x5020",
-        "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-    },
-    {
-        "type": "b2lgbp",
-        "lable": "0x5030",
-        "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-    }
 ]
