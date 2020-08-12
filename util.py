@@ -132,13 +132,21 @@ class AddressInfo():
             return "BTC"
         return self.type[3:].upper()
 
+    def get_show_name(self, name):
+        if name == "Coin1":
+            return "USD"
+        if name == "Coin2":
+            return "EUR"
+        return name
+
     def to_mapping_json(self):
         return {
             "from_coin": {
                 "assert": {
                     "address": self.get_smodule_address(),
                     "module": self.get_smapping_module(),
-                    "name": self.get_smapping_name()
+                    "name": self.get_smapping_name(),
+                    "show_name": self.get_show_name(self.get_smapping_name())
                 },
                 "coin_type": self.schain
             },
@@ -146,10 +154,12 @@ class AddressInfo():
                 "assert": {
                     "address": self.get_rmodule_address(),
                     "module": self.get_rmapping_module(),
-                    "name": self.get_rmapping_name()
+                    "name": self.get_rmapping_name(),
+                    "show_name":self.get_show_name(self.get_rmapping_name()),
                 },
                 "coin_type": self.rchain
             },
+            "receiver_address": self.get_receiver_address(),
             "lable": self.get_lable()
         }
 
