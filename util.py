@@ -126,7 +126,7 @@ class AddressInfo():
 
     def get_rmapping_name(self):
         if self.rchain == self.BTC_CHAIN_NAME:
-            return ""
+            return "BTC"
         coin = self.type[3:].upper()
         if self.rchain == self.LIBRA_CHAIN_NAME:
             if coin == "USD":
