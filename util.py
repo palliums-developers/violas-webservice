@@ -156,7 +156,7 @@ class AddressInfo():
             "to_coin": {
                 "assert": {
                     "address": self.get_rmodule_address(),
-                    "module": self.get_smapping_name(),
+                    "module": self.get_rmapping_name(),
                     "name": self.get_rmapping_name(),
                     "show_name":self.get_show_name(self.get_rmapping_name()),
                 },
