@@ -128,7 +128,7 @@ class AddressInfo():
         if self.rchain == self.BTC_CHAIN_NAME:
             return ""
         coin = self.type[3:].upper()
-        if self.schain == self.LIBRA_CHAIN_NAME:
+        if self.rchain == self.LIBRA_CHAIN_NAME:
             if coin == "USD":
                 return "Coin1"
             if coin == "EUR":
