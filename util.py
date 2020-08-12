@@ -92,7 +92,7 @@ class AddressInfo():
         return self.lable
 
     def get_receiver_address(self):
-        if self.rchain == self.BTC_CHAIN_NAME:
+        if self.schain == self.BTC_CHAIN_NAME:
             return self.address
         return self.address[32:]
 
@@ -125,12 +125,24 @@ class AddressInfo():
     def get_smapping_name(self):
         if self.schain == self.BTC_CHAIN_NAME:
             return "BTC"
-        return self.type[3:].upper()
+        coin = self.type[3:].upper()
+        if self.schain == self.LIBRA_CHAIN_NAME:
+            if coin == "USD":
+                return "Coin1"
+            if coin == "EUR":
+                return "Coin2"
+        return coin
 
     def get_rmapping_name(self):
         if self.rchain == self.BTC_CHAIN_NAME:
             return "BTC"
-        return self.type[3:].upper()
+        coin = self.type[3:].upper()
+        if self.schain == self.LIBRA_CHAIN_NAME:
+            if coin == "USD":
+                return "Coin1"
+            if coin == "EUR":
+                return "Coin2"
+        return coin
 
     def get_show_name(self, name):
         if name == "Coin1":

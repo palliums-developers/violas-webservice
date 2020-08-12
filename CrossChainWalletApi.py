@@ -23,7 +23,6 @@ def GetMappingAddressInfo():
     for i in MAPPING_ADDRESS_INFOS:
         type = i.get("type")
         address = i.get("address")
-        print(address)
         lable = i.get("lable")
         info = AddressInfo(type, address, lable)
         data.append(info.to_mapping_json())
