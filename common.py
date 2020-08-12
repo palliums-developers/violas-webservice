@@ -159,7 +159,7 @@ BASEMAPINFOS = [
 MAPPING_ADDRESS_INFOS = [
     {
         "type": "v2bbtc",
-        "address": "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
+        "address": "eda54651162270ccc0ff81cbcfffcded8ee2a1a52bd868c0baadb0d226731832"
     },
 
     {
@@ -180,12 +180,12 @@ MAPPING_ADDRESS_INFOS = [
 
     {
         "type": "v2lusd",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+        "address": "81d0e3818e6ffda1336b7b2aff9496b7148cea4f3ea38d2b602dc8997592fe79"
     },
 
     {
         "type": "v2leur",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+        "address": "81d0e3818e6ffda1336b7b2aff9496b7148cea4f3ea38d2b602dc8997592fe79"
     },
 ]
 
