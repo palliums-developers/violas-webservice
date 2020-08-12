@@ -112,15 +112,6 @@ class AddressInfo():
         if self.rchain == self.VIOLAS_CHAIN_NAME:
             return VIOLAS_CORE_CODE_ADDRESS.hex()
 
-    def get_smapping_module(self):
-        if self.schain == self.BTC_CHAIN_NAME:
-            return ""
-        return self.type[3:].upper()
-
-    def get_rmapping_module(self):
-        if self.rchain == self.BTC_CHAIN_NAME:
-            return ""
-        return self.type[3:].upper()
 
     def get_smapping_name(self):
         if self.schain == self.BTC_CHAIN_NAME:
@@ -135,7 +126,7 @@ class AddressInfo():
 
     def get_rmapping_name(self):
         if self.rchain == self.BTC_CHAIN_NAME:
-            return "BTC"
+            return ""
         coin = self.type[3:].upper()
         if self.schain == self.LIBRA_CHAIN_NAME:
             if coin == "USD":
@@ -156,7 +147,7 @@ class AddressInfo():
             "from_coin": {
                 "assert": {
                     "address": self.get_smodule_address(),
-                    "module": self.get_smapping_module(),
+                    "module": self.get_smapping_name(),
                     "name": self.get_smapping_name(),
                     "show_name": self.get_show_name(self.get_smapping_name())
                 },
@@ -165,7 +156,7 @@ class AddressInfo():
             "to_coin": {
                 "assert": {
                     "address": self.get_rmodule_address(),
-                    "module": self.get_rmapping_module(),
+                    "module": self.get_smapping_name(),
                     "name": self.get_rmapping_name(),
                     "show_name":self.get_show_name(self.get_rmapping_name()),
                 },
