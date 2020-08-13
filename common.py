@@ -154,8 +154,6 @@ BASEMAPINFOS = [
 ]
 
 
-
-
 MAPPING_ADDRESS_INFOS = [
     {
         "type": "v2bbtc",

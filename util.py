@@ -132,13 +132,20 @@ class AddressInfo():
             return "BTC"
         return self.type[3:].upper()
 
+    def get_slogo_url(self):
+        return f"{ICON_URL}{self.schain}.png"
+
+    def get_rlogo_url(self):
+        return f"{ICON_URL}{self.rchain}.png"
+
     def to_mapping_json(self):
         return {
             "from_coin": {
                 "assert": {
                     "address": self.get_smodule_address(),
                     "module": self.get_smapping_module(),
-                    "name": self.get_smapping_name()
+                    "name": self.get_smapping_name(),
+                    "icon": self.get_slogo_url()
                 },
                 "coin_type": self.schain
             },
@@ -146,7 +153,8 @@ class AddressInfo():
                 "assert": {
                     "address": self.get_rmodule_address(),
                     "module": self.get_rmapping_module(),
-                    "name": self.get_rmapping_name()
+                    "name": self.get_rmapping_name(),
+                    "icon": self.get_rlogo_url()
                 },
                 "coin_type": self.rchain
             },
