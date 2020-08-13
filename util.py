@@ -143,9 +143,11 @@ class AddressInfo():
         return name
 
     def get_slogo_url(self):
+        from common import ICON_URL
         return f"{ICON_URL}{self.schain}.png"
 
     def get_rlogo_url(self):
+        from common import ICON_URL
         return f"{ICON_URL}{self.rchain}.png"
 
     def to_mapping_json(self):
