@@ -162,7 +162,7 @@ MAPPING_ADDRESS_INFOS = [
 
     {
         "type": "b2vbtc",
-        "lable": "0x2000",
+        "lable": "0x3000",
         "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
     },
 
