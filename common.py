@@ -12,7 +12,7 @@ from violas_client.lbrtypes.account_config.constants.lbr import CORE_CODE_ADDRES
 from violas_client.lbrtypes.account_config import association_address
 
 from libra_client.error.error import LibraError
-from violas_client.error.error import LibraError as ViolasError 
+from violas_client.error.error import LibraError as ViolasError
 
 from ViolasPGHandler import ViolasPGHandler
 from LibraPGHandler import LibraPGHandler
@@ -186,4 +186,3 @@ MAPPING_ADDRESS_INFOS = [
         "address": "81d0e3818e6ffda1336b7b2aff9496b7148cea4f3ea38d2b602dc8997592fe79"
     },
 ]
-

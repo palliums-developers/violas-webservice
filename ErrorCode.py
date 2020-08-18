@@ -59,6 +59,7 @@ ErrorMsg = {
     ErrorCode.ERR_SIG_ERROR: "Signature verify failed.",
     ErrorCode.ERR_SESSION_NOT_EXIST: "Session ID does not exist.",
     ErrorCode.ERR_NEED_REQUEST_PARAM: "Need request params.",
+    ErrorCode.ERR_CROSSCHAIN_CONNECT: "Cross chain server connect failed.",
 
     ErrorCode.ERR_GRPC_CONNECT: "Grpc call failed.",
     ErrorCode.ERR_INVAILED_ADDRESS: "Invailed address.",

@@ -30,7 +30,6 @@ def GetMappingAddressInfo():
     return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/mapping/transaction")
-
 def GetMappingTransactions():
     address = request.args.get("address")
     offset = request.args.get("offset", type=int, default=0)
@@ -73,4 +72,3 @@ def GetMappingTransactions():
         },
         ]
     return MakeResp(ErrorCode.ERR_OK, data)
-
