@@ -1,5 +1,6 @@
 from ViolasWebservice import app
 from common import *
+from util import MakeResp
 
 @app.route("/1.0/btc/balance")
 def GetBtcBalance():
