@@ -1,7 +1,7 @@
 from flask import request
 
 from ViolasWebservice import app
-from common import HCrossChain, MAPPING_ADDRESS_INFOS
+from common import HCrossChain, MAPPING_ADDRESS_INFOS, requests
 from ErrorCode import ErrorCode
 from util import MakeResp, AddressInfo
 
@@ -31,44 +31,19 @@ def GetMappingAddressInfo():
 
 @app.route("/1.0/mapping/transaction")
 def GetMappingTransactions():
-    address = request.args.get("address")
+    address = request.args.get("addresses")
     offset = request.args.get("offset", type=int, default=0)
     limit = request.args.get("limit", type=int, default=5)
 
-    data = [
-        {
-            "amount_from":{
-                "chain": "violas",
-                "name": "BTC",
-                "show_name": "BTC",
-                "amount": 100
-            },
-            "amount_to": {
-                "chain": "btc",
-                "name": "BTC",
-                "show_name": "BTC",
-                "amount": 100
-            },
-            "confirmed_time": 1596492602,
-            "status": 4001,
-            "version_or_block_height": 12345689
-        },
-        {
-            "amount_from": {
-                "chain": "violas",
-                "name": "USD",
-                "show_name": "USD",
-                "amount": 100
-            },
-            "amount_to": {
-                "chain": "libra",
-                "name": "Coin1",
-                "show_name": "USD",
-                "amount": 100
-            },
-            "confirmed_time": 1596392602,
-            "status": 4001,
-            "version_or_block_height": 123456834
-        },
-        ]
-    return MakeResp(ErrorCode.ERR_OK, data)
+    params = {
+        "opt": "records",
+        "senders": address,
+        "opttype": "map",
+        "cursor": offset,
+        "limit": limit
+    }
+
+    resp = requests.get("http://18.136.139.151", params = params)
+    datas = resp.json()["datas"]["datas"]
+
+    return MakeResp(ErrorCode.ERR_OK, datas)
