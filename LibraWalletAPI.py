@@ -152,3 +152,21 @@ def GetLibraAccountInfo():
             "sent_events_key": state.get_account_resource().sent_events.get_key()}
 
     return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/libra/currency/published")
+def CheckLibraCurrencyPublished():
+    addr = request.args.get("addr")
+    addr = addr.lower()
+
+    cli = MakeLibraClient()
+
+    try:
+        balances = cli.get_balances(addr)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+
+    keys = []
+    for key in balances:
+        keys.append(key)
+
+    return MakeResp(ErrorCode.ERR_OK, {"published": keys})
