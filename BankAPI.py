@@ -235,7 +235,7 @@ def GetBorrowOrderDetail():
     return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/violas/bank/transaction", methods = ["POST"])
-def MakeViolasTransaction():
+def MakeBankTransaction():
     params = request.get_json()
     signedtxn = params["signedtxn"]
 
