@@ -30,8 +30,9 @@ import CrossChainAPI
 import BtcAPI
 # MARKET
 import MarketAPI
-
 import CrossChainWalletApi
+# BANK
+import BankAPI
 
 # test
 import index
