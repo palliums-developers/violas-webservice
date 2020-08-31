@@ -16,15 +16,15 @@ def GetViolasBankAccountInfo():
                     "id": "100001",
                     "logo": "http://xxxxxxxxx",
                     "name": "aaaaaa",
-                    "intro": "aaaaaaaaaaaaaaaaaaaaaaaaaa",
-                    "rate": 3.2
+                    "desc": "aaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "rate": 0.032
                 },
                 {
                     "id": "100002",
                     "logo": "http://xxxxxxxxx",
                     "name": "bbbbbb",
-                    "intro": "bbbbbbbbbbbbbbbbbbbbbbbbbb",
-                    "rate": 4.2
+                    "desc": "bbbbbbbbbbbbbbbbbbbbbbbbbb",
+                    "rate": 0.042
                 }
             ],
             "borrows": [
@@ -32,15 +32,15 @@ def GetViolasBankAccountInfo():
                     "id": "200001",
                     "logo": "http://xxxxxxxxxx",
                     "name": "ccccccc",
-                    "intor": "cccccccccccccccccccccccccc",
-                    "rate": 3.8
+                    "desc": "cccccccccccccccccccccccccc",
+                    "rate": 0.038
                 },
                 {
                     "id": "200002",
                     "logo": "http://xxxxxxxxxx",
                     "name": "ddddddd",
-                    "intor": "dddddddddddddddddddddddddd",
-                    "rate": 5.0
+                    "desc": "dddddddddddddddddddddddddd",
+                    "rate": 0.05
                 }
             ]}
 
@@ -48,14 +48,29 @@ def GetViolasBankAccountInfo():
 
 @app.route("/1.0/violas/bank/deposit/info")
 def GetDepositDetailInfo():
+    address = request.args.get("address")
     productId = request.args.get("id")
 
     data = {
         "id": "100001",
-        "limit": 1500,
-        "rate": 5.0,
-        "pledge_rate": 5.0,
-        "intor": "aaaaaaaaaaa"
+        "name": "xxxxxx",
+        "minimum_amount": 500,
+        "quota_used": 0,
+        "quota_limit": 1500,
+        "rate": 0.03,
+        "pledge_rate": 0.05,
+        "intor": [
+            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"},
+            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"}
+        ],
+        "question": [
+            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"},
+            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"}
+        ],
+        "token_module": "BTC",
+        "token_address": "00000000000000000000000000000001",
+        "token_name": "BTC",
+        "token_show_name": "BTC"
     }
 
     return MakeResp(ErrorCode.ERR_OK, data)
@@ -74,7 +89,12 @@ def GetDepositOrders():
             "status": 1,
             "principal": 1500,
             "earnings": 22,
-            "rate": 3.9
+            "rate": 0.039,
+            "available_quantity": 100,
+            "token_name": "BTC",
+            "token_address": "00000000000000000000000000000001",
+            "token_name": "BTC",
+            "token_show_name": "BTC"
         },
         {
             "id": "2000001",
@@ -83,7 +103,12 @@ def GetDepositOrders():
             "status": 1,
             "principal": 1500,
             "earnings": 22,
-            "rate": 3.9
+            "rate": 0.039,
+            "available_quantity": 100,
+            "token_name": "BTC",
+            "token_address": "00000000000000000000000000000001",
+            "token_name": "BTC",
+            "token_show_name": "BTC"
         }
     ]
     return MakeResp(ErrorCode.ERR_OK, data)
@@ -123,10 +148,24 @@ def GetBorrowDetailInfo():
 
     data = {
         "id": "100001",
-        "limit": 1500,
-        "rate": 5.0,
-        "pledge_rate": 5.0,
-        "intor": "aaaaaaaaaaa"
+        "name": "xxxxxx",
+        "minimum_amount": 500,
+        "quota_used": 0,
+        "quota_limit": 1500,
+        "rate": 0.03,
+        "pledge_rate": 0.05,
+        "intor": [
+            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"},
+            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"}
+        ],
+        "question": [
+            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"},
+            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"}
+        ],
+        "token_module": "BTC",
+        "token_address": "00000000000000000000000000000001",
+        "token_name": "BTC",
+        "token_show_name": "BTC"
     }
 
     return MakeResp(ErrorCode.ERR_OK, data)
@@ -141,13 +180,13 @@ def GetBorrowOrders():
         {
             "id": "2000001",
             "logo": "http://xxxxxxxxxxx",
-            "currency": "LBR",
+            "name": "LBR",
             "amount": 1500
         },
         {
             "id": "2000001",
             "logo": "http://xxxxxxxxxxx",
-            "currency": "LBR",
+            "name": "LBR",
             "amount": 1500
         }
     ]
@@ -190,8 +229,19 @@ def GetBorrowOrderDetail():
     offset = request.args.get("offset", type = int, default = 0)
     limit = request.args.get("limit", type = int, default = 10)
 
+    data = {
+        "id": "100001",
+        "name": "BTC",
+        "balance": 2000,
+        "rate": 0.05,
+        "token_module": "BTC",
+        "token_address": "00000000000000000000000000000001",
+        "token_name": "BTC",
+        "token_show_name": "BTC"
+    }
+
     if q == 1:
-        data = [
+        data["list"] = [
             {
                 "date": 159888010,
                 "amount": 1000,
@@ -204,7 +254,7 @@ def GetBorrowOrderDetail():
             }
         ]
     elif q == 2:
-        data = [
+        data["list"] = [
             {
                 "date": 159888010,
                 "cleared": 1000,
@@ -219,7 +269,7 @@ def GetBorrowOrderDetail():
             }
         ]
     else:
-        data = [
+        data["list"] = [
             {
                 "date": 159992342,
                 "amount": 823,
