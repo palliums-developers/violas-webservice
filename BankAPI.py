@@ -11,38 +11,53 @@ def GetViolasBankAccountInfo():
             "yesterday": 0.3,
             "total": 42.76,
             "borrow": 1403.23,
-            "deposits":[
-                {
-                    "id": "100001",
-                    "logo": "http://xxxxxxxxx",
-                    "name": "aaaaaa",
-                    "desc": "aaaaaaaaaaaaaaaaaaaaaaaaaa",
-                    "rate": 0.032
-                },
-                {
-                    "id": "100002",
-                    "logo": "http://xxxxxxxxx",
-                    "name": "bbbbbb",
-                    "desc": "bbbbbbbbbbbbbbbbbbbbbbbbbb",
-                    "rate": 0.042
-                }
-            ],
-            "borrows": [
-                {
-                    "id": "200001",
-                    "logo": "http://xxxxxxxxxx",
-                    "name": "ccccccc",
-                    "desc": "cccccccccccccccccccccccccc",
-                    "rate": 0.038
-                },
-                {
-                    "id": "200002",
-                    "logo": "http://xxxxxxxxxx",
-                    "name": "ddddddd",
-                    "desc": "dddddddddddddddddddddddddd",
-                    "rate": 0.05
-                }
-            ]}
+    }
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/violas/bank/product/deposit")
+def GetDepositProductList():
+    data = [
+        {
+            "id": "100001",
+            "logo": "http://xxxxxxxxx",
+            "name": "aaaaaa",
+            "desc": "aaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "rate": 0.032,
+            "token_module": "BTC"
+        },
+        {
+            "id": "100002",
+            "logo": "http://xxxxxxxxx",
+            "name": "bbbbbb",
+            "desc": "bbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "rate": 0.042,
+            "token_module": "LBR"
+        }
+    ]
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/violas/bank/product/borrow")
+def GetBorrowProductsList():
+    data = [
+        {
+            "id": "200001",
+            "logo": "http://xxxxxxxxxx",
+            "name": "ccccccc",
+            "desc": "cccccccccccccccccccccccccc",
+            "rate": 0.038,
+            "token_module": "BTC"
+        },
+        {
+            "id": "200002",
+            "logo": "http://xxxxxxxxxx",
+            "name": "ddddddd",
+            "desc": "dddddddddddddddddddddddddd",
+            "rate": 0.05,
+            "token_module": "LBR"
+        }
+    ]
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
@@ -54,6 +69,7 @@ def GetDepositDetailInfo():
     data = {
         "id": "100001",
         "name": "xxxxxx",
+        "logo": "http://xxxxxxxxxx",
         "minimum_amount": 500,
         "quota_used": 0,
         "quota_limit": 1500,
@@ -149,6 +165,7 @@ def GetBorrowDetailInfo():
     data = {
         "id": "100001",
         "name": "xxxxxx",
+        "logo": "http://xxxxxxxxxxxx",
         "minimum_amount": 500,
         "quota_used": 0,
         "quota_limit": 1500,
