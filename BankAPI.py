@@ -24,6 +24,7 @@ def GetDepositProductList():
             "name": "aaaaaa",
             "desc": "aaaaaaaaaaaaaaaaaaaaaaaaaa",
             "rate": 0.032,
+            "rate_desc": "年化利率",
             "token_module": "BTC"
         },
         {
@@ -32,6 +33,7 @@ def GetDepositProductList():
             "name": "bbbbbb",
             "desc": "bbbbbbbbbbbbbbbbbbbbbbbbbb",
             "rate": 0.042,
+            "rate_desc": "7日年化利率",
             "token_module": "LBR"
         }
     ]
@@ -47,6 +49,7 @@ def GetBorrowProductsList():
             "name": "ccccccc",
             "desc": "cccccccccccccccccccccccccc",
             "rate": 0.038,
+            "rate_desc": "年化利率",
             "token_module": "BTC"
         },
         {
@@ -55,6 +58,7 @@ def GetBorrowProductsList():
             "name": "ddddddd",
             "desc": "dddddddddddddddddddddddddd",
             "rate": 0.05,
+            "rate_desc": "7日年化利率",
             "token_module": "LBR"
         }
     ]
