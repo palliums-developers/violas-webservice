@@ -109,12 +109,7 @@ def GetDepositOrders():
             "status": 1,
             "principal": 1500,
             "earnings": 22,
-            "rate": 0.039,
-            "available_quantity": 100,
-            "token_name": "BTC",
-            "token_address": "00000000000000000000000000000001",
-            "token_name": "BTC",
-            "token_show_name": "BTC"
+            "rate": 0.039
         },
         {
             "id": "2000001",
@@ -123,14 +118,24 @@ def GetDepositOrders():
             "status": 1,
             "principal": 1500,
             "earnings": 22,
-            "rate": 0.039,
-            "available_quantity": 100,
-            "token_name": "BTC",
-            "token_address": "00000000000000000000000000000001",
-            "token_name": "BTC",
-            "token_show_name": "BTC"
+            "rate": 0.039
         }
     ]
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/violas/bank/deposit/withdrawal")
+def DepositWithdrawal():
+    address = request.args.get("address")
+    orderId = request.args.get("id")
+
+    data = {
+        "available_quantity": 100,
+        "token_name": "BTC",
+        "token_module": "BTC",
+        "token_address": "00000000000000000000000000000001",
+        "token_show_name": "BTC"
+    }
+
     return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/violas/bank/deposit/order/list")
