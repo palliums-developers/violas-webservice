@@ -258,12 +258,7 @@ def GetBorrowOrderDetail():
     data = {
         "id": "100001",
         "name": "BTC",
-        "balance": 2000,
-        "rate": 0.05,
-        "token_module": "BTC",
-        "token_address": "00000000000000000000000000000001",
-        "token_name": "BTC",
-        "token_show_name": "BTC"
+        "balance": 2000
     }
 
     if q == 1:
@@ -307,6 +302,22 @@ def GetBorrowOrderDetail():
                 "status": 1
             }
         ]
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/violas/bank/borrow/repayment")
+def RepaymentBorrow():
+    address = request.args.get("address")
+    orderId = request.args.get("id")
+
+    data = {
+        "balance": 2000,
+        "rate": 0.05,
+        "token_module": "BTC",
+        "token_address": "00000000000000000000000000000001",
+        "token_name": "BTC",
+        "token_show_name": "BTC"
+    }
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
