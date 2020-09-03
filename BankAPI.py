@@ -282,13 +282,15 @@ def GetBorrowOrderDetail():
                 "date": 159888010,
                 "cleared": 1000,
                 "deductioned": 1000,
-                "status": 3
+                "status": 3,
+                "deductioned_currency": "LBR"
             },
             {
                 "date": 159888010,
                 "cleared": 1000,
                 "deductioned": 1000,
-                "status": 3
+                "status": 3,
+                "deductioned_currency": "BTC"
             }
         ]
     else:
