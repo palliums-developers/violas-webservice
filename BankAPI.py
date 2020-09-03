@@ -207,13 +207,15 @@ def GetBorrowOrders():
             "id": "2000001",
             "logo": "http://xxxxxxxxxxx",
             "name": "LBR",
-            "amount": 1500
+            "amount": 1500,
+            "available_borrow":15000
         },
         {
             "id": "2000001",
             "logo": "http://xxxxxxxxxxx",
             "name": "LBR",
-            "amount": 1500
+            "amount": 1500,
+            "available_borrow":1500
         }
     ]
     return MakeResp(ErrorCode.ERR_OK, data)
