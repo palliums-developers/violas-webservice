@@ -317,7 +317,7 @@ def RepaymentBorrow():
     data = {
         "balance": 2000,
         "rate": 0.05,
-        "logo": "http://xxxxxxxxxxxxxxxxx"
+        "logo": "http://xxxxxxxxxxxxxxxxx",
         "token_module": "BTC",
         "token_address": "00000000000000000000000000000001",
         "token_name": "BTC",
