@@ -1,11 +1,13 @@
 from time import time, sleep
-from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo, ViolasGovernorInfo, ViolasTransaction, ViolasAddressInfo, ViolasSignedTransaction
+from datetime import date, datetime
+
+from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo, ViolasGovernorInfo, ViolasTransaction, ViolasAddressInfo, ViolasSignedTransaction, ViolasBankInterestInfo, ViolasBankBorrowOrder, ViolasBankDepositProduct, ViolasBankBorrowProduct, ViolasBankDepositOrder
 import logging
 import json
 
 from sqlalchemy import create_engine, or_, and_
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.sql import exists
+from sqlalchemy.sql import exists, distinct, join
 from sqlalchemy.sql.expression import false
 from sqlalchemy.exc import OperationalError
 
@@ -1379,6 +1381,526 @@ class ViolasPGHandler():
 
             s.add(info)
             s.commit()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        return True
+
+    def GetYesterdayIncome(self, address):
+        s = self.session()
+        today = datetime.strptime(str(date.today()), '%Y-%m-%d')
+        timestamp = datetime.timestamp(today)
+
+        try:
+            info = s.query(ViolasBankInterestInfo.interest, ViolasBankInterestInfo.total_interest).filter(ViolasBankInterestInfo.address == address).filter(ViolasBankInterestInfo.date > timestamp).all()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        return True, info
+
+    def GetBorrowedToday(self, address):
+        s = self.session()
+        today = datetime.strptime(str(date.today()), '%Y-%m-%d')
+        timestamp = datetime.timestamp(today)
+
+        try:
+            info = s.query(ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.address == address).filter(ViolasBankBorrowOrder.date >= timestamp).all()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        return True, info
+
+    def GetDepositProductList(self):
+        s = self.session()
+
+        try:
+            res = s.query(ViolasBankDepositProduct).order_by(ViolasBankDepositProduct.id).all()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        datas = []
+        for i in res:
+            item = {}
+            item['id'] = i.product_id
+            item['logo'] = i.logo
+            item['name'] = i.product_name
+            item['desc'] = i.description
+            item['rate'] = float(i.rate)
+            item['rate_desc'] = i.rate_desc
+            item['token_module'] = i.currency
+
+            datas.append(item)
+
+        return True, datas
+
+    def GetBorrowProductList(self):
+        s = self.session()
+
+        try:
+            res = s.query(ViolasBankBorrowProduct).order_by(ViolasBankBorrowProduct.id).all()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        datas = []
+        for i in res:
+            item = {}
+            item['id'] = i.product_id
+            item['logo'] = i.logo
+            item['name'] = i.product_name
+            item['desc'] = i.description
+            item['rate'] = float(i.rate)
+            item['rate_desc'] = i.rate_desc
+            item['token_module'] = i.currency
+
+            datas.append(item)
+
+        return True, datas
+
+    def GetDepositProductDetail(self, productId):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasBankDepositProduct).filter(ViolasBankDepositProduct.product_id == productId).first()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        if result is None:
+            return True, None
+
+        data = {}
+        data['id'] = result.product_id
+        data['name'] = result.product_name
+        data['logo'] = result.logo
+        data['minimum_amount'] = result.minimum_amount
+        data['quota_limit'] = result.max_limit
+        data['rate'] = float(result.rate)
+        data['pledge_rate'] = float(result.pledge_rate)
+        data['intor'] = json.loads(result.intor)
+        data['question'] = json.loads(result.question)
+        data['token_module'] = result.currency
+
+        return True, data
+
+    def GetDepositQuotaToday(self, address, productId):
+        s = self.session()
+        today = datetime.strptime(str(date.today()), '%Y-%m-%d')
+        timestamp = datetime.timestamp(today)
+
+        try:
+            result = s.query(ViolasBankDepositOrder.value).filter(ViolasBankDepositOrder.address == address).filter(ViolasBankDepositOrder.product_id == productId).filter(ViolasBankDepositOrder.date >= timestamp).all()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        quota = 0
+        for i in result:
+            quota += i[0]
+
+        return True, quota
+
+    def GetOrderedProducts(self, address):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasBankDepositOrder.product_id).distinct().all()
+            s.close();
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        products = []
+        for i in result:
+            products.append(i[0])
+
+        return True, products
+
+    def GetDepositOrderInfo(self, address, productId):
+        s = self.session()
+
+        try:
+            order = s.query(ViolasBankDepositOrder).filter(ViolasBankDepositOrder.address == address).filter(ViolasBankDepositOrder.product_id == productId).order_by(ViolasBankDepositOrder.id.desc()).first()
+
+            product = s.query(ViolasBankDepositProduct).filter(ViolasBankDepositProduct.product_id == productId).first()
+
+            interest = s.query(ViolasBankInterestInfo).filter(ViolasBankInterestInfo.product_id == productId).order_by(ViolasBankInterestInfo.id.desc()).first()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        if order is None:
+            return True, None
+
+        info = {}
+        info['id'] = order.order_id
+        info['logo'] = product.logo
+        info['currency'] = product.currency
+        info['principal'] = order.total_value
+        info['earnings'] = interest.total_interest
+        info['rate'] = product.rate
+        if order.total_value != 0:
+            info['status'] = 0
+        else:
+            info['status'] = 1
+
+        return True, info
+
+    def GetAllDepositOfProduct(self, address, productId):
+        s = self.session()
+
+        try:
+            order = s.query(ViolasBankDepositOrder).filter(ViolasBankDepositOrder.address == address).filter(ViolasBankDepositOrder.product_id == productId).order_by(ViolasBankDepositOrder.id.desc()).first()
+            product = s.query(ViolasBankDepositProduct).filter(ViolasBankDepositProduct.product_id == productId).first()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        if order is None:
+            return True, None, None
+
+        return True, order.total_value, product.currency
+
+    def GetDepositOrderList(self, address, offset, limit, currency = None, status = None):
+        s = self.session()
+        try:
+            if currency is None and status is None:
+                orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
+            elif currency is None and status is not None:
+                orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositOrder.order_type == status).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
+            elif currency is not None and status is None:
+                orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositProduct.currency == currency).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
+            else:
+                orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositProduct.currency == currency).filter(ViolasBankDepositOrder.order_type == status).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
+
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        result = []
+        for order in orders:
+            item = {}
+            item['id'] = order[0]
+            item['date'] = order[1]
+            if order[2] == 0 and order[3] == 0:
+                item['status'] = 0
+            elif order[2] == 1 and order[3] == 0:
+                item['status'] = 1
+            elif order[2] == 0 and order[3] == -1:
+                item['status'] = -1
+            elif order[2] == 1 and order[3] == -1:
+                item['status'] = -2
+
+            item['logo'] = order[4]
+            item['currency'] = order[5]
+            item['value'] = order[6]
+
+            result.append(item)
+
+        return True, result
+
+    def GetBorrowProductDetail(self, productId):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasBankBorrowProduct).filter(ViolasBankBorrowProduct.product_id == productId).first()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        if result is None:
+            return True, None
+
+        data = {}
+        data['id'] = result.product_id
+        data['name'] = result.product_name
+        data['logo'] = result.logo
+        data['minimum_amount'] = result.minimum_amount
+        data['quota_limit'] = result.max_limit
+        data['rate'] = float(result.rate)
+        data['pledge_rate'] = float(result.pledge_rate)
+        data['intor'] = json.loads(result.intor)
+        data['question'] = json.loads(result.question)
+        data['token_module'] = result.currency
+
+        return True, data
+
+    def GetBorrowQuotaToday(self, address, productId):
+        s = self.session()
+        today = datetime.strptime(str(date.today()), '%Y-%m-%d')
+        timestamp = datetime.timestamp(today)
+
+        try:
+            result = s.query(ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.address == address).filter(ViolasBankBorrowOrder.product_id == productId).filter(ViolasBankBorrowOrder.date >= timestamp).all()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        quota = 0
+        for i in result:
+            quota += i[0]
+
+        return True, quota
+
+    def GetBorrowOrderedProducts(self, address):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasBankBorrowOrder.product_id).distinct().all()
+            s.close();
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        products = []
+        for i in result:
+            products.append(i[0])
+
+        return True, products
+
+    def GetBorrowOrderInfo(self, address, productId):
+        s = self.session()
+
+        try:
+            order = s.query(ViolasBankBorrowOrder).filter(ViolasBankBorrowOrder.address == address).filter(ViolasBankBorrowOrder.product_id == productId).order_by(ViolasBankBorrowOrder.id.desc()).first()
+
+            product = s.query(ViolasBankBorrowProduct).filter(ViolasBankBorrowProduct.product_id == productId).first()
+
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+        if order is None:
+            return True, None
+
+        info = {}
+        info['id'] = order.order_id
+        info['logo'] = product.logo
+        info['name'] = product.currency
+        info['amount'] = order.total_value
+
+        return True, info
+
+    def GetBorrowOrderList(self, address, offset, limit, currency = None, status = None):
+        s = self.session()
+        try:
+            if currency is None and status is None:
+                orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
+            elif currency is None and status is not None:
+                orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.order_type == status).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
+            elif currency is not None and status is None:
+                orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowProduct.currency == currency).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
+            else:
+                orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowProduct.currency == currency).filter(ViolasBankBorrowOrder.order_type == status).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
+
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        result = []
+        for order in orders:
+            item = {}
+            item['id'] = order[0]
+            item['date'] = order[1]
+            if order[2] == 0 and order[3] == 0:
+                item['status'] = 0
+            elif order[2] == 1 and order[3] == 0:
+                item['status'] = 1
+            elif order[2] == 2 and order[3] == 0:
+                item['status'] = 2
+            elif order[2] == 0 and order[3] == -1:
+                item['status'] = -1
+            elif order[2] == 1 and order[3] == -1:
+                item['status'] = -2
+
+            item['logo'] = order[4]
+            item['currency'] = order[5]
+            item['value'] = order[6]
+
+            result.append(item)
+
+        return True, result
+
+    def GetBorrowOrderDetail(self, address, productId):
+        s = self.session()
+
+        try:
+            order = s.query(ViolasBankBorrowOrder).filter(ViolasBankBorrowOrder.address == address).filter(ViolasBankBorrowOrder.product_id == productId).order_by(ViolasBankBorrowOrder.id.desc()).first()
+            product = s.query(ViolasBankBorrowProduct).filter(ViolasBankBorrowProduct.product_id == productId).first()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        if order is None:
+            return True, None
+
+        data = {
+            'id': order.order_id,
+            'name': product.currency,
+            'balance': order.total_value
+        }
+
+        return True, data
+
+    def GetBorrowOrderDetailList(self, address, productId, q, offset, limit):
+        s = self.session()
+
+        try:
+            orders = s.query(ViolasBankBorrowOrder).filter(ViolasBankBorrowOrder.address == address).filter(ViolasBankBorrowOrder.product_id == productId).filter(ViolasBankBorrowOrder.order_type == q).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
+
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        orderList = []
+        if q == 2:
+            for o in orders:
+                item = {}
+                item['date'] = o.date
+                item['cleared'] = o.value
+                item['deductioned'] = o.deductioned
+                item['deductioned_currency'] = o.deductioned_currency
+                item['status'] = 2
+
+                orderList.append(item)
+        else:
+            for o in orders:
+                item = {}
+                item['date'] = o.date
+                item['amount'] = o.value
+                if o.order_type == 0 and o.status == 0:
+                    item['status'] = 0
+                elif o.order_type == 1 and o.status == 0:
+                    item['status'] = 1
+                elif o.order_type == 0 and o.status == -1:
+                    item['status'] = -1
+                elif o.order_type == 1 and o.status == -1:
+                    item['status'] = -1
+
+                orderList.append(item)
+
+        return True, orderList
+
+    def GetBorrowOrderRepayInfo(self, address, orderId):
+        s = self.session()
+
+        try:
+            order = s.query(ViolasBankBorrowOrder).filter(ViolasBankBorrowOrder.order_id == orderId).first()
+
+            if order is None:
+                s.close()
+                return True, None
+
+            product = s.query(ViolasBankBorrowProduct).filter(ViolasBankBorrowProduct.product_id == order.product_id).first()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        data = {
+            'balance': order.total_value,
+            'rate': float(product.pledge_rate),
+            'logo': product.logo,
+            'token_module': product.currency
+        }
+
+        return True, data
+
+    def AddDepositOrder(self, orderInfo):
+        s = self.session()
+
+        try:
+            lastTotalValue = s.query(ViolasBankDepositOrder.total_value).filter(ViolasBankDepositOrder.product_id == orderInfo["product_id"]).order_by(ViolasBankDepositOrder.id.desc()).first()
+
+            if lastTotalValue is None:
+                lastTotalValue = 0
+            else:
+                lastTotalValue = lastTotalValue[0]
+
+            order = ViolasBankDepositOrder(
+                order_id = orderInfo["order_id"],
+                product_id = orderInfo["product_id"],
+                address = orderInfo["address"],
+                value = orderInfo["value"],
+                total_value = lastTotalValue + orderInfo["value"],
+                date = int(time()),
+                order_type = orderInfo["order_type"],
+                status = orderInfo["status"]
+            )
+
+            s.add(order)
+            s.commit()
+            s.close()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            s.close()
+            return False
+
+        return True
+
+    def AddBorrowOrder(self, orderInfo):
+        s = self.session()
+
+        try:
+            lastTotalValue = s.query(ViolasBankBorrowOrder.total_value).filter(ViolasBankBorrowOrder.product_id == orderInfo["product_id"]).order_by(ViolasBankBorrowOrder.id.desc()).first()
+
+            if lastTotalValue is None:
+                lastTotalValue = 0
+            else:
+                lastTotalValue = lastTotalValue[0]
+
+            order = ViolasBankBorrowOrder(
+                order_id = orderInfo["order_id"],
+                product_id = orderInfo["product_id"],
+                address = orderInfo["address"],
+                value = orderInfo["value"],
+                total_value = lastTotalValue + orderInfo["value"],
+                date = int(time()),
+                order_type = orderInfo["order_type"],
+                status = orderInfo["status"]
+            )
+
+            s.add(order)
+            s.commit()
+            s.close()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()

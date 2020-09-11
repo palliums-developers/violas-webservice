@@ -1,8 +1,10 @@
 from common import *
 
+from datetime import datetime
 from libra_client import Client as LibraClient
 from violas_client import Client as ViolasClient
 from violas_client import exchange_client
+from violas_client import bank_client
 
 from ErrorCode import ErrorMsg
 
@@ -16,6 +18,12 @@ def MakeExchangeClient():
     cli = exchange_client.Client.new(config['NODE INFO']['VIOLAS_HOST'], faucet_file = config['NODE INFO']['VIOLAS_MINT_KEY'])
     cli.set_exchange_module_address(VIOLAS_CORE_CODE_ADDRESS)
     cli.set_exchange_owner_address(config["NODE INFO"]["EXCHANGE_MODULE_ADDRESS"])
+    return cli
+
+def MakeBankClient():
+    cli = bank_client.Client.new(config['NODE INFO']['VIOLAS_HOST'], faucet_file = config['NODE INFO']['VIOLAS_MINT_KEY'])
+    cli.set_bank_module_address(VIOLAS_CORE_CODE_ADDRESS)
+    cli.set_bank_owner_address(config["NODE INFO"]["BANK_MODULE_ADDRESS"])
     return cli
 
 def MakeResp(code, data = None, exception = None, message = None):
@@ -185,3 +193,8 @@ class AddressInfo():
         if v == "v":
             return "violas"
 
+def GetIDNumber():
+    idNumber = datetime.strftime(datetime.today(), "%Y%m%d%H%M%S")
+    randNumber = random.randint(100000,999999)
+
+    return idNumber + str(randNumber)

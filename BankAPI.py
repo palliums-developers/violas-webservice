@@ -1,99 +1,90 @@
 from ViolasWebservice import app
 from common import *
-from util import MakeViolasClient, MakeResp
+from util import MakeBankClient, MakeResp, GetIDNumber
 from violas_client.lbrtypes.transaction import SignedTransaction
 
 @app.route("/1.0/violas/bank/account/info")
 def GetViolasBankAccountInfo():
     address = request.args.get("address")
 
-    data = {"amount": 2000.34,
-            "yesterday": 0.3,
-            "total": 42.76,
-            "borrow": 1403.23,
+    cli = MakeBankClient()
+    amounts = cli.bank_get_lock_amounts(address)
+    totalAmount = 0
+    for value in amounts.values():
+        totalAmount += value
+
+    succ, income = HViolas.GetYesterdayIncome(address)
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    yesterday = 0
+    total = 0
+
+    for y, t in income:
+        yesterday += y
+        total += t
+
+    succ, borrowed = HViolas.GetBorrowedToday(address)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    totalBorrow = 0
+    for b in borrowed:
+        totalBorrow += b[0]
+
+    data = {
+        "amount": totalAmount,
+        "yesterday": yesterday,
+        "total": total,
+        "borrow": totalBorrow
     }
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/violas/bank/product/deposit")
 def GetDepositProductList():
-    data = [
-        {
-            "id": "100001",
-            "logo": "http://xxxxxxxxx",
-            "name": "aaaaaa",
-            "desc": "aaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "rate": 0.032,
-            "rate_desc": "年化利率",
-            "token_module": "BTC"
-        },
-        {
-            "id": "100002",
-            "logo": "http://xxxxxxxxx",
-            "name": "bbbbbb",
-            "desc": "bbbbbbbbbbbbbbbbbbbbbbbbbb",
-            "rate": 0.042,
-            "rate_desc": "7日年化利率",
-            "token_module": "LBR"
-        }
-    ]
+    succ, infos = HViolas.GetDepositProductList()
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-    return MakeResp(ErrorCode.ERR_OK, data)
+    for i in infos:
+        i['logo'] = ICON_URL+i['logo']
+
+    return MakeResp(ErrorCode.ERR_OK, infos)
 
 @app.route("/1.0/violas/bank/product/borrow")
 def GetBorrowProductsList():
-    data = [
-        {
-            "id": "200001",
-            "logo": "http://xxxxxxxxxx",
-            "name": "ccccccc",
-            "desc": "cccccccccccccccccccccccccc",
-            "rate": 0.038,
-            "rate_desc": "年化利率",
-            "token_module": "BTC"
-        },
-        {
-            "id": "200002",
-            "logo": "http://xxxxxxxxxx",
-            "name": "ddddddd",
-            "desc": "dddddddddddddddddddddddddd",
-            "rate": 0.05,
-            "rate_desc": "7日年化利率",
-            "token_module": "LBR"
-        }
-    ]
+    succ, infos = HViolas.GetBorrowProductList()
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-    return MakeResp(ErrorCode.ERR_OK, data)
+    for i in infos:
+        i['logo'] = ICON_URL+i['logo']
+
+    return MakeResp(ErrorCode.ERR_OK, infos)
 
 @app.route("/1.0/violas/bank/deposit/info")
 def GetDepositDetailInfo():
     address = request.args.get("address")
     productId = request.args.get("id")
 
-    data = {
-        "id": "100001",
-        "name": "xxxxxx",
-        "logo": "http://xxxxxxxxxx",
-        "minimum_amount": 500,
-        "quota_used": 0,
-        "quota_limit": 1500,
-        "rate": 0.03,
-        "pledge_rate": 0.05,
-        "intor": [
-            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"},
-            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"}
-        ],
-        "question": [
-            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"},
-            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"}
-        ],
-        "token_module": "BTC",
-        "token_address": "00000000000000000000000000000001",
-        "token_name": "BTC",
-        "token_show_name": "BTC"
-    }
+    succ, info = HViolas.GetDepositProductDetail(productId)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    if info is None:
+        return MakeResp(ErrorCode.ERR_OK, {})
 
-    return MakeResp(ErrorCode.ERR_OK, data)
+    succ, quota = HViolas.GetDepositQuotaToday(address, productId)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    info['quota_used'] = quota
+    info['logo'] = ICON_URL + info['logo']
+    info['token_address'] = VIOLAS_CORE_CODE_ADDRESS.hex()
+    info['token_name'] = info['token_module']
+    info['token_show_name'] = info['token_module']
+
+    return MakeResp(ErrorCode.ERR_OK, info)
 
 @app.route("/1.0/violas/bank/deposit/orders")
 def GetDepositOrders():
@@ -101,40 +92,20 @@ def GetDepositOrders():
     offset = request.args.get("offset", type = int, default = 0)
     limit = request.args.get("limit", type = int, default = 10)
 
-    data = [
-        {
-            "id": "2000001",
-            "logo": "http://xxxxxxxxxxx",
-            "currency": "LBR",
-            "status": 1,
-            "principal": 1500,
-            "earnings": 22,
-            "rate": 0.039
-        },
-        {
-            "id": "2000001",
-            "logo": "http://xxxxxxxxxxx",
-            "currency": "LBR",
-            "status": 1,
-            "principal": 1500,
-            "earnings": 22,
-            "rate": 0.039
-        }
-    ]
-    return MakeResp(ErrorCode.ERR_OK, data)
+    succ, products = HViolas.GetOrderedProducts(address)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-@app.route("/1.0/violas/bank/deposit/withdrawal")
-def DepositWithdrawal():
-    address = request.args.get("address")
-    orderId = request.args.get("id")
+    data = []
+    for product in products:
+        succ, order = HViolas.GetDepositOrderInfo(address, product)
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+        if order is None:
+            continue
 
-    data = {
-        "available_quantity": 100,
-        "token_name": "BTC",
-        "token_module": "BTC",
-        "token_address": "00000000000000000000000000000001",
-        "token_show_name": "BTC"
-    }
+        order['logo'] = ICON_URL + order['logo']
+        data.append(order)
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
@@ -146,55 +117,37 @@ def GetDepositOrderDetailInfo():
     offset = request.args.get("offset", type = int, default = 0)
     limit = request.args.get("limit", type = int, default = 10)
 
-    data = [
-        {
-            "id": "200001",
-            "logo": "http://xxxxxxxxxxxx",
-            "currency": "LBR",
-            "date": 1518391892,
-            "value": 182.22,
-            "status": 1
-        },
-        {
-            "id": "200001",
-            "logo": "http://xxxxxxxxxxxx",
-            "currency": "LBR",
-            "date": 1518391892,
-            "value": 182.22,
-            "status": 1
-        }
-    ]
+    succ, orders = HViolas.GetDepositOrderList(address, offset, limit, currency, status)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-    return MakeResp(ErrorCode.ERR_OK, data)
+    for i in orders:
+        i['logo'] = ICON_URL + i['logo']
+
+    return MakeResp(ErrorCode.ERR_OK, orders)
 
 @app.route("/1.0/violas/bank/borrow/info")
 def GetBorrowDetailInfo():
+    address = request.args.get("address")
     productId = request.args.get("id")
 
-    data = {
-        "id": "100001",
-        "name": "xxxxxx",
-        "logo": "http://xxxxxxxxxxxx",
-        "minimum_amount": 500,
-        "quota_used": 0,
-        "quota_limit": 1500,
-        "rate": 0.03,
-        "pledge_rate": 0.05,
-        "intor": [
-            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"},
-            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"}
-        ],
-        "question": [
-            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"},
-            {"tital":"aaaaaaaaaaa", "text":"xxxxxxxxxxxxxxxxxxxxxx"}
-        ],
-        "token_module": "BTC",
-        "token_address": "00000000000000000000000000000001",
-        "token_name": "BTC",
-        "token_show_name": "BTC"
-    }
+    succ, info = HViolas.GetBorrowProductDetail(productId)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    if info is None:
+        return MakeResp(ErrorCode.ERR_OK, {})
 
-    return MakeResp(ErrorCode.ERR_OK, data)
+    succ, quota = HViolas.GetBorrowQuotaToday(address, productId)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    info['quota_used'] = quota
+    info['logo'] = ICON_URL + info['logo']
+    info['token_address'] = VIOLAS_CORE_CODE_ADDRESS.hex()
+    info['token_name'] = info['token_module']
+    info['token_show_name'] = info['token_module']
+
+    return MakeResp(ErrorCode.ERR_OK, info)
 
 @app.route("/1.0/violas/bank/borrow/orders")
 def GetBorrowOrders():
@@ -202,22 +155,24 @@ def GetBorrowOrders():
     offset = request.args.get("offset", type = int, default = 0)
     limit = request.args.get("limit", type = int, default = 10)
 
-    data = [
-        {
-            "id": "2000001",
-            "logo": "http://xxxxxxxxxxx",
-            "name": "LBR",
-            "amount": 1500,
-            "available_borrow":15000
-        },
-        {
-            "id": "2000001",
-            "logo": "http://xxxxxxxxxxx",
-            "name": "LBR",
-            "amount": 1500,
-            "available_borrow":1500
-        }
-    ]
+    cli = MakeBankClient()
+
+    succ, products = HViolas.GetBorrowOrderedProducts(address)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    data = []
+    for product in products:
+        succ, order = HViolas.GetBorrowOrderInfo(address, product)
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+        if order is None:
+            continue
+
+        order['logo'] = ICON_URL + order['logo']
+        order['available_borrow'] = cli.bank_get_max_borrow_amount(address, order['name'])
+        data.append(order)
+
     return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/violas/bank/borrow/order/list")
@@ -228,26 +183,14 @@ def GetBorrowOrderList():
     offset = request.args.get("offset", type = int, default = 0)
     limit = request.args.get("limit", type = int, default = 10)
 
-    data = [
-        {
-            "id": "200001",
-            "logo": "http://xxxxxxxxxxxxxxxx",
-            "currency": "LBR",
-            "date": 1518391892,
-            "value": 182.22,
-            "status": 1
-        },
-        {
-            "id": "200001",
-            "logo": "http://xxxxxxxxxxxxxxxx",
-            "currency": "LBR",
-            "date": 1518391892,
-            "value": 182.22,
-            "status": 1
-        }
-    ]
+    succ, orders = HViolas.GetBorrowOrderList(address, offset, limit, currency, status)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-    return MakeResp(ErrorCode.ERR_OK, data)
+    for i in orders:
+        i['logo'] = ICON_URL + i['logo']
+
+    return MakeResp(ErrorCode.ERR_OK, orders)
 
 @app.route("/1.0/violas/bank/borrow/order/detail")
 def GetBorrowOrderDetail():
@@ -257,93 +200,202 @@ def GetBorrowOrderDetail():
     offset = request.args.get("offset", type = int, default = 0)
     limit = request.args.get("limit", type = int, default = 10)
 
+    succ, info = HViolas.GetBorrowOrderDetail(address, productId)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if info is None:
+        return MakeResp(ErrorCode.ERR_OK, {})
+
+    succ, orderList = HViolas.GetBorrowOrderDetailList(address, productId, q, offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    info['list'] = orderList
+
+    return MakeResp(ErrorCode.ERR_OK, info)
+
+@app.route("/1.0/violas/bank/deposit", methods = ["POST"])
+def PostDepositTransaction():
+    params = request.get_json()
+    address = params["address"]
+    productId = params["product_id"]
+    value = params["value"]
+    sigtxn = params["sigtxn"]
+
+    orderInfo = {
+        "order_id": GetIDNumber(),
+        "product_id": productId,
+        "address": address,
+        "value": value,
+        "order_type": 0,
+        "status": 0
+    }
+    cli = MakeBankClient()
+    try:
+        cli.submit_signed_transaction(sigtxn, True)
+        succ = HViolas.AddDepositOrder(orderInfo)
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    except LibraError as e:
+        orderInfo["status"] = -1
+        succ = HViolas.AddDepositOrder(orderInfo)
+
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+        if not e.on_chain:
+            return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+
+        return MakeResp(ErrorCode.ERR_CLIENT_UNKNOW_ERROR)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/bank/deposit/withdrawal")
+def DepositWithdrawal():
+    address = request.args.get("address")
+    productId = request.args.get("id")
+
+    succ, quantity, currency = HViolas.GetAllDepositOfProduct(address, productId)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if quantity is None:
+        return MakeResp(ErrorCode.ERR_OK, {})
+
     data = {
-        "id": "100001",
-        "name": "BTC",
-        "balance": 2000
+        "available_quantity": quantity,
+        "token_name": currency,
+        "token_module": currency,
+        "token_address": VIOLAS_CORE_CODE_ADDRESS.hex(),
+        "token_show_name": currency
     }
 
-    if q == 1:
-        data["list"] = [
-            {
-                "date": 159888010,
-                "amount": 1000,
-                "status": 2
-            },
-            {
-                "date": 159888010,
-                "amount": 1000,
-                "status": 2
-            }
-        ]
-    elif q == 2:
-        data["list"] = [
-            {
-                "date": 159888010,
-                "cleared": 1000,
-                "deductioned": 1000,
-                "status": 3,
-                "deductioned_currency": "LBR"
-            },
-            {
-                "date": 159888010,
-                "cleared": 1000,
-                "deductioned": 1000,
-                "status": 3,
-                "deductioned_currency": "BTC"
-            }
-        ]
-    else:
-        data["list"] = [
-            {
-                "date": 159992342,
-                "amount": 823,
-                "status": 1
-            },
-            {
-                "date": 159992342,
-                "amount": 823,
-                "status": 1
-            }
-        ]
-
     return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/violas/bank/deposit/withdrawal", methods = ["POST"])
+def PostDepositWithdrawal():
+    params = request.get_json()
+    address = params["address"]
+    productId = params["product_id"]
+    value = params["value"]
+    sigtxn = params["sigtxn"]
+
+    orderInfo = {
+        "order_id": GetIDNumber(),
+        "product_id": productId,
+        "address": address,
+        "value": value * -1,
+        "order_type": 1,
+        "status": 0
+    }
+    cli = MakeBankClient()
+    try:
+        cli.submit_signed_transaction(sigtxn, True)
+        succ = HViolas.AddDepositOrder(orderInfo)
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    except LibraError as e:
+        orderInfo["status"] = -1
+        succ = HViolas.AddDepositOrder(orderInfo)
+
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+        if not e.on_chain:
+            return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+
+        return MakeResp(ErrorCode.ERR_CLIENT_UNKNOW_ERROR)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/bank/borrow", methods = ["POST"])
+def PostBorrowTransaction():
+    params = request.get_json()
+    address = params["address"]
+    productId = params["product_id"]
+    value = params["value"]
+    sigtxn = params["sigtxn"]
+
+    orderInfo = {
+        "order_id": GetIDNumber(),
+        "product_id": productId,
+        "address": address,
+        "value": value,
+        "order_type": 0,
+        "status": 0
+    }
+    cli = MakeBankClient()
+    try:
+        cli.submit_signed_transaction(sigtxn, True)
+        succ = HViolas.AddBorrowOrder(orderInfo)
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    except LibraError as e:
+        orderInfo["status"] = -1
+        succ = HViolas.AddBorrowOrder(orderInfo)
+
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+        if not e.on_chain:
+            return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+
+        return MakeResp(ErrorCode.ERR_CLIENT_UNKNOW_ERROR)
+
+    return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.0/violas/bank/borrow/repayment")
 def RepaymentBorrow():
     address = request.args.get("address")
     orderId = request.args.get("id")
 
-    data = {
-        "balance": 2000,
-        "rate": 0.05,
-        "logo": "http://xxxxxxxxxxxxxxxxx",
-        "token_module": "BTC",
-        "token_address": "00000000000000000000000000000001",
-        "token_name": "BTC",
-        "token_show_name": "BTC"
-    }
+    succ, data = HViolas.GetBorrowOrderRepayInfo(address, orderId)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if data is None:
+        return MakeResp(ErrorCode.ERR_OK, {})
+
+    data['logo'] = ICON_URL + data['logo']
+    data['token_address'] = VIOLAS_CORE_CODE_ADDRESS.hex()
+    data['token_name'] = data['token_module']
+    data['token_show_name'] = data['token_module']
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
-@app.route("/1.0/violas/bank/transaction", methods = ["POST"])
-def MakeBankTransaction():
+@app.route("/1.0/violas/bank/borrow/repayment", methods = ["POST"])
+def PostBorrowRepayTransaction():
     params = request.get_json()
-    signedtxn = params["signedtxn"]
+    address = params["address"]
+    productId = params["product_id"]
+    value = params["value"]
+    sigtxn = params["sigtxn"]
 
-    cli = MakeViolasClient()
-    # transactionInfo = bytes.fromhex(signedtxn)
-    # transactionInfo = SignedTransaction.deserialize(transactionInfo)
-    # sender = transactionInfo.get_sender()
-    # seqNum = transactionInfo.get_sequence_number()
-    # timestamp = int(time.time())
-
+    orderInfo = {
+        "order_id": GetIDNumber(),
+        "product_id": productId,
+        "address": address,
+        "value": value * -1,
+        "order_type": 1,
+        "status": 0
+    }
+    cli = MakeBankClient()
     try:
-        cli.submit_signed_transaction(signedtxn, True)
-    except Exception as e:
+        cli.submit_signed_transaction(sigtxn, True)
+        succ = HViolas.AddBorrowOrder(orderInfo)
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    except LibraError as e:
+        orderInfo["status"] = -1
+        succ = HViolas.AddBorrowOrder(orderInfo)
+
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
         if not e.on_chain:
             return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
-        # HViolas.AddTransactionInfo(sender, seqNum, timestamp, transactionInfo.to_json())
+
         return MakeResp(ErrorCode.ERR_CLIENT_UNKNOW_ERROR)
 
     return MakeResp(ErrorCode.ERR_OK)
