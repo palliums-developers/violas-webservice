@@ -1559,7 +1559,7 @@ class ViolasPGHandler():
         info['currency'] = product.currency
         info['principal'] = order.total_value
         info['earnings'] = interest.total_interest
-        info['rate'] = product.rate
+        info['rate'] = float(product.rate)
         if order.total_value != 0:
             info['status'] = 0
         else:
