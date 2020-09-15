@@ -3,7 +3,7 @@ from flask import request
 from ViolasWebservice import app
 from common import HCrossChain, MAPPING_ADDRESS_INFOS, requests
 from ErrorCode import ErrorCode
-from util import MakeResp, AddressInfo
+from util import MakeResp, AddressInfo, get_show_name
 
 @app.route("/1.0/market/crosschain/transaction")
 def GetMarketCrosschainTransactions():
@@ -45,5 +45,8 @@ def GetMappingTransactions():
 
     resp = requests.get("http://18.136.139.151", params = params)
     datas = resp.json()["datas"]["datas"]
+    for i in datas:
+        i["in_show_name"] = get_show_name(i["in_token"])
+        i["out_show_name"] = get_show_name(i["out_token"])
 
     return MakeResp(ErrorCode.ERR_OK, datas)
