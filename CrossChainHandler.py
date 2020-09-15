@@ -13,11 +13,11 @@ class CrossChainHandler():
     def __init__(self, url):
         self.url = url
 
-    def getCrosschainTransactions(self, address, offset, limit, chain):
+    def getCrosschainTransactions(self, address, offset, limit):
         payload = {
-            "opt": "record",
-            "sender": address,
-            "chain": chain,
+            "opt": "records",
+            "senders": address,
+            "opttype": "swap",
             "cursor": offset,
             "limit": limit
         }

@@ -7,11 +7,11 @@ from util import MakeResp, AddressInfo
 
 @app.route("/1.0/market/crosschain/transaction")
 def GetMarketCrosschainTransactions():
-    address = request.args.get("address")
+    address = request.args.get("addresses")
     offset = request.args.get("offset", type = int, default = 0)
     limit = request.args.get("limit", type = int, default = 5)
-    chain = request.args.get("chain")
-    succ, infos = HCrossChain.getCrosschainTransactions(address, offset, limit, chain)
+
+    succ, infos = HCrossChain.getCrosschainTransactions(address, offset, limit)
     if not succ:
         return MakeResp(ErrorCode.ERR_CROSSCHAIN_CONNECT)
 
