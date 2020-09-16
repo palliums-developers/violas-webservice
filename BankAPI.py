@@ -295,7 +295,7 @@ def PostDepositWithdrawal():
         succ = HViolas.AddDepositOrder(orderInfo)
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-    except LibraError as e:
+    except ViolasError as e:
         orderInfo["status"] = -1
         succ = HViolas.AddDepositOrder(orderInfo)
 
@@ -331,7 +331,7 @@ def PostBorrowTransaction():
         succ = HViolas.AddBorrowOrder(orderInfo)
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-    except LibraError as e:
+    except ViolasError as e:
         orderInfo["status"] = -1
         succ = HViolas.AddBorrowOrder(orderInfo)
 
@@ -386,7 +386,7 @@ def PostBorrowRepayTransaction():
         succ = HViolas.AddBorrowOrder(orderInfo)
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-    except LibraError as e:
+    except ViolasError as e:
         orderInfo["status"] = -1
         succ = HViolas.AddBorrowOrder(orderInfo)
 
