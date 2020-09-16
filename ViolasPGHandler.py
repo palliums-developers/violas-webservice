@@ -1543,7 +1543,7 @@ class ViolasPGHandler():
 
             product = s.query(ViolasBankDepositProduct).filter(ViolasBankDepositProduct.product_id == productId).first()
 
-            interest = s.query(ViolasBankInterestInfo).filter(ViolasBankInterestInfo.product_id == productId).order_by(ViolasBankInterestInfo.id.desc()).first()
+            interest = s.query(ViolasBankInterestInfo).filter(ViolasBankInterestInfo.address == address).filter(ViolasBankInterestInfo.product_id == productId).order_by(ViolasBankInterestInfo.id.desc()).first()
             s.close()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -1558,7 +1558,7 @@ class ViolasPGHandler():
         info['logo'] = product.logo
         info['currency'] = product.currency
         info['principal'] = order.total_value
-        info['earnings'] = interest.total_interest
+        info['earnings'] = interest.total_interest if interest is not None else 0
         info['rate'] = float(product.rate)
         if order.total_value != 0:
             info['status'] = 0
@@ -1855,12 +1855,20 @@ class ViolasPGHandler():
             else:
                 lastTotalValue = lastTotalValue[0]
 
+            if orderInfo["status"] == 0:
+                if orderInfo['order_type'] == 0:
+                    newTotalValue = lastTotalValue + orderInfo["value"]
+                elif orderInfo['order_type'] == 1:
+                    newTotalValue = lastTotalValue + orderInfo["value"] * -1
+            else:
+                newTotalValue = lastTotalValue
+
             order = ViolasBankDepositOrder(
                 order_id = orderInfo["order_id"],
                 product_id = orderInfo["product_id"],
                 address = orderInfo["address"],
                 value = orderInfo["value"],
-                total_value = lastTotalValue + orderInfo["value"],
+                total_value = newTotalValue,
                 date = int(time()),
                 order_type = orderInfo["order_type"],
                 status = orderInfo["status"]
@@ -1887,12 +1895,20 @@ class ViolasPGHandler():
             else:
                 lastTotalValue = lastTotalValue[0]
 
+            if orderInfo["status"] == 0:
+                if orderInfo["order_type"] == 0:
+                    newTotalValue = lastTotalValue + orderInfo["value"]
+                elif orderInfo["order_type"] == 1:
+                    newTotalValue = lastTotalValue + orderInfo["value"] * -1
+            else:
+                newTotalValue = lastTotalValue
+
             order = ViolasBankBorrowOrder(
                 order_id = orderInfo["order_id"],
                 product_id = orderInfo["product_id"],
                 address = orderInfo["address"],
                 value = orderInfo["value"],
-                total_value = lastTotalValue + orderInfo["value"],
+                total_value = newTotalValue,
                 date = int(time()),
                 order_type = orderInfo["order_type"],
                 status = orderInfo["status"]
