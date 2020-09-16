@@ -348,9 +348,9 @@ def PostBorrowTransaction():
 @app.route("/1.0/violas/bank/borrow/repayment")
 def RepaymentBorrow():
     address = request.args.get("address")
-    orderId = request.args.get("id")
+    productId = request.args.get("id")
 
-    succ, data = HViolas.GetBorrowOrderRepayInfo(address, orderId)
+    succ, data = HViolas.GetBorrowOrderRepayInfo(address, productId)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 

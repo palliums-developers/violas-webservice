@@ -1818,22 +1818,22 @@ class ViolasPGHandler():
 
         return True, orderList
 
-    def GetBorrowOrderRepayInfo(self, address, orderId):
+    def GetBorrowOrderRepayInfo(self, address, productId):
         s = self.session()
 
         try:
-            order = s.query(ViolasBankBorrowOrder).filter(ViolasBankBorrowOrder.order_id == orderId).first()
+            order = s.query(ViolasBankBorrowOrder).filter(ViolasBankBorrowOrder.product_id == productId).order_by(ViolasBankBorrowOrder.id.desc()).first()
 
             if order is None:
                 s.close()
                 return True, None
 
-            product = s.query(ViolasBankBorrowProduct).filter(ViolasBankBorrowProduct.product_id == order.product_id).first()
+            product = s.query(ViolasBankBorrowProduct).filter(ViolasBankBorrowProduct.product_id == productId).first()
             s.close()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         data = {
             'balance': order.total_value,
