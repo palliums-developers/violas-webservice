@@ -1527,7 +1527,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         products = []
         for i in result:
@@ -1554,7 +1554,7 @@ class ViolasPGHandler():
             return True, None
 
         info = {}
-        info['id'] = order.order_id
+        info['id'] = productId
         info['logo'] = product.logo
         info['currency'] = product.currency
         info['principal'] = order.total_value
@@ -1577,7 +1577,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None, None
 
         if order is None:
             return True, None, None
@@ -1705,7 +1705,7 @@ class ViolasPGHandler():
             return True, None
 
         info = {}
-        info['id'] = order.order_id
+        info['id'] = productId
         info['logo'] = product.logo
         info['name'] = product.currency
         info['amount'] = order.total_value
