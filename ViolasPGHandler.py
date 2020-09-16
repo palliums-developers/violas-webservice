@@ -1522,7 +1522,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasBankDepositOrder.product_id).distinct().all()
+            result = s.query(ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).distinct().all()
             s.close();
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -1675,7 +1675,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasBankBorrowOrder.product_id).distinct().all()
+            result = s.query(ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).distinct().all()
             s.close();
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -1848,7 +1848,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            lastTotalValue = s.query(ViolasBankDepositOrder.total_value).filter(ViolasBankDepositOrder.product_id == orderInfo["product_id"]).order_by(ViolasBankDepositOrder.id.desc()).first()
+            lastTotalValue = s.query(ViolasBankDepositOrder.total_value).filter(ViolasBankDepositOrder.address == orderInfo['address']).filter(ViolasBankDepositOrder.product_id == orderInfo["product_id"]).order_by(ViolasBankDepositOrder.id.desc()).first()
 
             if lastTotalValue is None:
                 lastTotalValue = 0
@@ -1888,7 +1888,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            lastTotalValue = s.query(ViolasBankBorrowOrder.total_value).filter(ViolasBankBorrowOrder.product_id == orderInfo["product_id"]).order_by(ViolasBankBorrowOrder.id.desc()).first()
+            lastTotalValue = s.query(ViolasBankBorrowOrder.total_value).filter(ViolasBankBorrowOrder.address == orderInfo["address"]).filter(ViolasBankBorrowOrder.product_id == orderInfo["product_id"]).order_by(ViolasBankBorrowOrder.id.desc()).first()
 
             if lastTotalValue is None:
                 lastTotalValue = 0
