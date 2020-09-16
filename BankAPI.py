@@ -220,7 +220,7 @@ def PostDepositTransaction():
     params = request.get_json()
     address = params["address"]
     productId = params["product_id"]
-    value = params["value"]
+    value = int(params["value"])
     sigtxn = params["sigtxn"]
 
     orderInfo = {
@@ -278,7 +278,7 @@ def PostDepositWithdrawal():
     params = request.get_json()
     address = params["address"]
     productId = params["product_id"]
-    value = params["value"]
+    value = int(params["value"])
     sigtxn = params["sigtxn"]
 
     orderInfo = {
@@ -314,7 +314,7 @@ def PostBorrowTransaction():
     params = request.get_json()
     address = params["address"]
     productId = params["product_id"]
-    value = params["value"]
+    value = int(params["value"])
     sigtxn = params["sigtxn"]
 
     orderInfo = {
@@ -369,7 +369,7 @@ def PostBorrowRepayTransaction():
     params = request.get_json()
     address = params["address"]
     productId = params["product_id"]
-    value = params["value"]
+    value = int(params["value"])
     sigtxn = params["sigtxn"]
 
     orderInfo = {
