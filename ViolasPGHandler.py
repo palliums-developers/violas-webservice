@@ -1822,7 +1822,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            order = s.query(ViolasBankBorrowOrder).filter(ViolasBankBorrowOrder.product_id == productId).order_by(ViolasBankBorrowOrder.id.desc()).first()
+            order = s.query(ViolasBankBorrowOrder).filter(ViolasBankBorrowOrder.product_id == productId).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).first()
 
             if order is None:
                 s.close()
