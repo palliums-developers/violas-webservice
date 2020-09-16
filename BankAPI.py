@@ -265,6 +265,7 @@ def DepositWithdrawal():
 
     data = {
         "available_quantity": quantity,
+        "product_id": productId,
         "token_name": currency,
         "token_module": currency,
         "token_address": VIOLAS_CORE_CODE_ADDRESS.hex(),
@@ -358,6 +359,7 @@ def RepaymentBorrow():
         return MakeResp(ErrorCode.ERR_OK, {})
 
     data['logo'] = ICON_URL + data['logo']
+    data['product_id'] = productId
     data['token_address'] = VIOLAS_CORE_CODE_ADDRESS.hex()
     data['token_name'] = data['token_module']
     data['token_show_name'] = data['token_module']
