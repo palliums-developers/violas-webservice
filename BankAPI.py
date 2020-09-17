@@ -8,10 +8,10 @@ def GetViolasBankAccountInfo():
     address = request.args.get("address")
 
     cli = MakeBankClient()
-    amounts = cli.bank_get_lock_amounts(address)
-    totalAmount = 0
-    for value in amounts.values():
-        totalAmount += value
+    amount = cli.bank_get_lock_amounts_to_currency(address, "USD")
+
+    max_borrow = cli.bank_get_max_borrow_amount(address, "USD")
+    print(max_borrow)
 
     succ, income = HViolas.GetYesterdayIncome(address)
 
@@ -33,10 +33,11 @@ def GetViolasBankAccountInfo():
         totalBorrow += b[0]
 
     data = {
-        "amount": totalAmount,
+        "amount": amount,
         "yesterday": yesterday,
         "total": total,
-        "borrow": totalBorrow
+        "borrow": totalBorrow,
+        "borrow_limit": max_borrow
     }
 
     return MakeResp(ErrorCode.ERR_OK, data)

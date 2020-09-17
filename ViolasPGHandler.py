@@ -1400,7 +1400,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         return True, info
 
@@ -1410,12 +1410,12 @@ class ViolasPGHandler():
         timestamp = datetime.timestamp(today)
 
         try:
-            info = s.query(ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.address == address).filter(ViolasBankBorrowOrder.date >= timestamp).all()
+            info = s.query(ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.address == address).filter(ViolasBankBorrowOrder.order_type == 0).filter(ViolasBankBorrowOrder.date >= timestamp).all()
             s.close()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         return True, info
 
@@ -1428,7 +1428,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         datas = []
         for i in res:
@@ -1454,7 +1454,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         datas = []
         for i in res:
@@ -1480,7 +1480,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         if result is None:
             return True, None
@@ -1510,7 +1510,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         quota = 0
         for i in result:
@@ -1548,7 +1548,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         if order is None:
             return True, None
@@ -1600,7 +1600,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         result = []
         for order in orders:
@@ -1633,7 +1633,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         if result is None:
             return True, None
@@ -1663,7 +1663,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         quota = 0
         for i in result:
@@ -1680,7 +1680,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         products = []
         for i in result:
@@ -1700,7 +1700,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
         if order is None:
             return True, None
 
@@ -1728,7 +1728,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         result = []
         for order in orders:
@@ -1764,7 +1764,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         if order is None:
             return True, None
@@ -1787,7 +1787,7 @@ class ViolasPGHandler():
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False
+            return False, None
 
         orderList = []
         if q == 2:
