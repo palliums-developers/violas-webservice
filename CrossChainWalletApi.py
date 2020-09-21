@@ -1,7 +1,7 @@
 from flask import request
 
 from ViolasWebservice import app
-from common import HCrossChain, MAPPING_ADDRESS_INFOS, requests
+from common import HCrossChain, requests
 from ErrorCode import ErrorCode
 from util import MakeResp, AddressInfo, get_show_name
 
@@ -19,12 +19,24 @@ def GetMarketCrosschainTransactions():
 
 @app.route("/1.0/mapping/address/info")
 def GetMappingAddressInfo():
+    payload = {
+        "opt": "receivers",
+        "opttype": "map"
+    }
+
+    resp = requests.get("http://18.136.139.151", params= payload)
+    mapInfos = resp.json().get("datas")
+
     data = []
-    for i in MAPPING_ADDRESS_INFOS:
+    for i in mapInfos:
         type = i.get("type")
         address = i.get("address")
-        lable = i.get("lable")
-        info = AddressInfo(type, address, lable)
+        lable = i.get("code")
+        for coinPair in i.get("from_to_token"):
+            scoin = coinPair.get("from_coin")
+            rcoin = coinPair.get("to_coin")
+            info = AddressInfo(type, address, scoin, rcoin, lable)
+
         data.append(info.to_mapping_json())
 
     return MakeResp(ErrorCode.ERR_OK, data)

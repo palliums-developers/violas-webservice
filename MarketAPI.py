@@ -107,15 +107,23 @@ def GetMarketExchangeTransactions():
 
 @app.route("/1.0/market/exchange/crosschain/address/info")
 def GetMarketCrosschainMapInfo():
+    payload = {
+        "opt": "receivers",
+        "opttype": "swap"
+    }
+
+    resp = requests.get("http://18.136.139.151", params = payload)
+    mapInfos = resp.json().get("datas")
+
     data = []
-    for i in BASEMAPINFOS:
+    for i in mapInfos:
         flow = i["type"][0:3]
         cIn, cOut = flow.split("2")
         currency = i["type"][3:] if len(i["type"]) > 3 else None
 
         item = {}
         if cIn == "b":
-            item["lable"] = i["lable"]
+            item["lable"] = i["code"]
             item["receiver_address"] = i["address"]
         else:
             item["lable"] = i["type"]

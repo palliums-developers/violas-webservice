@@ -83,20 +83,22 @@ class AddressInfo():
     LIBRA_CHAIN_NAME = "libra"
     VIOLAS_CHAIN_NAME = "violas"
 
-    def __init__(self, type, address, lable=None):
+    def __init__(self, type, address, scoin, rcoin, lable=None):
         self.type = type
         flow = type[0:3]
         chain_in, chain_out = flow.split("2")
         self.schain = self._parse_chain_name(chain_in)
         self.rchain = self._parse_chain_name(chain_out)
         self.lable = lable
+        self.scoin = scoin
+        self.rcoin = rcoin
 
         self.type = type
         self.address = address
 
     def get_lable(self):
         if self.schain != self.BTC_CHAIN_NAME:
-            return self.type[0:3] + "m"
+            return self.type
         return self.lable
 
     def get_receiver_address(self):
@@ -122,26 +124,30 @@ class AddressInfo():
 
 
     def get_smapping_name(self):
-        if self.schain == self.BTC_CHAIN_NAME:
-            return "BTC"
-        coin = self.type[3:].upper()
-        if self.schain == self.LIBRA_CHAIN_NAME:
-            if coin == "USD":
-                return "Coin1"
-            if coin == "EUR":
-                return "Coin2"
-        return coin
+        return self.scoin
+
+        # if self.schain == self.BTC_CHAIN_NAME:
+        #     return "BTC"
+        # coin = self.type[3:].upper()
+        # if self.schain == self.LIBRA_CHAIN_NAME:
+        #     if coin == "USD":
+        #         return "Coin1"
+        #     if coin == "EUR":
+        #         return "Coin2"
+        # return coin
 
     def get_rmapping_name(self):
-        if self.rchain == self.BTC_CHAIN_NAME:
-            return "BTC"
-        coin = self.type[3:].upper()
-        if self.rchain == self.LIBRA_CHAIN_NAME:
-            if coin == "USD":
-                return "Coin1"
-            if coin == "EUR":
-                return "Coin2"
-        return coin
+        return self.rcoin
+
+        # if self.rchain == self.BTC_CHAIN_NAME:
+        #     return "BTC"
+        # coin = self.type[3:].upper()
+        # if self.rchain == self.LIBRA_CHAIN_NAME:
+        #     if coin == "USD":
+        #         return "Coin1"
+        #     if coin == "EUR":
+        #         return "Coin2"
+        # return coin
 
     def get_show_name(self, name):
         if name == "Coin1":
