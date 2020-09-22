@@ -1584,14 +1584,14 @@ class ViolasPGHandler():
 
         return True, order.total_value, product.currency
 
-    def GetDepositOrderList(self, address, offset, limit, currency = None, status = None):
+    def GetDepositOrderList(self, address, offset, limit, currency = None, status = None, startTime = None, endTime = None):
         s = self.session()
         try:
             if currency is None and status is None:
                 orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
-            elif currency is not None and status is None:
+            elif status is None:
                 orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositProduct.currency == currency).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
-            elif currency is None and status is not None:
+            elif currency is None:
                 orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositOrder.order_type == status).filter(ViolasBankDepositOrder.status == 0).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
             else:
                 orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositProduct.currency == currency).filter(ViolasBankDepositOrder.order_type == status).filter(ViolasBankDepositOrder.status == 0).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
@@ -1604,6 +1604,13 @@ class ViolasPGHandler():
 
         result = []
         for order in orders:
+            if startTime is not None:
+                if order[1] < startTime:
+                    continue
+            elif endTime is not None:
+                if order[1] > endTime:
+                    continue
+
             item = {}
             item['id'] = order[0]
             item['date'] = order[1]
@@ -1712,14 +1719,14 @@ class ViolasPGHandler():
 
         return True, info
 
-    def GetBorrowOrderList(self, address, offset, limit, currency = None, status = None):
+    def GetBorrowOrderList(self, address, offset, limit, currency = None, status = None, startTime = None, endTime = None):
         s = self.session()
         try:
             if currency is None and status is None:
                 orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
-            elif currency is not None and status is None:
+            elif status is None:
                 orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowProduct.currency == currency).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
-            elif currency is None and status is not None:
+            elif currency is None:
                 orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.order_type == status).filter(ViolasBankBorrowOrder.status == 0).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
             else:
                 orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowProduct.currency == currency).filter(ViolasBankBorrowOrder.order_type == status).filter(ViolasBankBorrowOrder.status == 0).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
@@ -1732,6 +1739,13 @@ class ViolasPGHandler():
 
         result = []
         for order in orders:
+            if startTime is not None:
+                if order[1] < startTime:
+                    continue
+            elif endTime is not None:
+                if order[1] > endTime:
+                    continue
+
             item = {}
             item['id'] = order[0]
             item['date'] = order[1]

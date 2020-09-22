@@ -117,8 +117,10 @@ def GetDepositOrderDetailInfo():
     status = request.args.get("status", type = int)
     offset = request.args.get("offset", type = int, default = 0)
     limit = request.args.get("limit", type = int, default = 10)
+    startTime = request.args.get("start", type = int)
+    endTime = request.args.get("end", type = int)
 
-    succ, orders = HViolas.GetDepositOrderList(address, offset, limit, currency, status)
+    succ, orders = HViolas.GetDepositOrderList(address, offset, limit, currency, status, startTime, endTime)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
@@ -183,8 +185,10 @@ def GetBorrowOrderList():
     status = request.args.get("status", type = int)
     offset = request.args.get("offset", type = int, default = 0)
     limit = request.args.get("limit", type = int, default = 10)
+    startTime = request.args.get("start", type = int)
+    endTime = request.args.get("end", type = int)
 
-    succ, orders = HViolas.GetBorrowOrderList(address, offset, limit, currency, status)
+    succ, orders = HViolas.GetBorrowOrderList(address, offset, limit, currency, status, startTime, endTime)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
