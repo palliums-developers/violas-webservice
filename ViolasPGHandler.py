@@ -1490,8 +1490,10 @@ class ViolasPGHandler():
         data['name'] = result.product_name
         data['logo'] = result.logo
         data['minimum_amount'] = result.minimum_amount
+        data['minimum_step'] = result.minimum_step
         data['quota_limit'] = result.max_limit
         data['rate'] = float(result.rate)
+        data['rate_desc'] = result.rate_desc
         data['pledge_rate'] = float(result.pledge_rate)
         data['intor'] = json.loads(result.intor)
         data['question'] = json.loads(result.question)
@@ -1650,6 +1652,7 @@ class ViolasPGHandler():
         data['name'] = result.product_name
         data['logo'] = result.logo
         data['minimum_amount'] = result.minimum_amount
+        data['minimum_step'] = result.minimum_step
         data['quota_limit'] = result.max_limit
         data['rate'] = float(result.rate)
         data['pledge_rate'] = float(result.pledge_rate)
