@@ -1591,12 +1591,16 @@ class ViolasPGHandler():
         try:
             if currency is None and status is None:
                 orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
+                count = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).count()
             elif status is None:
                 orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositProduct.currency == currency).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
+                count =  s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositProduct.currency == currency).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).count()
             elif currency is None:
                 orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositOrder.order_type == status).filter(ViolasBankDepositOrder.status == 0).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
+                count = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositOrder.order_type == status).filter(ViolasBankDepositOrder.status == 0).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).count()
             else:
                 orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositProduct.currency == currency).filter(ViolasBankDepositOrder.order_type == status).filter(ViolasBankDepositOrder.status == 0).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
+                count = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositProduct.currency == currency).filter(ViolasBankDepositOrder.order_type == status).filter(ViolasBankDepositOrder.status == 0).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).count()
 
             s.close()
         except OperationalError:
@@ -1608,9 +1612,11 @@ class ViolasPGHandler():
         for order in orders:
             if startTime is not None:
                 if order[1] < startTime:
+                    count -= 1
                     continue
             elif endTime is not None:
                 if order[1] > endTime:
+                    count -= 1
                     continue
 
             item = {}
@@ -1631,7 +1637,7 @@ class ViolasPGHandler():
 
             result.append(item)
 
-        return True, result
+        return True, result, count
 
     def GetBorrowProductDetail(self, productId):
         s = self.session()
@@ -1727,12 +1733,16 @@ class ViolasPGHandler():
         try:
             if currency is None and status is None:
                 orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
+                count = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).count()
             elif status is None:
                 orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowProduct.currency == currency).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
+                count = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowProduct.currency == currency).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).count()
             elif currency is None:
                 orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.order_type == status).filter(ViolasBankBorrowOrder.status == 0).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
+                count = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.order_type == status).filter(ViolasBankBorrowOrder.status == 0).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).count()
             else:
                 orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowProduct.currency == currency).filter(ViolasBankBorrowOrder.order_type == status).filter(ViolasBankBorrowOrder.status == 0).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
+                count = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowProduct.currency == currency).filter(ViolasBankBorrowOrder.order_type == status).filter(ViolasBankBorrowOrder.status == 0).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).count()
 
             s.close()
         except OperationalError:
@@ -1744,9 +1754,11 @@ class ViolasPGHandler():
         for order in orders:
             if startTime is not None:
                 if order[1] < startTime:
+                    count -= 1
                     continue
             elif endTime is not None:
                 if order[1] > endTime:
+                    count -= 1
                     continue
 
             item = {}
@@ -1769,7 +1781,7 @@ class ViolasPGHandler():
 
             result.append(item)
 
-        return True, result
+        return True, result, count
 
     def GetBorrowOrderDetail(self, address, productId):
         s = self.session()

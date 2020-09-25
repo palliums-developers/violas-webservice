@@ -91,7 +91,7 @@ def GetDepositDetailInfo():
 def GetDepositOrders():
     address = request.args.get("address")
     offset = request.args.get("offset", type = int, default = 0)
-    limit = request.args.get("limit", type = int, default = 10)
+    limit = request.args.get("limit", type = int, default = 5)
 
     succ, products = HViolas.GetOrderedProducts(address)
     if not succ:
@@ -102,10 +102,12 @@ def GetDepositOrders():
         succ, order = HViolas.GetDepositOrderInfo(address, product)
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
         if order is None:
             continue
 
         order['logo'] = ICON_URL + order['logo']
+        order['totalCount'] = len(products)
         data.append(order)
 
     return MakeResp(ErrorCode.ERR_OK, data)
@@ -116,16 +118,17 @@ def GetDepositOrderDetailInfo():
     currency = request.args.get("currency")
     status = request.args.get("status", type = int)
     offset = request.args.get("offset", type = int, default = 0)
-    limit = request.args.get("limit", type = int, default = 10)
+    limit = request.args.get("limit", type = int, default = 5)
     startTime = request.args.get("start", type = int)
     endTime = request.args.get("end", type = int)
 
-    succ, orders = HViolas.GetDepositOrderList(address, offset, limit, currency, status, startTime, endTime)
+    succ, orders, count = HViolas.GetDepositOrderList(address, offset, limit, currency, status, startTime, endTime)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     for i in orders:
         i['logo'] = ICON_URL + i['logo']
+        i['totalCount'] = count
 
     return MakeResp(ErrorCode.ERR_OK, orders)
 
@@ -156,7 +159,7 @@ def GetBorrowDetailInfo():
 def GetBorrowOrders():
     address = request.args.get("address")
     offset = request.args.get("offset", type = int, default = 0)
-    limit = request.args.get("limit", type = int, default = 10)
+    limit = request.args.get("limit", type = int, default = 5)
 
     cli = MakeBankClient()
 
@@ -174,6 +177,7 @@ def GetBorrowOrders():
 
         order['logo'] = ICON_URL + order['logo']
         order['available_borrow'] = cli.bank_get_max_borrow_amount(address, order['name'])
+        order['totalCount'] = len(products)
         data.append(order)
 
     return MakeResp(ErrorCode.ERR_OK, data)
@@ -184,16 +188,17 @@ def GetBorrowOrderList():
     currency = request.args.get("currency")
     status = request.args.get("status", type = int)
     offset = request.args.get("offset", type = int, default = 0)
-    limit = request.args.get("limit", type = int, default = 10)
+    limit = request.args.get("limit", type = int, default = 5)
     startTime = request.args.get("start", type = int)
     endTime = request.args.get("end", type = int)
 
-    succ, orders = HViolas.GetBorrowOrderList(address, offset, limit, currency, status, startTime, endTime)
+    succ, orders, count = HViolas.GetBorrowOrderList(address, offset, limit, currency, status, startTime, endTime)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     for i in orders:
         i['logo'] = ICON_URL + i['logo']
+        i['totalCount'] = count
 
     return MakeResp(ErrorCode.ERR_OK, orders)
 
@@ -203,7 +208,7 @@ def GetBorrowOrderDetail():
     productId = request.args.get("id")
     q = request.args.get("q", type = int)
     offset = request.args.get("offset", type = int, default = 0)
-    limit = request.args.get("limit", type = int, default = 10)
+    limit = request.args.get("limit", type = int, default = 5)
 
     succ, info = HViolas.GetBorrowOrderDetail(address, productId)
     if not succ:
