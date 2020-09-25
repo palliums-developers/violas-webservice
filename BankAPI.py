@@ -107,7 +107,7 @@ def GetDepositOrders():
             continue
 
         order['logo'] = ICON_URL + order['logo']
-        order['totalCount'] = len(products)
+        order['total_count'] = len(products)
         data.append(order)
 
     return MakeResp(ErrorCode.ERR_OK, data)
@@ -128,7 +128,7 @@ def GetDepositOrderDetailInfo():
 
     for i in orders:
         i['logo'] = ICON_URL + i['logo']
-        i['totalCount'] = count
+        i['total_count'] = count
 
     return MakeResp(ErrorCode.ERR_OK, orders)
 
@@ -177,7 +177,7 @@ def GetBorrowOrders():
 
         order['logo'] = ICON_URL + order['logo']
         order['available_borrow'] = cli.bank_get_max_borrow_amount(address, order['name'])
-        order['totalCount'] = len(products)
+        order['total_count'] = len(products)
         data.append(order)
 
     return MakeResp(ErrorCode.ERR_OK, data)
@@ -198,7 +198,7 @@ def GetBorrowOrderList():
 
     for i in orders:
         i['logo'] = ICON_URL + i['logo']
-        i['totalCount'] = count
+        i['total_count'] = count
 
     return MakeResp(ErrorCode.ERR_OK, orders)
 
