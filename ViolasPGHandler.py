@@ -1590,52 +1590,54 @@ class ViolasPGHandler():
         s = self.session()
         try:
             if currency is None and status is None:
-                orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
+                orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).all()
                 count = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).count()
             elif status is None:
-                orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositProduct.currency == currency).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
+                orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositProduct.currency == currency).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).all()
                 count =  s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositProduct.currency == currency).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).count()
             elif currency is None:
-                orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositOrder.order_type == status).filter(ViolasBankDepositOrder.status == 0).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
+                orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositOrder.order_type == status).filter(ViolasBankDepositOrder.status == 0).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).all()
                 count = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositOrder.order_type == status).filter(ViolasBankDepositOrder.status == 0).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).count()
             else:
-                orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositProduct.currency == currency).filter(ViolasBankDepositOrder.order_type == status).filter(ViolasBankDepositOrder.status == 0).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).offset(offset).limit(limit).all()
+                orders = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositProduct.currency == currency).filter(ViolasBankDepositOrder.order_type == status).filter(ViolasBankDepositOrder.status == 0).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).all()
                 count = s.query(ViolasBankDepositOrder.order_id, ViolasBankDepositOrder.date, ViolasBankDepositOrder.order_type, ViolasBankDepositOrder.status, ViolasBankDepositProduct.logo, ViolasBankDepositProduct.currency, ViolasBankDepositOrder.value).filter(ViolasBankDepositProduct.currency == currency).filter(ViolasBankDepositOrder.order_type == status).filter(ViolasBankDepositOrder.status == 0).join(ViolasBankDepositProduct, ViolasBankDepositProduct.product_id == ViolasBankDepositOrder.product_id).filter(ViolasBankDepositOrder.address == address).order_by(ViolasBankDepositOrder.id.desc()).count()
 
             s.close()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False, None
+            return False, None, None
 
         result = []
-        for order in orders:
+        for idx, order in enumerate(orders):
             if startTime is not None:
                 if order[1] < startTime:
                     count -= 1
                     continue
-            elif endTime is not None:
+
+            if endTime is not None:
                 if order[1] > endTime:
                     count -= 1
                     continue
 
-            item = {}
-            item['id'] = order[0]
-            item['date'] = order[1]
-            if order[2] == 0 and order[3] == 0:
-                item['status'] = 0
-            elif order[2] == 1 and order[3] == 0:
-                item['status'] = 1
-            elif order[2] == 0 and order[3] == -1:
-                item['status'] = -1
-            elif order[2] == 1 and order[3] == -1:
-                item['status'] = -2
+            if idx >= offset and idx < (offset + limit):
+                item = {}
+                item['id'] = order[0]
+                item['date'] = order[1]
+                if order[2] == 0 and order[3] == 0:
+                    item['status'] = 0
+                elif order[2] == 1 and order[3] == 0:
+                    item['status'] = 1
+                elif order[2] == 0 and order[3] == -1:
+                    item['status'] = -1
+                elif order[2] == 1 and order[3] == -1:
+                    item['status'] = -2
 
-            item['logo'] = order[4]
-            item['currency'] = order[5]
-            item['value'] = order[6]
+                item['logo'] = order[4]
+                item['currency'] = order[5]
+                item['value'] = order[6]
 
-            result.append(item)
+                result.append(item)
 
         return True, result, count
 
@@ -1732,54 +1734,56 @@ class ViolasPGHandler():
         s = self.session()
         try:
             if currency is None and status is None:
-                orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
+                orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).all()
                 count = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).count()
             elif status is None:
-                orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowProduct.currency == currency).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
+                orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowProduct.currency == currency).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).all()
                 count = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowProduct.currency == currency).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).count()
             elif currency is None:
-                orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.order_type == status).filter(ViolasBankBorrowOrder.status == 0).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
+                orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.order_type == status).filter(ViolasBankBorrowOrder.status == 0).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).all()
                 count = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.order_type == status).filter(ViolasBankBorrowOrder.status == 0).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).count()
             else:
-                orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowProduct.currency == currency).filter(ViolasBankBorrowOrder.order_type == status).filter(ViolasBankBorrowOrder.status == 0).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).offset(offset).limit(limit).all()
+                orders = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowProduct.currency == currency).filter(ViolasBankBorrowOrder.order_type == status).filter(ViolasBankBorrowOrder.status == 0).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).all()
                 count = s.query(ViolasBankBorrowOrder.order_id, ViolasBankBorrowOrder.date, ViolasBankBorrowOrder.order_type, ViolasBankBorrowOrder.status, ViolasBankBorrowProduct.logo, ViolasBankBorrowProduct.currency, ViolasBankBorrowOrder.value).filter(ViolasBankBorrowProduct.currency == currency).filter(ViolasBankBorrowOrder.order_type == status).filter(ViolasBankBorrowOrder.status == 0).join(ViolasBankBorrowProduct, ViolasBankBorrowProduct.product_id == ViolasBankBorrowOrder.product_id).filter(ViolasBankBorrowOrder.address == address).order_by(ViolasBankBorrowOrder.id.desc()).count()
 
             s.close()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             s.close()
-            return False, None
+            return False, None, None
 
         result = []
-        for order in orders:
+        for idx, order in enumerate(orders):
             if startTime is not None:
                 if order[1] < startTime:
                     count -= 1
                     continue
-            elif endTime is not None:
+
+            if endTime is not None:
                 if order[1] > endTime:
                     count -= 1
                     continue
 
-            item = {}
-            item['id'] = order[0]
-            item['date'] = order[1]
-            if order[2] == 0 and order[3] == 0:
-                item['status'] = 0
-            elif order[2] == 1 and order[3] == 0:
-                item['status'] = 1
-            elif order[2] == 2 and order[3] == 0:
-                item['status'] = 2
-            elif order[2] == 0 and order[3] == -1:
-                item['status'] = -1
-            elif order[2] == 1 and order[3] == -1:
-                item['status'] = -2
+            if idx >= offset and idx < (offset + limit):
+                item = {}
+                item['id'] = order[0]
+                item['date'] = order[1]
+                if order[2] == 0 and order[3] == 0:
+                    item['status'] = 0
+                elif order[2] == 1 and order[3] == 0:
+                    item['status'] = 1
+                elif order[2] == 2 and order[3] == 0:
+                    item['status'] = 2
+                elif order[2] == 0 and order[3] == -1:
+                    item['status'] = -1
+                elif order[2] == 1 and order[3] == -1:
+                    item['status'] = -2
 
-            item['logo'] = order[4]
-            item['currency'] = order[5]
-            item['value'] = order[6]
+                item['logo'] = order[4]
+                item['currency'] = order[5]
+                item['value'] = order[6]
 
-            result.append(item)
+                result.append(item)
 
         return True, result, count
 
