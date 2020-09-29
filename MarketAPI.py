@@ -94,7 +94,7 @@ def GetExchangeTrial():
     return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/market/exchange/trial/reverse")
-def GetExchangeTrial():
+def GetExchangeTrialReverse():
     amount = request.args.get("amount", type = int)
     currencyIn = request.args.get("currencyIn")
     currencyOut = request.args.get("currencyOut")
