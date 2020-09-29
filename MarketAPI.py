@@ -93,6 +93,28 @@ def GetExchangeTrial():
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
+@app.route("/1.0/market/exchange/trial/reverse")
+def GetExchangeTrial():
+    amount = request.args.get("amount", type = int)
+    currencyIn = request.args.get("currencyIn")
+    currencyOut = request.args.get("currencyOut")
+
+    cli = MakeExchangeClient()
+    try:
+        amountOut = cli.swap_get_swap_input_amount(currency_in, currency_out, amount_out)
+        path = cli.get_currency_max_output_path(currencyIn, currencyOut, amount)
+    except AssertionError:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, message = "Exchange path too deep!")
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+
+    data = {"amount": amountOut[0],
+            "fee": amountOut[1],
+            "rate": amount / amountOut[0] if amountOut[0] > 0 else 0,
+            "path": path}
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
 @app.route("/1.0/market/exchange/transaction")
 def GetMarketExchangeTransactions():
     address = request.args.get("address")
