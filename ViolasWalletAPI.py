@@ -9,6 +9,9 @@ def GetViolasBalance():
     currency = request.args.get("currency")
     address = address.lower()
 
+    if not all([address, currency, address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
     cli = MakeViolasClient()
     try:
         if currency is None:
@@ -39,6 +42,9 @@ def GetViolasSequenceNumbert():
     address = request.args.get("addr")
     address = address.lower()
 
+    if not all([address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
     cli = MakeViolasClient()
     try:
         seqNum = cli.get_sequence_number(address)
@@ -50,6 +56,9 @@ def GetViolasSequenceNumbert():
 def MakeViolasTransaction():
     params = request.get_json()
     signedtxn = params["signedtxn"]
+
+    if not all([signedtxn]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     cli = MakeViolasClient()
     transactionInfo = bytes.fromhex(signedtxn)
@@ -76,6 +85,9 @@ def GetViolasTransactionInfo():
     limit = request.args.get("limit", 10, int)
     offset = request.args.get("offset", 0, int)
     address = address.lower()
+
+    if not all([address, currency, flows, limit, offset]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     succ, datas = HViolas.GetTransactionsForWallet(address, currency, flows, offset, limit)
     if not succ:
@@ -119,6 +131,9 @@ def CheckCurrencyPublished():
     addr = request.args.get("addr")
     addr = addr.lower()
 
+    if not all([addr]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
     cli = MakeViolasClient()
 
     try:
@@ -158,6 +173,9 @@ def SendVerifyCode():
 
     receiver = receiver.lower()
     address = address.lower()
+
+    if not all([address, local_number, receiver]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     verifyCode = random.randint(100000, 999999)
 
@@ -202,6 +220,9 @@ def MintViolasToAccount():
     currency = request.args.get("currency")
     address = address.lower()
 
+    if not all([address, authKey, currency, address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
     cli = MakeViolasClient()
     try:
         cli.mint_coin(address, 100, auth_key_prefix = authKey, is_blocking = True, currency_code=currency)
@@ -216,6 +237,9 @@ def MintViolasToAccount():
 def GetAccountInfo():
     address = request.args.get("address")
     address = address.lower()
+
+    if not all([address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     cli = MakeViolasClient()
 
@@ -247,6 +271,10 @@ def GetBTCValue():
 @app.route("/1.0/violas/value/violas")
 def GetViolasValue():
     address = request.args.get("address")
+
+    if not all([address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
     cli = MakeViolasClient()
 
     balances = cli.get_balances(address)
@@ -268,6 +296,10 @@ def GetViolasValue():
 @app.route("/1.0/violas/value/libra")
 def GetLibraValue():
     address = request.args.get("address")
+
+    if not all([address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
     cli = MakeLibraClient()
 
     balances = cli.get_balances(address)

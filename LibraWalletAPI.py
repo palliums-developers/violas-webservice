@@ -8,6 +8,9 @@ def GetLibraBalance():
     currency = request.args.get("currency")
     address = address.lower()
 
+    if not all([address, currency, address]):
+        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
     cli = MakeLibraClient()
     try:
         if currency is None:
@@ -52,6 +55,9 @@ def GetLibraSequenceNumbert():
     address = request.args.get("addr")
     address = address.lower()
 
+    if not all([address]):
+        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
     cli = MakeLibraClient()
     try:
         seqNum = cli.get_sequence_number(address)
@@ -63,6 +69,9 @@ def GetLibraSequenceNumbert():
 def MakeLibraTransaction():
     params = request.get_json()
     signedtxn = params["signedtxn"]
+
+    if not all([signedtxn]):
+        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     cli = MakeLibraClient()
     try:
@@ -81,6 +90,9 @@ def GetLibraTransactionInfo():
     offset = request.args.get("offset", 0, int)
     address = address.lower()
 
+    if not all([address, currency, flows, limit, offset, address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
     succ, datas = HLibra.GetTransactionsForWallet(address, currency, flows, offset, limit)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
@@ -93,6 +105,9 @@ def MintLibraToAccount():
     authKey = request.args.get("auth_key_perfix")
     currency = request.args.get("currency")
     address = address.lower()
+
+    if not all([address, authKey, currency, address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     cli = MakeLibraClient()
     try:
@@ -136,6 +151,9 @@ def GetLibraAccountInfo():
     address = request.args.get("address")
     address = address.lower()
 
+    if not all([address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
     cli = MakeLibraClient()
 
     try:
@@ -158,6 +176,8 @@ def CheckLibraCurrencyPublished():
     addr = request.args.get("addr")
     addr = addr.lower()
 
+    if not all([addr]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
     cli = MakeLibraClient()
 
     try:
