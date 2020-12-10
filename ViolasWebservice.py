@@ -33,5 +33,8 @@ import MarketAPI
 import CrossChainWalletApi
 # BANK
 import BankAPI
+# Incentive Mining
+import IncentiveMining
+
 # test
 import index

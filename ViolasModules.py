@@ -191,3 +191,23 @@ class ViolasBankLiabilityInfo(Base):
     total_liability = Column(BigInteger, nullable = False)
     date = Column(Integer, nullable = False)
     product_id = Column(String(32), nullable = False)
+
+class ViolasNewRegisteredRecord(Base):
+    __tablename__ = "new_registered_record"
+
+    id = Column(BigInteger, primary_key = True, autoincrement = True)
+    wallet_address = Column(String(64), nullable = False)
+    phone_number = Column(String(32), nullable = False)
+    inviter_address = Column(String(64), nullable = True)
+    date = Column(Integer, nullable = False)
+    incentive_record_id = Column(BigInteger, nullable = False)
+
+class ViolasIncentiveIssueRecord(Base):
+    __tablename__ = "incentive_issue_record"
+
+    id = Column(BigInteger, primary_key = True, autoincrement = True)
+    address = Column(String(64), nullable = False)
+    amount = Column(Numeric, nullable = False)
+    date = Column(Integer, nullable = False)
+    status = Column(SmallInteger, nullable = False) # 0: not issued; 1: issued; -1: issued failed
+    type = Column(SmallInteger, nullable = False) # 0: Register; 1: invite; 2: be invited; 3: deposit; 4: borrow; 5: withdraw; 6: pool

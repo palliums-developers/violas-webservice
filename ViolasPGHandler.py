@@ -1,7 +1,7 @@
 from time import time, sleep
 from datetime import date, datetime
 
-from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo, ViolasGovernorInfo, ViolasTransaction, ViolasAddressInfo, ViolasSignedTransaction, ViolasBankInterestInfo, ViolasBankBorrowOrder, ViolasBankDepositProduct, ViolasBankBorrowProduct, ViolasBankDepositOrder
+from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo, ViolasGovernorInfo, ViolasTransaction, ViolasAddressInfo, ViolasSignedTransaction, ViolasBankInterestInfo, ViolasBankBorrowOrder, ViolasBankDepositProduct, ViolasBankBorrowProduct, ViolasBankDepositOrder, ViolasNewRegisteredRecord, ViolasIncentiveIssueRecord
 import logging
 import json
 
@@ -10,9 +10,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import exists, distinct, join
 from sqlalchemy.sql.expression import false
 from sqlalchemy.exc import OperationalError
+from sqlalchemy import func
 
 from TransferType import TransferType
 from util import get_show_name
+
 class ViolasPGHandler():
     def __init__(self, dbUrl):
         self.engine = create_engine(dbUrl)
@@ -1956,3 +1958,212 @@ class ViolasPGHandler():
             return False
 
         return True
+
+    def AddNewRegisteredRecord(self, orderInfo):
+        s = self.session()
+
+        try:
+            incID = None
+            if orderInfo.get("inviterAddress") is not None:
+                result = s.query(ViolasIncentiveIssueRecord.id).filter(ViolasIncentiveIssueRecord.address == orderInfo.get("inviterAddress")).order_by(ViolasIncentiveIssueRecord.id.desc()).first()
+                incID = result[0]
+
+            record = ViolasNewRegisteredRecord(
+                wallet_address = orderInfo.get("walletAddress"),
+                phone_number = orderInfo.get("phoneNumber"),
+                inviter_address = orderInfo.get("inviterAddress"),
+                date = int(time()),
+                incentive_record_id = incID
+            )
+
+            s.add(record)
+            s.commit()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False
+        finally:
+            s.close()
+
+        return True
+
+    def AddNewIncentiveRecord(self, address, amount, status, type):
+        s = self.session()
+        record = ViolasIncentiveIssueRecord(
+            address = address,
+            amount = amount,
+            date = int(time()),
+            status = status,
+            type = type
+        )
+
+        try:
+            s.add(record)
+            s.commit()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False
+        finally:
+            s.close()
+
+        return True
+
+    def CheckRegistered(self, walletAddress):
+        s = self.session()
+
+        try:
+            if s.query(exists().where(ViolasNewRegisteredRecord.wallet_address == walletAddress)).scalar():
+                isNew = 1
+            else:
+                isNew = 0
+
+            return True, isNew
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+    def GetInviteOrders(self, walletAddress, limit, offset):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasNewRegisteredRecord.wallet_address, ViolasNewRegisteredRecord.date, ViolasIncentiveIssueRecord.amount, ViolasIncentiveIssueRecord.status).join(ViolasIncentiveIssueRecord, ViolasNewRegisteredRecord.incentive_record_id == ViolasIncentiveIssueRecord.id).filter(ViolasNewRegisteredRecord.inviter_address == walletAddress).order_by(ViolasNewRegisteredRecord.id.desc()).offset(offset).limit(limit).all()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        orders = []
+        for i in result:
+            order = {
+                "be_invited": i.wallet_address,
+                "amount": int(i.amount),
+                "date": i.date,
+                "status": i.status
+            }
+
+            orders.append(order)
+
+        return True, orders
+
+    def GetTop20Invite(self):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasIncentiveIssueRecord.address, func.count("*"), func.sum(ViolasIncentiveIssueRecord.amount)).filter(ViolasIncentiveIssueRecord.type == 1).group_by(ViolasIncentiveIssueRecord.address).order_by(func.count("*").desc()).limit(20).all()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        infos = []
+        for idx, i in enumerate(result):
+            info = {
+                "rank": idx + 1,
+                "address": i[0],
+                "invite_count": i[1],
+                "incentive": int(i[2])
+            }
+
+            infos.append(info)
+
+        return True, infos
+
+    def GetInviteCount(self, walletAddress):
+        s = self.session()
+        try:
+            result = s.query(func.count("*")).filter(ViolasIncentiveIssueRecord.address == walletAddress).filter(ViolasIncentiveIssueRecord.type == 1).first()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        return True, result[0]
+
+    def GetTotalIncentive(self, address):
+        s = self.session()
+        try:
+            result = s.query(func.sum(ViolasIncentiveIssueRecord.amount)).filter(ViolasIncentiveIssueRecord.address == address).filter(ViolasIncentiveIssueRecord.status == 1).scalar()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        if result is None:
+            result = 0
+        return True, result
+
+    def GetIncentiveTop20(self):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasIncentiveIssueRecord.address, func.sum(ViolasIncentiveIssueRecord.amount)).group_by(ViolasIncentiveIssueRecord.address).order_by(func.count("*").desc()).limit(20).all()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        infos = []
+        for idx, i in enumerate(result):
+            info = {
+                "rank": idx + 1,
+                "address": i[0],
+                "incentive": int(i[1])
+            }
+
+            infos.append(info)
+
+        return True, infos
+
+    def GetBankIncentiveOrders(self, address, offset, limit):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasIncentiveIssueRecord).filter(ViolasIncentiveIssueRecord.address == address).filter(or_(ViolasIncentiveIssueRecord.type == 3, ViolasIncentiveIssueRecord.type == 4, ViolasIncentiveIssueRecord.type == 5)).order_by(ViolasIncentiveIssueRecord.id.desc()).offset(offset).limit(limit).all()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        orders = []
+        for i in result:
+            order = {
+                "type": i.type,
+                "amount": int(i.amount),
+                "date": i.date,
+                "status": i.status
+            }
+
+            orders.append(order)
+
+        return True, orders
+
+    def GetPoolIncentiveOrders(self, address, offset, limit):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasIncentiveIssueRecord).filter(ViolasIncentiveIssueRecord.address == address).filter(ViolasIncentiveIssueRecord.type == 6).order_by(ViolasIncentiveIssueRecord.id.desc()).offset(offset).limit(limit).all()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        orders = []
+        for i in result:
+            order = {
+                "type": i.type,
+                "amount": int(i.amount),
+                "date": i.date,
+                "status": i.status
+            }
+
+            orders.append(order)
+
+        return True, orders
