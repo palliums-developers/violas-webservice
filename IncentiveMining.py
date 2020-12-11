@@ -21,7 +21,7 @@ def VerifyIncentiveMobile():
     elif value.decode("utf8") != str(verifyCode):
         return MakeResp(ErrorCode.ERR_VERIFICATION_CODE)
 
-    rdsVerify.delete(receiver)
+    rdsVerify.delete(localNumber + mobileNumber)
 
     orderInfo = {
         "walletAddress": walletAddress,
