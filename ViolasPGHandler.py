@@ -1966,7 +1966,7 @@ class ViolasPGHandler():
             incID = None
             if orderInfo.get("inviterAddress") is not None:
                 result = s.query(ViolasIncentiveIssueRecord.id).filter(ViolasIncentiveIssueRecord.address == orderInfo.get("inviterAddress")).order_by(ViolasIncentiveIssueRecord.id.desc()).first()
-                incID = result[0]
+                incID = result[0] if result[0] is not None else None
 
             record = ViolasNewRegisteredRecord(
                 wallet_address = orderInfo.get("walletAddress"),
