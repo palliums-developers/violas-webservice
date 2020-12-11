@@ -200,7 +200,7 @@ class ViolasNewRegisteredRecord(Base):
     phone_number = Column(String(32), nullable = False)
     inviter_address = Column(String(64), nullable = True)
     date = Column(Integer, nullable = False)
-    incentive_record_id = Column(BigInteger, nullable = False)
+    incentive_record_id = Column(BigInteger, nullable = True)
 
 class ViolasIncentiveIssueRecord(Base):
     __tablename__ = "incentive_issue_record"
