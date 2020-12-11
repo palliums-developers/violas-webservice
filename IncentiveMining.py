@@ -34,11 +34,11 @@ def VerifyIncentiveMobile():
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     if inviterAddress is not None and len(inviterAddress) > 0:
-        succ = HViolas.AddNewIncentiveRecord(walletAddress, 1, 0, 0)
+        succ = HViolas.AddNewIncentiveRecord(walletAddress, 1, 0, 2)
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-        succ = HViolas.AddNewIncentiveRecord(inviterAddress, 2, 0, 0)
+        succ = HViolas.AddNewIncentiveRecord(inviterAddress, 2, 0, 1)
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
