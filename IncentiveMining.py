@@ -14,8 +14,14 @@ def VerifyIncentiveMobile():
     if not all([walletAddress, localNumber, mobileNumber, verifyCode]):
         return MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
-    if not VerifyCodeExist(localNumber + mobileNumber, verifyCode):
+    value = rdsVerify.get(localNumber + mobileNumber)
+
+    if value is None:
         return MakeResp(ErrorCode.ERR_VERIFICATION_CODE)
+    elif value.decode("utf8") != str(verifyCode):
+        return MakeResp(ErrorCode.ERR_VERIFICATION_CODE)
+
+    rdsVerify.delete(receiver)
 
     orderInfo = {
         "walletAddress": walletAddress,

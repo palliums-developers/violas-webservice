@@ -1,4 +1,4 @@
-import os, random, logging, datetime, json, time, datetime
+import os, random, logging, datetime, json, time
 from flask import request, send_file
 from werkzeug.utils import secure_filename
 from redis import Redis

@@ -69,7 +69,6 @@ def VerifyCodeExist(receiver, code):
 
     return True
 
-
 def get_show_name(name):
     if name == "Coin1":
         return "USD"
