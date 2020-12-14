@@ -210,4 +210,4 @@ class ViolasIncentiveIssueRecord(Base):
     amount = Column(Numeric, nullable = False)
     date = Column(Integer, nullable = False)
     status = Column(SmallInteger, nullable = False) # 0: not issued; 1: issued; -1: issued failed
-    type = Column(SmallInteger, nullable = False) # 0: Register; 1: invite; 2: be invited; 3: deposit; 4: borrow; 5: withdraw; 6: pool
+    type = Column(SmallInteger, nullable = False) # 0: Register; 1: invite; 2: be invited; 3: deposit; 4: withdraw; 5: borrow; 6: repayment; 7: bank extract; 8: pool extract

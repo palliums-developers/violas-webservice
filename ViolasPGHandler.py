@@ -2124,7 +2124,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasIncentiveIssueRecord).filter(ViolasIncentiveIssueRecord.address == address).filter(or_(ViolasIncentiveIssueRecord.type == 3, ViolasIncentiveIssueRecord.type == 4, ViolasIncentiveIssueRecord.type == 5)).order_by(ViolasIncentiveIssueRecord.id.desc()).offset(offset).limit(limit).all()
+            result = s.query(ViolasIncentiveIssueRecord).filter(ViolasIncentiveIssueRecord.address == address).filter(or_(ViolasIncentiveIssueRecord.type == 3, ViolasIncentiveIssueRecord.type == 4, ViolasIncentiveIssueRecord.type == 5, ViolasIncentiveIssueRecord.type == 6, ViolasIncentiveIssueRecord.type == 7)).order_by(ViolasIncentiveIssueRecord.id.desc()).offset(offset).limit(limit).all()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             return False, None
