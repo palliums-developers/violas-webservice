@@ -108,6 +108,14 @@ def GetIncentiveMintInfo():
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
+    succ, bankTotal = HViolas.GetBankTotalIncenntive(walletAddress)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    succ, poolTotal = HViolas.GetPoolTotalIncenntive(walletAddress)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
     bankCli = MakeBankClient()
     bankIncentive = bankCli.bank_get_sum_incentive_amount(walletAddress)
     poolIncentive = 0
@@ -118,11 +126,14 @@ def GetIncentiveMintInfo():
 
     data = {
         "total_incentive": total,
+        "bank_total_incentive": bankTotal,
         "bank_incentive": bankIncentive,
+        "pool_total_incentive": poolTotal,
         "pool_incentive": poolIncentive,
         "ranking": ranking
     }
 
+    print(data)
     return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/violas/1.0/incentive/top20")

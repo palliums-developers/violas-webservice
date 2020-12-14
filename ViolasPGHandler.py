@@ -2095,7 +2095,7 @@ class ViolasPGHandler():
 
         if result is None:
             result = 0
-        return True, result
+        return True, int(result)
 
     def GetIncentiveTop20(self):
         s = self.session()
@@ -2171,3 +2171,31 @@ class ViolasPGHandler():
             orders.append(order)
 
         return True, orders
+
+    def GetBankTotalIncenntive(self, address):
+        s = self.session()
+        try:
+            result = s.query(func.sum(ViolasIncentiveIssueRecord.amount)).filter(ViolasIncentiveIssueRecord.address == address).filter(or_(ViolasIncentiveIssueRecord.type == 3, ViolasIncentiveIssueRecord.type == 4, ViolasIncentiveIssueRecord.type == 5, ViolasIncentiveIssueRecord.type == 6, ViolasIncentiveIssueRecord.type == 7)).filter(ViolasIncentiveIssueRecord.status == 1).scalar()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        if result is None:
+            result = 0
+        return True, int(result)
+
+    def GetPoolTotalIncenntive(self, address):
+        s = self.session()
+        try:
+            result = s.query(func.sum(ViolasIncentiveIssueRecord.amount)).filter(ViolasIncentiveIssueRecord.address == address).filter(ViolasIncentiveIssueRecord.type == 8).filter(ViolasIncentiveIssueRecord.status == 1).scalar()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        if result is None:
+            result = 0
+        return True, int(result)
