@@ -2028,6 +2028,7 @@ class ViolasPGHandler():
 
         try:
             result = s.query(ViolasNewRegisteredRecord.wallet_address, ViolasNewRegisteredRecord.date, ViolasIncentiveIssueRecord.amount, ViolasIncentiveIssueRecord.status).join(ViolasIncentiveIssueRecord, ViolasNewRegisteredRecord.incentive_record_id == ViolasIncentiveIssueRecord.id).filter(ViolasNewRegisteredRecord.inviter_address == walletAddress).order_by(ViolasNewRegisteredRecord.id.desc()).offset(offset).limit(limit).all()
+            count = s.query(ViolasNewRegisteredRecord.wallet_address, ViolasNewRegisteredRecord.date, ViolasIncentiveIssueRecord.amount, ViolasIncentiveIssueRecord.status).join(ViolasIncentiveIssueRecord, ViolasNewRegisteredRecord.incentive_record_id == ViolasIncentiveIssueRecord.id).filter(ViolasNewRegisteredRecord.inviter_address == walletAddress).count()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             return False, None
@@ -2040,7 +2041,8 @@ class ViolasPGHandler():
                 "be_invited": i.wallet_address,
                 "amount": int(i.amount),
                 "date": i.date,
-                "status": i.status
+                "status": i.status,
+                "total_count": count
             }
 
             orders.append(order)
