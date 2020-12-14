@@ -2150,7 +2150,8 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasIncentiveIssueRecord).filter(ViolasIncentiveIssueRecord.address == address).filter(ViolasIncentiveIssueRecord.type == 6).order_by(ViolasIncentiveIssueRecord.id.desc()).offset(offset).limit(limit).all()
+            result = s.query(ViolasIncentiveIssueRecord).filter(ViolasIncentiveIssueRecord.address == address).filter(ViolasIncentiveIssueRecord.type == 8).order_by(ViolasIncentiveIssueRecord.id.desc()).offset(offset).limit(limit).all()
+            count = s.query(ViolasIncentiveIssueRecord).filter(ViolasIncentiveIssueRecord.address == address).filter(ViolasIncentiveIssueRecord.type == 8).count()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             return False, None
@@ -2163,7 +2164,8 @@ class ViolasPGHandler():
                 "type": i.type,
                 "amount": int(i.amount),
                 "date": i.date,
-                "status": i.status
+                "status": i.status,
+                "total_count": count
             }
 
             orders.append(order)
