@@ -2,7 +2,7 @@ from ViolasWebservice import app
 from common import *
 from util import MakeViolasClient, MakeResp, VerifyCodeExist, MakeBankClient
 
-@app.route("/violas/1.0/incentive/mobile/verify", methods = ["POST"])
+@app.route("/1.0/violas/incentive/mobile/verify", methods = ["POST"])
 def VerifyIncentiveMobile():
     params = request.get_json()
     walletAddress = params.get("wallet_address")
@@ -48,7 +48,7 @@ def VerifyIncentiveMobile():
 
     return MakeResp(ErrorCode.ERR_OK)
 
-@app.route("/violas/1.0/incentive/check/verified")
+@app.route("/1.0/violas/incentive/check/verified")
 def CheckWalletIsVerified():
     walletAddress = request.args.get("address")
 
@@ -61,7 +61,7 @@ def CheckWalletIsVerified():
 
     return MakeResp(ErrorCode.ERR_OK, {"is_new": isNew})
 
-@app.route("/violas/1.0/incentive/orders/invite")
+@app.route("/1.0/violas/incentive/orders/invite")
 def GetInviteOrders():
     walletAddress = request.args.get("address")
     offset = request.args.get("offset", default=0, type=int)
@@ -76,7 +76,7 @@ def GetInviteOrders():
 
     return MakeResp(ErrorCode.ERR_OK, orders)
 
-@app.route("/violas/1.0/incentive/inviter/top20")
+@app.route("/1.0/violas/incentive/inviter/top20")
 def GetInviteTop20():
     succ, infos = HViolas.GetTop20Invite()
 
@@ -84,7 +84,7 @@ def GetInviteTop20():
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
     return MakeResp(ErrorCode.ERR_OK, infos)
 
-@app.route("/violas/1.0/incentive/inviter/info")
+@app.route("/1.0/violas/incentive/inviter/info")
 def GetInviterInfo():
     walletAddress = request.args.get("address")
 
@@ -97,7 +97,7 @@ def GetInviterInfo():
 
     return MakeResp(ErrorCode.ERR_OK, {"invite_count": count, "incentive": 2 * count})
 
-@app.route("/violas/1.0/incentive/mint/info")
+@app.route("/1.0/violas/incentive/mint/info")
 def GetIncentiveMintInfo():
     walletAddress = request.args.get("address")
 
@@ -136,7 +136,7 @@ def GetIncentiveMintInfo():
     print(data)
     return MakeResp(ErrorCode.ERR_OK, data)
 
-@app.route("/violas/1.0/incentive/top20")
+@app.route("/1.0/violas/incentive/top20")
 def GetIncentiveTop20():
     succ, infos = HViolas.GetIncentiveTop20()
 
@@ -144,7 +144,7 @@ def GetIncentiveTop20():
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
     return MakeResp(ErrorCode.ERR_OK, infos)
 
-@app.route("/violas/1.0/incentive/orders/bank")
+@app.route("/1.0/violas/incentive/orders/bank")
 def GetBankIncentiveOrders():
     address = request.args.get("address")
     offset = request.args.get("offset", default=0, type=int)
@@ -159,7 +159,7 @@ def GetBankIncentiveOrders():
 
     return MakeResp(ErrorCode.ERR_OK, orders)
 
-@app.route("/violas/1.0/incentive/orders/pool")
+@app.route("/1.0/violas/incentive/orders/pool")
 def GetPoolIncentiveOrders():
     address = request.args.get("address")
     offset = request.args.get("offset", default=0, type=int)
