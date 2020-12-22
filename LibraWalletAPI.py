@@ -8,7 +8,7 @@ def GetLibraBalance():
     currency = request.args.get("currency")
     address = address.lower()
 
-    if not all([address, currency, address]):
+    if not all([address]):
         return MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     cli = MakeLibraClient()
@@ -90,7 +90,7 @@ def GetLibraTransactionInfo():
     offset = request.args.get("offset", 0, int)
     address = address.lower()
 
-    if not all([address, currency, flows, limit, offset, address]):
+    if not all([address]):
         MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     succ, datas = HLibra.GetTransactionsForWallet(address, currency, flows, offset, limit)
@@ -106,7 +106,7 @@ def MintLibraToAccount():
     currency = request.args.get("currency")
     address = address.lower()
 
-    if not all([address, authKey, currency, address]):
+    if not all([address, authKey]):
         MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     cli = MakeLibraClient()
