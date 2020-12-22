@@ -9,7 +9,7 @@ def GetViolasBalance():
     currency = request.args.get("currency")
     address = address.lower()
 
-    if not all([address, currency, address]):
+    if not all([address]):
         MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     cli = MakeViolasClient()
@@ -86,7 +86,7 @@ def GetViolasTransactionInfo():
     offset = request.args.get("offset", 0, int)
     address = address.lower()
 
-    if not all([address, currency, flows, limit, offset]):
+    if not all([address]):
         MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     succ, datas = HViolas.GetTransactionsForWallet(address, currency, flows, offset, limit)
@@ -220,7 +220,7 @@ def MintViolasToAccount():
     currency = request.args.get("currency")
     address = address.lower()
 
-    if not all([address, authKey, currency, address]):
+    if not all([address, authKey]):
         MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     cli = MakeViolasClient()
