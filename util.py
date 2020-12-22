@@ -9,7 +9,7 @@ from violas_client import bank_client
 from ErrorCode import ErrorMsg
 
 def MakeLibraClient():
-    return LibraClient("libra_testnet")
+    return LibraClient(config["NODE INFO"]["LIBRA_HOST"])
 
 def MakeViolasClient():
     return ViolasClient.new(config['NODE INFO']['VIOLAS_HOST'], faucet_file = config['NODE INFO']['VIOLAS_MINT_KEY'])
