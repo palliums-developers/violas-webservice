@@ -26,6 +26,8 @@ class ErrorCode(IntEnum):
     ERR_NEED_REQUEST_PARAM = 2022
     ERR_CROSSCHAIN_CONNECT = 2023
     ERR_MISSING_PARAM = 2024
+    ERR_INCENTIVE_RECEIVED = 2025
+    ERR_REGISTER_COUNT = 2026
 
     ERR_GRPC_CONNECT = 3000
     ERR_INVAILED_ADDRESS = 3001
@@ -62,6 +64,8 @@ ErrorMsg = {
     ErrorCode.ERR_NEED_REQUEST_PARAM: "Need request params.",
     ErrorCode.ERR_CROSSCHAIN_CONNECT: "Cross chain server connect failed.",
     ErrorCode.ERR_MISSING_PARAM: "Missing prarmeters.",
+    ErrorCode.ERR_INCENTIVE_RECEIVED: "Incentive received.",
+    ErrorCode.ERR_REGISTER_COUNT: "The phone number no chance.",
 
     ErrorCode.ERR_GRPC_CONNECT: "Grpc call failed.",
     ErrorCode.ERR_INVAILED_ADDRESS: "Invailed address.",

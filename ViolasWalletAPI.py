@@ -1,6 +1,6 @@
 from ViolasWebservice import app
 from common import *
-from util import MakeLibraClient, MakeViolasClient, MakeResp, AllowedType, GetRates
+from util import MakeLibraClient, MakeViolasClient, MakeResp, AllowedType, GetRates, GetAccount, MakeTransfer
 from violas_client.lbrtypes.transaction import SignedTransaction
 
 @app.route("/1.0/violas/balance")
@@ -223,12 +223,11 @@ def MintViolasToAccount():
     if not all([address, authKey]):
         MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
+    account = GetAccount()
     cli = MakeViolasClient()
     try:
-        cli.mint_coin(address, 100, auth_key_prefix = authKey, is_blocking = True, currency_code=currency)
-    except ValueError:
-        return MakeResp(ErrorCode.ERR_INVAILED_ADDRESS)
-    except Exception as e:
+        cli.create_child_vasp_account(account, address, authKey, currency_code = "VLS", child_initial_balance=100000, gas_currency_code="VLS")
+    except ViolasError as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     return MakeResp(ErrorCode.ERR_OK)

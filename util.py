@@ -5,6 +5,7 @@ from libra_client import Client as LibraClient
 from violas_client import Client as ViolasClient
 from violas_client import exchange_client
 from violas_client import bank_client
+from violas_client import Wallet
 
 from ErrorCode import ErrorMsg
 
@@ -12,16 +13,19 @@ def MakeLibraClient():
     return LibraClient(config["NODE INFO"]["LIBRA_HOST"])
 
 def MakeViolasClient():
-    return ViolasClient.new(config['NODE INFO']['VIOLAS_HOST'], faucet_file = config['NODE INFO']['VIOLAS_MINT_KEY'])
+    # return ViolasClient()
+    return ViolasClient.new(config['NODE INFO']['VIOLAS_HOST'])
 
 def MakeExchangeClient():
-    cli = exchange_client.Client.new(config['NODE INFO']['VIOLAS_HOST'], faucet_file = config['NODE INFO']['VIOLAS_MINT_KEY'])
+    # return exchange_client.Client()
+    cli = exchange_client.Client.new(config['NODE INFO']['VIOLAS_HOST'])
     cli.set_exchange_module_address(VIOLAS_CORE_CODE_ADDRESS)
     cli.set_exchange_owner_address(config["NODE INFO"]["EXCHANGE_MODULE_ADDRESS"])
     return cli
 
 def MakeBankClient():
-    cli = bank_client.Client.new(config['NODE INFO']['VIOLAS_HOST'], faucet_file = config['NODE INFO']['VIOLAS_MINT_KEY'])
+    # return bank_client.Client()
+    cli = bank_client.Client.new(config['NODE INFO']['VIOLAS_HOST'])
     cli.set_bank_module_address(VIOLAS_CORE_CODE_ADDRESS)
     cli.set_bank_owner_address(config["NODE INFO"]["BANK_MODULE_ADDRESS"])
     return cli
@@ -203,3 +207,26 @@ def GetIDNumber():
     randNumber = random.randint(100000,999999)
 
     return idNumber + str(randNumber)
+
+def GetMnemonic():
+    filePath = "./backend.mne"
+
+    if os.path.exists(filePath):
+        with open(filePath) as f:
+            data = f.read()
+            keys = data.split(Wallet.DELIMITER)
+            if len(keys) != 2:
+                return None
+
+            return keys
+
+def GetAccount():
+    mnemonic = GetMnemonic()
+    wallet = Wallet.new_from_mnemonic(mnemonic[0])
+    wallet.generate_addresses(int(mnemonic[1]))
+
+    return wallet.new_account()
+
+def MakeTransfer(senderAccount, receiveAddress, amount, coin = None):
+    cli = MakeViolasClient()
+    cli.transfer_coin(senderAccount, receiveAddress, amount, currency_code = coin, gas_currency_code = coin)

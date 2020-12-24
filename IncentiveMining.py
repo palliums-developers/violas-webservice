@@ -1,6 +1,6 @@
 from ViolasWebservice import app
 from common import *
-from util import MakeViolasClient, MakeResp, VerifyCodeExist, MakeBankClient
+from util import MakeViolasClient, MakeResp, VerifyCodeExist, MakeBankClient, GetAccount, MakeTransfer
 
 @app.route("/1.0/violas/incentive/mobile/verify", methods = ["POST"])
 def VerifyIncentiveMobile():
@@ -29,18 +29,52 @@ def VerifyIncentiveMobile():
         "inviterAddress": inviterAddress
     }
 
-    succ = HViolas.AddNewIncentiveRecord(walletAddress, 10, 0, 0)
+    succ, isNew = HViolas.CheckRegistered(walletAddress)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    if isNew == 1:
+        return MakeResp(ErrorCode.ERR_INCENTIVE_RECEIVED)
+
+    succ, regCount = HViolas.GetPhoneRegisterCount(localNumber + mobileNumber)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    if regCount == 3:
+        return MakeResp(ErrorCode.ERR_REGISTER_COUNT)
+
+    account = GetAccount()
+    try:
+        MakeTransfer(account, walletAddress, 10 * 1000000, "VLS")
+        succ = HViolas.AddNewIncentiveRecord(walletAddress, 10, 1, 0)
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    except ViolasError as e:
+        succ = HViolas.AddNewIncentiveRecord(walletAddress, 10, 0, 0)
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     if inviterAddress is not None and len(inviterAddress) > 0:
-        succ = HViolas.AddNewIncentiveRecord(walletAddress, 1, 0, 2)
-        if not succ:
-            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+        try:
+            MakeTransfer(account, walletAddress, 1 * 1000000, "VLS")
+            succ = HViolas.AddNewIncentiveRecord(walletAddress, 1, 1, 2)
+            if not succ:
+                return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+        except ViolasError as e:
+            succ = HViolas.AddNewIncentiveRecord(walletAddress, 1, 0, 2)
+            if not succ:
+                return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+            return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
-        succ = HViolas.AddNewIncentiveRecord(inviterAddress, 2, 0, 1)
-        if not succ:
-            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+        try:
+            MakeTransfer(account, inviterAddress, 2 * 1000000, "VLS")
+            succ = HViolas.AddNewIncentiveRecord(inviterAddress, 2, 1, 1)
+            if not succ:
+                return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+        except ViolasError as e:
+            succ = HViolas.AddNewIncentiveRecord(inviterAddress, 2, 0, 1)
+            if not succ:
+                return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+            return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     succ = HViolas.AddNewRegisteredRecord(orderInfo)
     if not succ:

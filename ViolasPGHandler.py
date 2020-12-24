@@ -2016,12 +2016,13 @@ class ViolasPGHandler():
             else:
                 isNew = 0
 
-            return True, isNew
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             return False, None
         finally:
             s.close()
+
+        return True, isNew
 
     def GetInviteOrders(self, walletAddress, limit, offset):
         s = self.session()
@@ -2201,3 +2202,15 @@ class ViolasPGHandler():
         if result is None:
             result = 0
         return True, int(result)
+
+    def GetPhoneRegisterCount(self, mobileNumber):
+        s = self.session()
+        try:
+            count = s.query(ViolasNewRegisteredRecord).fliter(ViolasNewRegisteredRecord.phone_number == mobileNumber).count()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        return True, count
