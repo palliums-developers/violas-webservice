@@ -1509,7 +1509,7 @@ class ViolasPGHandler():
         timestamp = datetime.timestamp(today)
 
         try:
-            result = s.query(ViolasBankDepositOrder.value).filter(ViolasBankDepositOrder.address == address).filter(ViolasBankDepositOrder.product_id == productId).filter(ViolasBankDepositOrder.date >= timestamp).all()
+            result = s.query(ViolasBankDepositOrder.value, ViolasBankDepositOrder.order_type).filter(ViolasBankDepositOrder.address == address).filter(ViolasBankDepositOrder.product_id == productId).filter(ViolasBankDepositOrder.date >= timestamp).order_by(ViolasBankDepositOrder.id).all()
             s.close()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -1517,8 +1517,17 @@ class ViolasPGHandler():
             return False, None
 
         quota = 0
-        for i in result:
-            quota += i[0]
+        for idx, i in enumerate(result):
+            if i[1] == 0:
+                quota += i[0]
+            elif i[1] == 1:
+                if idx == 0 or quota == 0
+                    continue
+                else:
+                    quota -= i[0]
+                    if quota < 0:
+                        quota = 0
+
 
         return True, quota
 
@@ -1678,7 +1687,7 @@ class ViolasPGHandler():
         timestamp = datetime.timestamp(today)
 
         try:
-            result = s.query(ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.address == address).filter(ViolasBankBorrowOrder.product_id == productId).filter(ViolasBankBorrowOrder.date >= timestamp).all()
+            result = s.query(ViolasBankBorrowOrder.value, ViolasBankBorrowOrder.order_type).filter(ViolasBankBorrowOrder.address == address).filter(ViolasBankBorrowOrder.product_id == productId).filter(ViolasBankBorrowOrder.date >= timestamp).order_by(ViolasBankBorrowOrder.id).all()
             s.close()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -1686,8 +1695,16 @@ class ViolasPGHandler():
             return False, None
 
         quota = 0
-        for i in result:
-            quota += i[0]
+        for idx, i in enumerate(result):
+            if i[0] == 0:
+                quota += i[0]
+            elif i[0] == 1:
+                if idx == 0 or quota == 0:
+                    continue
+                else:
+                    quota -= i[0]
+                    if quota < 0:
+                        quota = 0
 
         return True, quota
 
