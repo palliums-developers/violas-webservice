@@ -179,7 +179,7 @@ def GetBorrowOrders():
         order['logo'] = ICON_URL + order['logo']
         order['available_borrow'] = cli.bank_get_max_borrow_amount(address, order['name'])
         order['total_count'] = len(products)
-        if order["principal"] != 0:
+        if order["amount"] != 0:
             data.append(order)
 
     return MakeResp(ErrorCode.ERR_OK, data)
