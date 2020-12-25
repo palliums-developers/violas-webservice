@@ -1552,7 +1552,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            order = s.query(ViolasBankDepositOrder).filter(ViolasBankDepositOrder.total_value > 0).filter(ViolasBankDepositOrder.address == address).filter(ViolasBankDepositOrder.product_id == productId).order_by(ViolasBankDepositOrder.id.desc()).first()
+            order = s.query(ViolasBankDepositOrder).filter(ViolasBankDepositOrder.address == address).filter(ViolasBankDepositOrder.product_id == productId).order_by(ViolasBankDepositOrder.id.desc()).first()
 
             product = s.query(ViolasBankDepositProduct).filter(ViolasBankDepositProduct.product_id == productId).first()
 
@@ -1729,7 +1729,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            order = s.query(ViolasBankBorrowOrder).filter(ViolasBankBorrowOrder.total_value > 0).filter(ViolasBankBorrowOrder.address == address).filter(ViolasBankBorrowOrder.product_id == productId).order_by(ViolasBankBorrowOrder.id.desc()).first()
+            order = s.query(ViolasBankBorrowOrder).filter(ViolasBankBorrowOrder.address == address).filter(ViolasBankBorrowOrder.product_id == productId).order_by(ViolasBankBorrowOrder.id.desc()).first()
 
             product = s.query(ViolasBankBorrowProduct).filter(ViolasBankBorrowProduct.product_id == productId).first()
 
