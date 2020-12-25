@@ -1509,7 +1509,7 @@ class ViolasPGHandler():
         timestamp = datetime.timestamp(today)
 
         try:
-            result = s.query(ViolasBankDepositOrder.value, ViolasBankDepositOrder.order_type).filter(ViolasBankDepositOrder.address == address).filter(ViolasBankDepositOrder.product_id == productId).filter(ViolasBankDepositOrder.date >= timestamp).order_by(ViolasBankDepositOrder.id).all()
+            result = s.query(ViolasBankDepositOrder.value, ViolasBankDepositOrder.order_type).filter(ViolasBankDepositOrder.status == 0)filter(ViolasBankDepositOrder.address == address).filter(ViolasBankDepositOrder.product_id == productId).filter(ViolasBankDepositOrder.date >= timestamp).order_by(ViolasBankDepositOrder.id).all()
             s.close()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
