@@ -1521,7 +1521,7 @@ class ViolasPGHandler():
             if i[1] == 0:
                 quota += i[0]
             elif i[1] == 1:
-                if idx == 0 or quota == 0
+                if idx == 0 or quota == 0:
                     continue
                 else:
                     quota -= i[0]
