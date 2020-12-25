@@ -2206,7 +2206,7 @@ class ViolasPGHandler():
     def GetPhoneRegisterCount(self, mobileNumber):
         s = self.session()
         try:
-            count = s.query(ViolasNewRegisteredRecord).fliter(ViolasNewRegisteredRecord.phone_number == mobileNumber).count()
+            count = s.query(ViolasNewRegisteredRecord).filter(ViolasNewRegisteredRecord.phone_number == mobileNumber).count()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             return False, None
