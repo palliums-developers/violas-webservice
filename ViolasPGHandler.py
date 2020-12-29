@@ -2170,8 +2170,8 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasIncentiveIssueRecord).filter(ViolasIncentiveIssueRecord.address == address).filter(ViolasIncentiveIssueRecord.type == 8).order_by(ViolasIncentiveIssueRecord.id.desc()).offset(offset).limit(limit).all()
-            count = s.query(ViolasIncentiveIssueRecord).filter(ViolasIncentiveIssueRecord.address == address).filter(ViolasIncentiveIssueRecord.type == 8).count()
+            result = s.query(ViolasIncentiveIssueRecord).filter(ViolasIncentiveIssueRecord.address == address).filter(or_(ViolasIncentiveIssueRecord.type == 8, ViolasIncentiveIssueRecord.type == 9, ViolasIncentiveIssueRecord.type == 10)).order_by(ViolasIncentiveIssueRecord.id.desc()).offset(offset).limit(limit).all()
+            count = s.query(ViolasIncentiveIssueRecord).filter(ViolasIncentiveIssueRecord.address == address).filter(or_(ViolasIncentiveIssueRecord.type == 8, ViolasIncentiveIssueRecord.type == 9, ViolasIncentiveIssueRecord.type == 10)).count()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             return False, None
@@ -2209,7 +2209,7 @@ class ViolasPGHandler():
     def GetPoolTotalIncenntive(self, address):
         s = self.session()
         try:
-            result = s.query(func.sum(ViolasIncentiveIssueRecord.amount)).filter(ViolasIncentiveIssueRecord.address == address).filter(ViolasIncentiveIssueRecord.type == 8).filter(ViolasIncentiveIssueRecord.status == 1).scalar()
+            result = s.query(func.sum(ViolasIncentiveIssueRecord.amount)).filter(ViolasIncentiveIssueRecord.address == address).filter(or_(ViolasIncentiveIssueRecord.type == 8, ViolasIncentiveIssueRecord.type == 9, ViolasIncentiveIssueRecord.type == 10)).filter(ViolasIncentiveIssueRecord.status == 1).scalar()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             return False, None

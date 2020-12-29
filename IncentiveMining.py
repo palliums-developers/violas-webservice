@@ -1,6 +1,6 @@
 from ViolasWebservice import app
 from common import *
-from util import MakeViolasClient, MakeResp, VerifyCodeExist, MakeBankClient, GetAccount, MakeTransfer
+from util import MakeViolasClient, MakeResp, VerifyCodeExist, MakeBankClient, MakeExchangeClient, GetAccount, MakeTransfer
 
 @app.route("/1.0/violas/incentive/mobile/verify", methods = ["POST"])
 def VerifyIncentiveMobile():
@@ -152,7 +152,8 @@ def GetIncentiveMintInfo():
 
     bankCli = MakeBankClient()
     bankIncentive = bankCli.bank_get_sum_incentive_amount(walletAddress)
-    poolIncentive = 0
+    poolCli = MakeExchangeClient()
+    poolIncentive = poolCli.swap_get_reward_balance(walletAddress)
 
     succ, ranking = HViolas.GetIncentiveTop20()
     if not succ:
@@ -167,7 +168,6 @@ def GetIncentiveMintInfo():
         "ranking": ranking
     }
 
-    print(data)
     return MakeResp(ErrorCode.ERR_OK, data)
 
 @app.route("/1.0/violas/incentive/top20")
