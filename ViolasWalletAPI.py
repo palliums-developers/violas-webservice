@@ -230,7 +230,7 @@ def MintViolasToAccount():
         if state is not None:
             return MakeResp(ErrorCode.ERR_OK)
 
-        cli.create_child_vasp_account(account, address, authKey, currency_code = "VLS", child_initial_balance=100000, gas_currency_code="VLS", gas_unit_price=100)
+        cli.create_child_vasp_account(account, address, authKey, currency_code = "VLS", child_initial_balance=100000, gas_currency_code="VLS")
     except ViolasError as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
