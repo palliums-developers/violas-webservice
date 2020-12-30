@@ -226,7 +226,11 @@ def MintViolasToAccount():
     account = GetAccount()
     cli = MakeViolasClient()
     try:
-        cli.create_child_vasp_account(account, address, authKey, currency_code = "VLS", child_initial_balance=100000, gas_currency_code="VLS")
+        state = cli.get_account_state(address)
+        if state is not None:
+            return MakeResp(ErrorCode.ERR_OK)
+
+        cli.create_child_vasp_account(account, address, authKey, currency_code = "VLS", child_initial_balance=100000, gas_currency_code="VLS", gas_unit_price=100)
     except ViolasError as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
