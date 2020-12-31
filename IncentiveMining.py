@@ -162,9 +162,9 @@ def GetIncentiveMintInfo():
     data = {
         "total_incentive": total,
         "bank_total_incentive": bankTotal,
-        "bank_incentive": bankIncentive,
+        "bank_incentive": bankIncentive if bankIncentive is not None else 0,
         "pool_total_incentive": poolTotal,
-        "pool_incentive": poolIncentive,
+        "pool_incentive": poolIncentive if poolIncentive is not None else 0,
         "ranking": ranking
     }
 
