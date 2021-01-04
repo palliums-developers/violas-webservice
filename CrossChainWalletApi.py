@@ -24,7 +24,7 @@ def GetMappingAddressInfo():
         "opttype": "map"
     }
 
-    resp = requests.get("http://18.136.139.151", params= payload)
+    resp = requests.get("http://52.231.52.107", params= payload)
     mapInfos = resp.json().get("datas")
 
     data = []
@@ -55,7 +55,7 @@ def GetMappingTransactions():
         "limit": limit
     }
 
-    resp = requests.get("http://18.136.139.151", params = params)
+    resp = requests.get("http://52.231.52.107", params = params)
     datas = resp.json()["datas"]["datas"]
     for i in datas:
         i["in_show_name"] = get_show_name(i["in_token"])

@@ -134,7 +134,7 @@ def GetMarketCrosschainMapInfo():
         "opttype": "swap"
     }
 
-    resp = requests.get("http://18.136.139.151", params = payload)
+    resp = requests.get("http://52.231.52.107", params = payload)
     mapInfos = resp.json().get("datas")
 
     data = []
