@@ -14,56 +14,19 @@ def GetMarketExchangeCurrencies():
         logging.error(f"When get violas echange registered currencies: {e}")
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME)
 
-    try:
-        libraCurrencies = libraCli.get_registered_currencies()
-    except Exception as e:
-        logging.error(f"When get libra registered currencies: {e}")
-        libraCurrencies = []
-
     if currencies is None:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, message = "There is no currency has registered!")
 
-    filtered = {}
-    filtered["violas"] = []
-    filtered["libra"] = []
-    filtered["btc"] = []
+    filtered = []
     for i in currencies:
-        if i[0:3] == "VLS" and len(i) > 3:
-            cInfo = {}
-            cInfo["name"] = i
-            cInfo["module"] = i
-            cInfo["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
-            cInfo["show_name"] = i
-            cInfo["index"] = currencies.index(i)
-            cInfo["icon"] = f"{ICON_URL}violas.png"
-            filtered["violas"].append(cInfo)
-        elif i == "BTC":
-            cInfo = {}
-            cInfo["name"] = i
-            cInfo["module"] = ""
-            cInfo["address"] = ""
-            cInfo["show_name"] = i
-            #to be confirmed
-            cInfo["index"] = currencies.index(i)
-            cInfo["icon"] = f"{ICON_URL}btc.png"
-            filtered["btc"].append(cInfo)
-        else:
-            if i == "USD":
-                c = "Coin1"
-            elif i == "EUR":
-                c = "Coin2"
-            else:
-                c = i
-
-            if c in libraCurrencies:
-                cInfo = {}
-                cInfo["name"] = c
-                cInfo["module"] = c
-                cInfo["address"] = LIBRA_CORE_CODE_ADDRESS.hex()
-                cInfo["show_name"] = i
-                cInfo["index"] = currencies.index(i)
-                cInfo["icon"] = f"{ICON_URL}libra.png"
-                filtered["libra"].append(cInfo)
+        cInfo = {}
+        cInfo["name"] = i
+        cInfo["module"] = i
+        cInfo["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
+        cInfo["show_name"] = i
+        cInfo["index"] = currencies.index(i)
+        cInfo["icon"] = f"{ICON_URL}violas.png"
+        filtered.append(cInfo)
 
     return MakeResp(ErrorCode.ERR_OK, filtered)
 
