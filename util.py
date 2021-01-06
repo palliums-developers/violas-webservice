@@ -85,6 +85,7 @@ class AddressInfo():
     BTC_CHAIN_NAME = "btc"
     LIBRA_CHAIN_NAME = "libra"
     VIOLAS_CHAIN_NAME = "violas"
+    ETH_CHAIN_NAME = "eth"
 
     def __init__(self, type, address, scoin, rcoin, lable=None):
         self.type = type
@@ -110,20 +111,20 @@ class AddressInfo():
         return self.address[32:]
 
     def get_smodule_address(self):
-        if self.schain == self.BTC_CHAIN_NAME:
-            return ""
         if self.schain == self.LIBRA_CHAIN_NAME:
             return LIBRA_CORE_CODE_ADDRESS.hex()
-        if self.schain == self.VIOLAS_CHAIN_NAME:
+        elif self.schain == self.VIOLAS_CHAIN_NAME:
             return VIOLAS_CORE_CODE_ADDRESS.hex()
+        else:
+            return ""
 
     def get_rmodule_address(self):
-        if self.rchain == self.BTC_CHAIN_NAME:
-            return ""
         if self.rchain == self.LIBRA_CHAIN_NAME:
             return LIBRA_CORE_CODE_ADDRESS.hex()
-        if self.rchain == self.VIOLAS_CHAIN_NAME:
+        elif self.rchain == self.VIOLAS_CHAIN_NAME:
             return VIOLAS_CORE_CODE_ADDRESS.hex()
+        else:
+            return ""
 
 
     def get_smapping_name(self):
@@ -201,6 +202,8 @@ class AddressInfo():
             return "libra"
         if v == "v":
             return "violas"
+        if v == "e":
+            return "eth"
 
 def GetIDNumber():
     idNumber = datetime.strftime(datetime.today(), "%Y%m%d%H%M%S")
