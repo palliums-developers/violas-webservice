@@ -44,11 +44,11 @@ def VerifyIncentiveMobile():
     account = GetAccount()
     try:
         MakeTransfer(account, walletAddress, 10 * 1000000, "VLS")
-        succ = HViolas.AddNewIncentiveRecord(walletAddress, 10, 1, 0)
+        succ = HViolas.AddNewIncentiveRecord(walletAddress, 10 * 1000000, 1, 0)
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
     except ViolasError as e:
-        succ = HViolas.AddNewIncentiveRecord(walletAddress, 10, 0, 0)
+        succ = HViolas.AddNewIncentiveRecord(walletAddress, 10 * 1000000, 0, 0)
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
@@ -56,22 +56,22 @@ def VerifyIncentiveMobile():
     if inviterAddress is not None and len(inviterAddress) > 0:
         try:
             MakeTransfer(account, walletAddress, 1 * 1000000, "VLS")
-            succ = HViolas.AddNewIncentiveRecord(walletAddress, 1, 1, 2)
+            succ = HViolas.AddNewIncentiveRecord(walletAddress, 1 * 1000000, 1, 2)
             if not succ:
                 return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
         except ViolasError as e:
-            succ = HViolas.AddNewIncentiveRecord(walletAddress, 1, 0, 2)
+            succ = HViolas.AddNewIncentiveRecord(walletAddress, 1 * 1000000, 0, 2)
             if not succ:
                 return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
             return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
         try:
             MakeTransfer(account, inviterAddress, 2 * 1000000, "VLS")
-            succ = HViolas.AddNewIncentiveRecord(inviterAddress, 2, 1, 1)
+            succ = HViolas.AddNewIncentiveRecord(inviterAddress, 2 * 1000000, 1, 1)
             if not succ:
                 return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
         except ViolasError as e:
-            succ = HViolas.AddNewIncentiveRecord(inviterAddress, 2, 0, 1)
+            succ = HViolas.AddNewIncentiveRecord(inviterAddress, 2 * 1000000, 0, 1)
             if not succ:
                 return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
             return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
