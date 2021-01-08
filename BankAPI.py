@@ -1,6 +1,6 @@
 from ViolasWebservice import app
 from common import *
-from util import MakeBankClient, MakeResp, GetIDNumber
+from util import MakeBankClient, MakeResp, GetIDNumber, ConvertToUSD
 from violas_client.lbrtypes.transaction import SignedTransaction
 
 @app.route("/1.0/violas/bank/account/info")
@@ -30,11 +30,11 @@ def GetViolasBankAccountInfo():
         totalBorrow += b[0]
 
     data = {
-        "amount": amount,
-        "yesterday": yesterday,
-        "total": total,
-        "borrow": totalBorrow,
-        "borrow_limit": max_borrow
+        "amount": ConvertToUSD(amount),
+        "yesterday": ConvertToUSD(yesterday),
+        "total": ConvertToUSD(total),
+        "borrow": ConvertToUSD(totalBorrow),
+        "borrow_limit": ConvertToUSD(max_borrow)
     }
 
     return MakeResp(ErrorCode.ERR_OK, data)

@@ -1,6 +1,8 @@
 from common import *
 
 from datetime import datetime
+from decimal import Decimal
+
 from libra_client import Client as LibraClient
 from violas_client import Client as ViolasClient
 from violas_client import exchange_client
@@ -233,3 +235,6 @@ def GetAccount():
 def MakeTransfer(senderAccount, receiveAddress, amount, coin = None):
     cli = MakeViolasClient()
     cli.transfer_coin(senderAccount, receiveAddress, amount, currency_code = coin, gas_currency_code = coin)
+
+def ConvertToUSD(amount):
+    return float(Decimal(amount / 1000000).quantize(Decimal("0.00")))
