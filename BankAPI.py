@@ -8,11 +8,8 @@ def GetViolasBankAccountInfo():
     address = request.args.get("address")
 
     cli = MakeBankClient()
-    amount = cli.bank_get_lock_amounts_to_currency(address, "USD")
-
-    max_borrow = cli.bank_get_max_borrow_amount(address, "USD")
-    print(max_borrow)
-
+    amount = cli.bank_get_lock_amounts_to_currency(address, "vUSDT")
+    max_borrow = cli.bank_get_max_borrow_amount(address, "vUSDT")
     succ, income = HViolas.GetYesterdayIncome(address)
 
     if not succ:
