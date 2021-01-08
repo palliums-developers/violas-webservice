@@ -285,12 +285,12 @@ def GetViolasValue():
     for currency in balances.keys():
         currencies.append(currency)
 
-    rates = GetRates()
     values = []
     for currency in currencies:
         item = {}
         item["name"] = currency
-        item["rate"] = rates.get(currency[3:]) if rates.get(currency[3:]) is not None else 0
+        value = cli.oracle_get_exchange_rate(currency)
+        item["rate"] = value.value / (2 ** 32) if value is not None else 0
 
         values.append(item)
 
