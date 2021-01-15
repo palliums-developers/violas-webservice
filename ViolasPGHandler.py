@@ -2121,7 +2121,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasIncentiveIssueRecord.address, func.sum(ViolasIncentiveIssueRecord.amount)).group_by(ViolasIncentiveIssueRecord.address).order_by(func.count("*").desc()).limit(20).all()
+            result = s.query(ViolasIncentiveIssueRecord.address, func.sum(ViolasIncentiveIssueRecord.amount)).group_by(ViolasIncentiveIssueRecord.address).order_by(func.sum(ViolasIncentiveIssueRecord.amount).desc()).limit(20).all()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             return False, None
