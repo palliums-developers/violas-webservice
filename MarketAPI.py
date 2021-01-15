@@ -98,6 +98,8 @@ def GetMarketCrosschainMapInfo():
     }
 
     resp = requests.get("http://52.231.52.107", params = payload)
+    if not resp.ok:
+        return MakeResp(ErrorCode.ERR_EXTERNAL_REQUEST)
     mapInfos = resp.json().get("datas")
 
     data = []

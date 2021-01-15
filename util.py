@@ -59,6 +59,8 @@ def GetRates():
     # url = f"https://api.exchangeratesapi.io/history?base=USD&start_at={start}&end_at={end}"
     url = f"https://api.exchangeratesapi.io/latest?base=USD"
     resp = requests.get(url)
+    if not resp.ok:
+        return MakeResp(ErrorCode.ERR_EXTERNAL_REQUEST)
     rates = resp.json()["rates"]
 
     return rates

@@ -265,6 +265,8 @@ def GetAccountInfo():
 def GetBTCValue():
     url = "https://api.coincap.io/v2/assets/bitcoin"
     resp = requests.get(url)
+    if not resp.ok:
+        return MakeResp(ErrorCode.ERR_EXTERNAL_REQUEST)
     rate = resp.json()["data"]["priceUsd"]
 
     data = [{"name": "BTC", "rate": float(rate)}]

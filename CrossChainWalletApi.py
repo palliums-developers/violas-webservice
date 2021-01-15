@@ -25,6 +25,8 @@ def GetMappingAddressInfo():
     }
 
     resp = requests.get("http://52.231.52.107", params= payload)
+    if not resp.ok:
+        return MakeResp(ErrorCode.ERR_EXTERNAL_REQUEST)
     mapInfos = resp.json().get("datas")
 
     data = []
@@ -56,6 +58,8 @@ def GetMappingTransactions():
     }
 
     resp = requests.get("http://52.231.52.107", params = params)
+    if not resp.ok:
+        return MakeResp(ErrorCode.ERR_EXTERNAL_REQUEST)
     datas = resp.json()["datas"]["datas"]
     for i in datas:
         i["in_show_name"] = get_show_name(i["in_token"])

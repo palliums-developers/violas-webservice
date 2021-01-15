@@ -78,6 +78,8 @@ def GetCrossChainTransactionInfo():
     url = f"{url}&chain={wallet}&cursor={offset}&limt={limit}&sender={address}"
 
     resp = requests.get(url)
+    if not resp.ok:
+        return MakeResp(ErrorCode.ERR_EXTERNAL_REQUEST)
     respInfos = resp.json()["datas"]
 
     data = {}
@@ -118,6 +120,9 @@ def ForwardBtcTransaction():
     rawHex = params["rawhex"]
 
     resp = requests.post("https://tchain.api.btc.com/v3/tools/tx-publish", params = {"rawhex": rawHex})
+    if not resp.ok:
+        return MakeResp(ErrorCode.ERR_EXTERNAL_REQUEST)
+
     if resp.json()["err_no"] != 0:
         logging.error(f"ERROR: Forward BTC request failed, msg: {resp.json()['error_msg']}")
         return MakeResp(ErrorCode.ERR_BTC_FORWARD_REQUEST)

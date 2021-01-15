@@ -36,6 +36,8 @@ class ErrorCode(IntEnum):
 
     ERR_BTC_FORWARD_REQUEST = 5000
 
+    ERR_EXTERNAL_REQUEST = 6000
+
     ERR_CLIENT_UNKNOW_ERROR = 9000
 
 ErrorMsg = {
@@ -73,6 +75,8 @@ ErrorMsg = {
     ErrorCode.ERR_NODE_RUNTIME: "Node runtime error.",
 
     ErrorCode.ERR_BTC_FORWARD_REQUEST: "Forward BTC request failed.",
+
+    ErrorCode.ERR_EXTERNAL_REQUEST: "External request failed.",
 
     ErrorCode.ERR_CLIENT_UNKNOW_ERROR: "Client unknow error."
 }
