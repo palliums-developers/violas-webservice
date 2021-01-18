@@ -379,7 +379,7 @@ def SetMessageReaded():
 
 @app.route("/1.0/violas/message/content")
 def GetMessageContent():
-    version = request.args.get("version", int)
+    version = request.args.get("version", type = int)
 
     if not all([version]):
         MakeResp(ErrorCode.ERR_MISSING_PARAM)
