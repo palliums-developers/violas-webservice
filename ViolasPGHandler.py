@@ -790,7 +790,7 @@ class ViolasPGHandler():
         info["currency"] = result.currency
         info["gas_currency"] = result.gas_currency
         info["amount"] = int(result.amount)
-        info["gas"] = int(result.gas_used * i.gas_unit_price)
+        info["gas"] = int(result.gas_used * result.gas_unit_price)
         info["gas_unit_price"] = int(result.gas_unit_price)
         info["max_gas_amount"] = int(result.max_gas_amount)
         info["expiration_time"] = result.expiration_time
