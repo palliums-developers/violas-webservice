@@ -2276,7 +2276,7 @@ class ViolasPGHandler():
             item = {
                 "title": i.title,
                 "body": i.body,
-                "date": i.date,
+                "data": json.loads(i.data),
                 "readed": i.readed
             }
 
