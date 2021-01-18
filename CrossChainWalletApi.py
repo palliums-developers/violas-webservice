@@ -32,6 +32,8 @@ def GetMappingAddressInfo():
     data = []
     for i in mapInfos:
         type = i.get("type")
+        if type == "e2vm":
+            continue
         address = i.get("address")
         lable = i.get("code")
         for coinPair in i.get("from_to_token"):

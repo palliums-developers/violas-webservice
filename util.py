@@ -112,7 +112,7 @@ class AddressInfo():
     def get_receiver_address(self):
         if self.schain == self.BTC_CHAIN_NAME:
             return self.address
-        return self.address[32:]
+        return self.address[:32]
 
     def get_smodule_address(self):
         if self.schain == self.LIBRA_CHAIN_NAME:
