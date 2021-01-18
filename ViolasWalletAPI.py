@@ -329,3 +329,47 @@ def GetLibraValue():
         values.append(item)
 
     return MakeResp(ErrorCode.ERR_OK, values)
+
+@app.route("/1.0/violas/device/info", methods = ["POST"])
+def RegisterDeviceInfo():
+    params = request.get_json()
+    address= params.get("address")
+    token = params.get("token")
+    device_type = params.get("device_type")
+    language = params.get("language")
+
+    if not all([address, token, device_type, language]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    succ = HViolas.AddDeviceInfo(address, token, device_type, language)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/messages")
+def GetMessages():
+    address = request.args.get("address")
+    offset = request.args.get("offset", 0, int)
+    limit = request.args.get("limit", 10, int)
+
+    succ, messages = HViolas.GetMessages(address, offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, messages)
+
+@app.route("/1.0/violas/messages/readed", methods=["PUT"])
+def SetMessageReaded():
+    params = request.get_json()
+    version = params.get("version")
+    address = params.get("address")
+
+    if not all([version, address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    succ = HViolas.SetMessageReaded(version, address)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK)

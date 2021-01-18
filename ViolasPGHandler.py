@@ -1,9 +1,9 @@
 from time import time, sleep
 from datetime import date, datetime
-
-from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo, ViolasGovernorInfo, ViolasTransaction, ViolasAddressInfo, ViolasSignedTransaction, ViolasBankInterestInfo, ViolasBankBorrowOrder, ViolasBankDepositProduct, ViolasBankBorrowProduct, ViolasBankDepositOrder, ViolasNewRegisteredRecord, ViolasIncentiveIssueRecord
 import logging
 import json
+
+from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo, ViolasGovernorInfo, ViolasTransaction, ViolasAddressInfo, ViolasSignedTransaction, ViolasBankInterestInfo, ViolasBankBorrowOrder, ViolasBankDepositProduct, ViolasBankBorrowProduct, ViolasBankDepositOrder, ViolasNewRegisteredRecord, ViolasIncentiveIssueRecord, ViolasDeviceInfo, ViolasMessageRecord
 
 from sqlalchemy import create_engine, or_, and_
 from sqlalchemy.orm import sessionmaker
@@ -2231,3 +2231,70 @@ class ViolasPGHandler():
             s.close()
 
         return True, count
+
+    def AddDeviceInfo(self, address, token, device_type, language, location = None):
+        s = self.session()
+        try:
+            result = s.query(ViolasDeviceInfo).filter(ViolasDeviceInfo.address == address).first()
+            if result is None:
+                info = ViolasDeviceInfo(
+                    address = address,
+                    token = token,
+                    device_type = device_type,
+                    language = language,
+                    location = location
+                )
+
+                s.add(info)
+            else:
+                result.token = token
+                result.device_type = device_type
+                result.language = language
+                result.location = location
+
+            s.commit()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False
+        finally:
+            s.close()
+
+        return True
+
+    def GetMessages(self, address, offset, limit):
+        s = self.session()
+        try:
+            result = s.query(ViolasMessageRecord).filter(ViolasMessageRecord.address == address).order_by(ViolasMessageRecord.id.desc()).offset(offset).limit(limit).all()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        messages = []
+        for i in result:
+            item = {
+                "title": i.title,
+                "body": i.body,
+                "date": i.date,
+                "readed": i.readed
+            }
+
+            messages.append(item)
+
+        return True, messages
+
+    def SetMessageReaded(self, version, address):
+        s = self.session()
+        try:
+            result = s.query(ViolasMessageRecord).filter(ViolasMessageRecord.id == version).filter(ViolasMessageRecord.address == address).first()
+            if result is not None:
+                result.readed = 1
+            s.commit()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False
+        finally:
+            s.close()
+
+        return True

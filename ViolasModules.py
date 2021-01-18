@@ -27,6 +27,10 @@ class ViolasTransaction(Base):
     event = Column(Text(), nullable = True)
     confirmed_time = Column(Integer, nullable = True)
 
+Index("address_index", ViolasTransaction.sender, ViolasTransaction.receiver)
+Index("sender_index", ViolasTransaction.sender)
+Index("receiver_index", ViolasTransaction.receiver)
+Index("currency_index", ViolasTransaction.currency)
 
 class ViolasAddressInfo(Base):
     __tablename__ = "address_info"
@@ -43,6 +47,8 @@ class ViolasAddressInfo(Base):
     received_minted_tx_count = Column(BigInteger, nullable = True)
     sent_failed_tx_count = Column(BigInteger, nullable = True)
     received_failed_tx_count = Column(BigInteger, nullable = True)
+
+Index("address_info_index", ViolasAddressInfo.address)
 
 class ViolasSignedTransaction(Base):
     __tablename__ = "signed_transactions"
@@ -211,3 +217,24 @@ class ViolasIncentiveIssueRecord(Base):
     date = Column(Integer, nullable = False)
     status = Column(SmallInteger, nullable = False) # 0: not issued; 1: issued; -1: issued failed
     type = Column(SmallInteger, nullable = False) # 0: Register; 1: invite; 2: be invited; 3: deposit; 4: withdraw; 5: borrow; 6: repayment; 7: bank extract; 8: pool add; 9: pool remove; 10: pool extract
+
+class ViolasDeviceInfo(Base):
+    __tablename__ = "device_info"
+
+    id = Column(BigInteger, primary_key = True, autoincrement = True)
+    address = Column(String(64), nullable = False)
+    device_type = Column(String(16), nullable = False)
+    token = Column(Text, nullable = False)
+    language = Column(String(32), nullable = False)
+    location = Column(String(32), nullable = True)
+
+class ViolasMessageRecord(Base):
+    __tablename__ = "message_record"
+
+    id = Column(BigInteger, primary_key = True, autoincrement = True)
+    version = Column(BigInteger, nullable = False)
+    sender = Column(String(64), nullable = False)
+    title = Column(Text, nullable = False)
+    body = Column(Text, nullable = False)
+    data = Column(Text, nullable = False)
+    readed = Column(SmallInteger, nullable = False) # 0: unread; 1: readed
