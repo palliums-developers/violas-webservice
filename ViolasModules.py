@@ -233,7 +233,7 @@ class ViolasMessageRecord(Base):
 
     id = Column(BigInteger, primary_key = True, autoincrement = True)
     version = Column(BigInteger, nullable = False)
-    sender = Column(String(64), nullable = False)
+    address = Column(String(64), nullable = False)
     title = Column(Text, nullable = False)
     body = Column(Text, nullable = False)
     data = Column(Text, nullable = False)
