@@ -241,7 +241,7 @@ class ViolasMessageRecord(Base):
 
 
 class ViolasNotificationRecord(Base):
-    __talbename__ = "notification_record"
+    __tablename__ = "notification_record"
 
     id = Column(BigInteger, primary_key = True, autoincrement = True)
     title = Column(Text, nullable = False)
