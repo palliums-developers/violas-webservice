@@ -28,6 +28,7 @@ ViolasBase.metadata.tables["new_registered_record"].drop(ViolasEngine)
 ViolasBase.metadata.tables["incentive_issue_record"].drop(ViolasEngine)
 ViolasBase.metadata.tables["device_info"].drop(ViolasEngine)
 ViolasBase.metadata.tables["message_record"].drop(ViolasEngine)
+ViolasBase.metadata.tables["notification_record"].drop(ViolasEngine)
 
 ViolasBase.metadata.tables["transactions"].create(ViolasEngine)
 ViolasBase.metadata.tables["address_info"].create(ViolasEngine)
@@ -45,6 +46,7 @@ ViolasBase.metadata.tables["new_registered_record"].create(ViolasEngine)
 ViolasBase.metadata.tables["incentive_issue_record"].create(ViolasEngine)
 ViolasBase.metadata.tables["device_info"].create(ViolasEngine)
 ViolasBase.metadata.tables["message_record"].create(ViolasEngine)
+ViolasBase.metadata.tables["notification_record"].create(ViolasEngine)
 
 libraDBInfo = config["LIBRA DB INFO"]
 libraDBUrl = f"{libraDBInfo['DBTYPE']}+{libraDBInfo['DRIVER']}://{libraDBInfo['USERNAME']}:{libraDBInfo['PASSWORD']}@{libraDBInfo['HOSTNAME']}:{libraDBInfo['PORT']}/{libraDBInfo['DATABASE']}"
