@@ -2273,10 +2273,15 @@ class ViolasPGHandler():
 
         messages = []
         for i in result:
+            content = json.loads(i.data)
             item = {
                 "title": i.title,
                 "body": i.body,
-                "data": json.loads(i.data),
+                "service": content.get("service"),
+                "version": content.get("version"),
+                "date": content.get("date"),
+                "status": content.get("status"),
+                "type": content.get("type"),
                 "readed": i.readed
             }
 
