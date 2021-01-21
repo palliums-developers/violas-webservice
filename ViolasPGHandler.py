@@ -3,7 +3,7 @@ from datetime import date, datetime
 import logging
 import json
 
-from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo, ViolasGovernorInfo, ViolasTransaction, ViolasAddressInfo, ViolasSignedTransaction, ViolasBankInterestInfo, ViolasBankBorrowOrder, ViolasBankDepositProduct, ViolasBankBorrowProduct, ViolasBankDepositOrder, ViolasNewRegisteredRecord, ViolasIncentiveIssueRecord, ViolasDeviceInfo, ViolasMessageRecord
+from ViolasModules import ViolasSSOInfo, ViolasSSOUserInfo, ViolasGovernorInfo, ViolasTransaction, ViolasAddressInfo, ViolasSignedTransaction, ViolasBankInterestInfo, ViolasBankBorrowOrder, ViolasBankDepositProduct, ViolasBankBorrowProduct, ViolasBankDepositOrder, ViolasNewRegisteredRecord, ViolasIncentiveIssueRecord, ViolasDeviceInfo, ViolasMessageRecord, ViolasNotificationRecord
 
 from sqlalchemy import create_engine, or_, and_
 from sqlalchemy.orm import sessionmaker
@@ -2303,3 +2303,29 @@ class ViolasPGHandler():
             s.close()
 
         return True
+
+    def GetNotificationMessages(self, offset, limit):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasNotificationRecord).order_by(ViolasNotificationRecord.id.desc()).offset(offset).limit(limit).all()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        messages = []
+        for i in result:
+            content = json.loads(i.data)
+            message = {
+                "title": i.title,
+                "body": i.body,
+                "service": content.get("service"),
+                "content": content.get("content"),
+                "date": content.get("date")
+            }
+
+            messages.append(message)
+
+        return True, messages

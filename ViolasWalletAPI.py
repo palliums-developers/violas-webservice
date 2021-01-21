@@ -345,6 +345,14 @@ def RegisterDeviceInfo():
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
+    try:
+        requests.post(
+            "http://127.0.0.1:4006/violas/push/subscribe/topic",
+            json = {"token": token, "topic": "notification"}
+        )
+    except:
+        logging.error(f"Device: [{token}] subscribe to topic failed!")
+
     return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.0/violas/messages")
@@ -390,3 +398,14 @@ def GetMessageContent():
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/violas/notifications")
+def GetNotifications():
+    offset = request.args.get("offset", 0, int)
+    limit = request.args.get("limit", 10, int)
+
+    succ, message = HViolas.GetNotificationMessages(offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, message)
