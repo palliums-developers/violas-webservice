@@ -2274,6 +2274,7 @@ class ViolasPGHandler():
         for i in result:
             content = json.loads(i.data)
             item = {
+                "id": i.id,
                 "title": i.title,
                 "body": i.body,
                 "service": content.get("service"),
@@ -2318,6 +2319,7 @@ class ViolasPGHandler():
         for i in result:
             content = json.loads(i.data)
             message = {
+                "id": i.id,
                 "title": i.title,
                 "body": i.body,
                 "service": content.get("service"),
@@ -2328,3 +2330,17 @@ class ViolasPGHandler():
             messages.append(message)
 
         return True, messages
+
+    def DeleteMessage(self, messageId):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasMessageRecord).filter(ViolasMessageRecord.id == messageId).delete(synchronize_session='evaluate')
+            s.commit()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False
+        finally:
+            s.close()
+
+        return True

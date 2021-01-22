@@ -409,3 +409,13 @@ def GetNotifications():
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, message)
+
+@app.route("/1.0/violas/message", methods = ["DELETE"])
+def DeleteMessage():
+    messageId = request.args.get("message_id", type = int)
+
+    succ = HViolas.DeleteMessage(messageId)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK)
