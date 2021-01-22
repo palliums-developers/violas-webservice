@@ -388,12 +388,16 @@ def SetMessageReaded():
 @app.route("/1.0/violas/message/content")
 def GetMessageContent():
     version = request.args.get("version", type = int)
+    address = request.args.get("address")
 
     if not all([version]):
         MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     succ, data = HViolas.GetTransactionByVersion(version)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
+    succ = HViolas.SetMessageReaded(version, address)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
