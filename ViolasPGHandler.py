@@ -2292,7 +2292,7 @@ class ViolasPGHandler():
     def SetMessageReaded(self, version, address):
         s = self.session()
         try:
-            result = s.query(ViolasMessageRecord).filter(ViolasMessageRecord.id == version).filter(ViolasMessageRecord.address == address).first()
+            result = s.query(ViolasMessageRecord).filter(ViolasMessageRecord.version == version).filter(ViolasMessageRecord.address == address).first()
             if result is not None:
                 result.readed = 1
             s.commit()
