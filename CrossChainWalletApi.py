@@ -32,7 +32,7 @@ def GetMappingAddressInfo():
     data = []
     for i in mapInfos:
         type = i.get("type")
-        if type == "e2vm":
+        if type in ["e2vm", "v2em"]:
             continue
         address = i.get("address")
         lable = i.get("code")
