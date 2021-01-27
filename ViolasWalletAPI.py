@@ -1,6 +1,6 @@
 from ViolasWebservice import app
 from common import *
-from util import MakeLibraClient, MakeViolasClient, MakeResp, AllowedType, GetRates
+from util import MakeLibraClient, MakeViolasClient, MakeResp, AllowedType, GetRates, GetAccount, MakeTransfer
 from violas_client.lbrtypes.transaction import SignedTransaction
 
 @app.route("/1.0/violas/balance")
@@ -8,6 +8,9 @@ def GetViolasBalance():
     address = request.args.get("addr")
     currency = request.args.get("currency")
     address = address.lower()
+
+    if not all([address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     cli = MakeViolasClient()
     try:
@@ -39,6 +42,9 @@ def GetViolasSequenceNumbert():
     address = request.args.get("addr")
     address = address.lower()
 
+    if not all([address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
     cli = MakeViolasClient()
     try:
         seqNum = cli.get_sequence_number(address)
@@ -50,6 +56,9 @@ def GetViolasSequenceNumbert():
 def MakeViolasTransaction():
     params = request.get_json()
     signedtxn = params["signedtxn"]
+
+    if not all([signedtxn]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     cli = MakeViolasClient()
     transactionInfo = bytes.fromhex(signedtxn)
@@ -63,9 +72,9 @@ def MakeViolasTransaction():
     except Exception as e:
         if not e.on_chain:
             return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+        HViolas.AddTransactionInfo(sender, seqNum, timestamp, transactionInfo.to_json())
         return MakeResp(ErrorCode.ERR_CLIENT_UNKNOW_ERROR)
 
-    HViolas.AddTransactionInfo(sender, seqNum, timestamp, transactionInfo.to_json())
     return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.0/violas/transaction")
@@ -76,6 +85,9 @@ def GetViolasTransactionInfo():
     limit = request.args.get("limit", 10, int)
     offset = request.args.get("offset", 0, int)
     address = address.lower()
+
+    if not all([address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     succ, datas = HViolas.GetTransactionsForWallet(address, currency, flows, offset, limit)
     if not succ:
@@ -94,9 +106,11 @@ def GetViolasCurrency():
 
     filtered = []
     for i in currencies:
-        if i == "VLS":
-            filtered.append(i)
-        elif i != "Coin1" and i != "Coin2" and len(i) > 3:
+        # if i == "VLS":
+        #     filtered.append(i)
+        # elif i != "Coin1" and i != "Coin2" and len(i) > 3:
+        #     filtered.append(i)
+        if i != "Coin1" and i != "Coin2":
             filtered.append(i)
 
     data = []
@@ -116,6 +130,9 @@ def GetViolasCurrency():
 def CheckCurrencyPublished():
     addr = request.args.get("addr")
     addr = addr.lower()
+
+    if not all([addr]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     cli = MakeViolasClient()
 
@@ -156,6 +173,9 @@ def SendVerifyCode():
 
     receiver = receiver.lower()
     address = address.lower()
+
+    if not all([address, local_number, receiver]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     verifyCode = random.randint(100000, 999999)
 
@@ -200,12 +220,18 @@ def MintViolasToAccount():
     currency = request.args.get("currency")
     address = address.lower()
 
+    if not all([address, authKey]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    account = GetAccount()
     cli = MakeViolasClient()
     try:
-        cli.mint_coin(address, 100, auth_key_prefix = authKey, is_blocking = True, currency_code=currency)
-    except ValueError:
-        return MakeResp(ErrorCode.ERR_INVAILED_ADDRESS)
-    except Exception as e:
+        state = cli.get_account_state(address)
+        if state is not None:
+            return MakeResp(ErrorCode.ERR_OK)
+
+        cli.create_child_vasp_account(account, address, authKey, currency_code = "VLS", child_initial_balance=100000, gas_currency_code="VLS")
+    except ViolasError as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     return MakeResp(ErrorCode.ERR_OK)
@@ -214,6 +240,9 @@ def MintViolasToAccount():
 def GetAccountInfo():
     address = request.args.get("address")
     address = address.lower()
+
+    if not all([address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     cli = MakeViolasClient()
 
@@ -236,6 +265,8 @@ def GetAccountInfo():
 def GetBTCValue():
     url = "https://api.coincap.io/v2/assets/bitcoin"
     resp = requests.get(url)
+    if not resp.ok:
+        return MakeResp(ErrorCode.ERR_EXTERNAL_REQUEST)
     rate = resp.json()["data"]["priceUsd"]
 
     data = [{"name": "BTC", "rate": float(rate)}]
@@ -245,6 +276,10 @@ def GetBTCValue():
 @app.route("/1.0/violas/value/violas")
 def GetViolasValue():
     address = request.args.get("address")
+
+    if not all([address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
     cli = MakeViolasClient()
 
     balances = cli.get_balances(address)
@@ -252,12 +287,12 @@ def GetViolasValue():
     for currency in balances.keys():
         currencies.append(currency)
 
-    rates = GetRates()
     values = []
     for currency in currencies:
         item = {}
         item["name"] = currency
-        item["rate"] = rates.get(currency[3:]) if rates.get(currency[3:]) is not None else 0
+        value = cli.oracle_get_exchange_rate(currency)
+        item["rate"] = value.value / (2 ** 32) if value is not None else 0
 
         values.append(item)
 
@@ -266,6 +301,10 @@ def GetViolasValue():
 @app.route("/1.0/violas/value/libra")
 def GetLibraValue():
     address = request.args.get("address")
+
+    if not all([address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
     cli = MakeLibraClient()
 
     balances = cli.get_balances(address)
@@ -290,3 +329,97 @@ def GetLibraValue():
         values.append(item)
 
     return MakeResp(ErrorCode.ERR_OK, values)
+
+@app.route("/1.0/violas/device/info", methods = ["POST"])
+def RegisterDeviceInfo():
+    params = request.get_json()
+    address= params.get("address")
+    token = params.get("token")
+    device_type = params.get("device_type")
+    language = params.get("language")
+
+    if not all([address, token, device_type, language]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    succ = HViolas.AddDeviceInfo(address, token, device_type, language)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    try:
+        requests.post(
+            "http://127.0.0.1:4006/violas/push/subscribe/topic",
+            json = {"token": token, "topic": "notification"}
+        )
+    except:
+        logging.error(f"Device: [{token}] subscribe to topic failed!")
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/messages")
+def GetMessages():
+    address = request.args.get("address")
+    offset = request.args.get("offset", 0, int)
+    limit = request.args.get("limit", 10, int)
+
+    succ, messages = HViolas.GetMessages(address, offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, messages)
+
+@app.route("/1.0/violas/message/readed", methods=["PUT"])
+def SetMessageReaded():
+    params = request.get_json()
+    version = params.get("version")
+    address = params.get("address")
+
+    if not all([version, address]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    if not isinstance(version, int):
+        version = int(version)
+
+    succ = HViolas.SetMessageReaded(version, address)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/message/content")
+def GetMessageContent():
+    version = request.args.get("version", type = int)
+    address = request.args.get("address")
+
+    if not all([version]):
+        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    succ, data = HViolas.GetTransactionByVersion(version)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    succ = HViolas.SetMessageReaded(version, address)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
+@app.route("/1.0/violas/notifications")
+def GetNotifications():
+    offset = request.args.get("offset", 0, int)
+    limit = request.args.get("limit", 10, int)
+
+    succ, message = HViolas.GetNotificationMessages(offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, message)
+
+@app.route("/1.0/violas/message", methods = ["DELETE"])
+def DeleteMessage():
+    messageId = request.args.get("message_id", type = int)
+
+    succ = HViolas.DeleteMessage(messageId)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK)

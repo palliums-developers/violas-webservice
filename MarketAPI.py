@@ -8,60 +8,25 @@ def GetMarketExchangeCurrencies():
     libraCli = MakeLibraClient()
 
     try:
-        currencies = cli.swap_get_registered_currencies()
+        # to be confirmed
+        currencies = cli.swap_get_registered_currencies(update=True)
     except Exception as e:
         logging.error(f"When get violas echange registered currencies: {e}")
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME)
 
-    try:
-        libraCurrencies = libraCli.get_registered_currencies()
-    except Exception as e:
-        logging.error(f"When get libra registered currencies: {e}")
-        libraCurrencies = []
-
     if currencies is None:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, message = "There is no currency has registered!")
 
-    filtered = {}
-    filtered["violas"] = []
-    filtered["libra"] = []
-    filtered["btc"] = []
+    filtered = []
     for i in currencies:
-        if i[0:3] == "VLS" and len(i) > 3:
-            cInfo = {}
-            cInfo["name"] = i
-            cInfo["module"] = i
-            cInfo["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
-            cInfo["show_name"] = i
-            cInfo["index"] = currencies.index(i)
-            cInfo["icon"] = f"{ICON_URL}violas.png"
-            filtered["violas"].append(cInfo)
-        elif i == "BTC":
-            cInfo = {}
-            cInfo["name"] = i
-            cInfo["module"] = ""
-            cInfo["address"] = ""
-            cInfo["show_name"] = i
-            cInfo["index"] = 0
-            cInfo["icon"] = f"{ICON_URL}btc.png"
-            filtered["btc"].append(cInfo)
-        else:
-            if i == "USD":
-                c = "Coin1"
-            elif i == "EUR":
-                c = "Coin2"
-            else:
-                c = i
-
-            if c in libraCurrencies:
-                cInfo = {}
-                cInfo["name"] = c
-                cInfo["module"] = c
-                cInfo["address"] = LIBRA_CORE_CODE_ADDRESS.hex()
-                cInfo["show_name"] = i
-                cInfo["index"] = currencies.index(i)
-                cInfo["icon"] = f"{ICON_URL}libra.png"
-                filtered["libra"].append(cInfo)
+        cInfo = {}
+        cInfo["name"] = i
+        cInfo["module"] = i
+        cInfo["address"] = VIOLAS_CORE_CODE_ADDRESS.hex()
+        cInfo["show_name"] = i
+        cInfo["index"] = currencies.index(i)
+        cInfo["icon"] = f"{ICON_URL}violas.png"
+        filtered.append(cInfo)
 
     return MakeResp(ErrorCode.ERR_OK, filtered)
 
@@ -91,6 +56,28 @@ def GetExchangeTrial():
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
+@app.route("/1.0/market/exchange/trial/reverse")
+def GetExchangeTrialReverse():
+    amount = request.args.get("amount", type = int)
+    currencyIn = request.args.get("currencyIn")
+    currencyOut = request.args.get("currencyOut")
+
+    cli = MakeExchangeClient()
+    try:
+        amountOut = cli.swap_get_swap_input_amount(currencyIn, currencyOut, amount)
+        path = cli.get_currency_max_output_path(currencyIn, currencyOut, amountOut[0])
+    except AssertionError:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, message = "Exchange path too deep!")
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+
+    data = {"amount": amountOut[0],
+            "fee": amountOut[1],
+            "rate": amount / amountOut[0] if amountOut[0] > 0 else 0,
+            "path": path}
+
+    return MakeResp(ErrorCode.ERR_OK, data)
+
 @app.route("/1.0/market/exchange/transaction")
 def GetMarketExchangeTransactions():
     address = request.args.get("address")
@@ -105,15 +92,25 @@ def GetMarketExchangeTransactions():
 
 @app.route("/1.0/market/exchange/crosschain/address/info")
 def GetMarketCrosschainMapInfo():
+    payload = {
+        "opt": "receivers",
+        "opttype": "swap"
+    }
+
+    resp = requests.get("http://52.231.52.107", params = payload)
+    if not resp.ok:
+        return MakeResp(ErrorCode.ERR_EXTERNAL_REQUEST)
+    mapInfos = resp.json().get("datas")
+
     data = []
-    for i in BASEMAPINFOS:
+    for i in mapInfos:
         flow = i["type"][0:3]
         cIn, cOut = flow.split("2")
         currency = i["type"][3:] if len(i["type"]) > 3 else None
 
         item = {}
         if cIn == "b":
-            item["lable"] = i["lable"]
+            item["lable"] = i["code"]
             item["receiver_address"] = i["address"]
         else:
             item["lable"] = i["type"]
@@ -230,6 +227,8 @@ def GetPoolInfoAboutAccount():
     total = 0
     balancePair = []
     for i in balance:
+        if i.get("liquidity") == 0:
+            continue
         item = {}
         for k, v in i.items():
             if k == "liquidity":

@@ -1,4 +1,4 @@
-import os, random, logging, datetime, json, time, datetime
+import os, random, logging, datetime, json, time
 from flask import request, send_file
 from werkzeug.utils import secure_filename
 from redis import Redis
@@ -12,12 +12,12 @@ from violas_client.lbrtypes.account_config.constants.lbr import CORE_CODE_ADDRES
 from violas_client.lbrtypes.account_config import association_address
 
 from libra_client.error.error import LibraError
-from violas_client.error.error import LibraError as ViolasError 
+from violas_client.error.error import LibraError as ViolasError
 
 from ViolasPGHandler import ViolasPGHandler
 from LibraPGHandler import LibraPGHandler
 from PushServerHandler import PushServerHandler
-
+from CrossChainHandler import CrossChainHandler
 from ErrorCode import ErrorCode
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
@@ -32,6 +32,9 @@ HLibra = LibraPGHandler(libraDBUrl)
 violasDBInfo = config["VIOLAS DB INFO"]
 violasDBUrl = f"{violasDBInfo['DBTYPE']}+{violasDBInfo['DRIVER']}://{violasDBInfo['USERNAME']}:{violasDBInfo['PASSWORD']}@{violasDBInfo['HOSTNAME']}:{violasDBInfo['PORT']}/{violasDBInfo['DATABASE']}"
 HViolas = ViolasPGHandler(violasDBUrl)
+
+crosschainInfo = config["CROSSCHAIN SERVER"]
+HCrossChain = CrossChainHandler(crosschainInfo["HOST"])
 
 pushInfo = config["PUSH SERVER"]
 pushh = PushServerHandler(pushInfo["HOST"], int(pushInfo["PORT"]))
@@ -52,100 +55,3 @@ ChairmanFailedReason = {
     -1: "其他",
     0: "信息不全面"
 }
-
-BASEMAPINFOS = [
-    {
-        "type": "v2b",
-        "chain": "violas",
-        "address": "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
-    },
-    {
-        "type": "v2lusd",
-        "chain": "violas",
-        "address": "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
-    },
-    {
-        "type": "v2leur",
-        "chain": "violas",
-        "address": "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
-    },
-    {
-        "type": "l2b",
-        "chain": "libra",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-    },
-    {
-        "type": "l2vusd",
-        "chain": "libra",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-    },
-    {
-        "type": "l2veur",
-        "chain": "libra",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-    },
-    {
-        "type": "l2vgbp",
-        "chain": "libra",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-    },
-    {
-        "type": "l2vsgd",
-        "chain": "libra",
-        "address": "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-    },
-    {
-        "type": "b2v",
-        "lable": "",
-        "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-    },
-    {
-        "type": "b2vusd",
-        "lable": "0x4000",
-        "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-    },
-    {
-        "type": "b2veur",
-        "lable": "0x4010",
-        "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-    },
-    {
-        "type": "b2vsgd",
-        "lable": "0x4020",
-        "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-    },
-    {
-        "type": "b2vgbp",
-        "lable": "0x4030",
-        "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-    },
-    {
-        "type": "b2lusd",
-        "lable": "0x5000",
-        "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-    },
-    {
-        "type": "b2leur",
-        "lable": "0x5010",
-        "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-    },
-    {
-        "type": "b2lsgd",
-        "lable": "0x5020",
-        "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-    },
-    {
-        "type": "b2lgbp",
-        "lable": "0x5030",
-        "chain": "btc",
-        "address": "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-    }
-]

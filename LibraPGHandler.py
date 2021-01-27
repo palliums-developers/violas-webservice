@@ -5,8 +5,6 @@ from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError
 
-from TransferType import TransferType
-
 class LibraPGHandler():
     def __init__(self, dbUrl):
         self.engine = create_engine(dbUrl)
@@ -117,6 +115,7 @@ class LibraPGHandler():
             info["amount"] = int(i.amount)
             info["currency"] = i.currency
             info["status"] = i.status
+            info["confirmed_time"] = i.confirmed_time
 
             infoList.append(info)
 
@@ -145,6 +144,7 @@ class LibraPGHandler():
             info["amount"] = int(i.amount)
             info["status"] = i.status
             info["currency"] = i.currency
+            info["confirmed_time"] = i.confirmed_time
 
             infoList.append(info)
 
@@ -177,6 +177,7 @@ class LibraPGHandler():
         info["signature"] = result.signature
         info["status"] = result.status
         info["data"] = result.data
+        info["confirmed_time"] = result.confirmed_time
 
         return True, info
 
@@ -224,7 +225,7 @@ class LibraPGHandler():
         infoList = []
         for i in result:
             info = {}
-            info["type"] = TransferType.get(i.transaction_type)
+            info["type"] = i.transaction_type
             info["version"] = i.id - 1
             info["sender"] = i.sender
             info["sequence_number"] = i.sequence_number
@@ -235,6 +236,7 @@ class LibraPGHandler():
             info["currency"] = i.currency
             info["gas_currency"] = i.gas_currency
             info["status"] = i.status
+            info["confirmed_time"] = i.confirmed_time
 
             infoList.append(info)
 
