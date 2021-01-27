@@ -13,6 +13,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy import func
 
 from util import get_show_name
+import TransferType
 
 class ViolasPGHandler():
     def __init__(self, dbUrl):
@@ -934,18 +935,18 @@ class ViolasPGHandler():
         try:
             if currency is None:
                 if flows is None:
-                    result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                    result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
                 elif flows == 0:
-                    result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                    result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
                 elif flows == 1:
-                    result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                    result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
             else:
                 if flows is None:
-                    result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.currency == currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                    result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.currency == currency).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
                 elif flows == 0:
-                    result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.currency == currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                    result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.currency == currency).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
                 elif flows == 1:
-                    result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.currency == currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                    result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.currency == currency).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
         except OperationalError:
             s.close()
             return False, None
