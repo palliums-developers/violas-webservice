@@ -23,9 +23,9 @@ class ViolasTransaction(Base):
     script_hash = Column(String(64), nullable = True)
     signature = Column(Text(), nullable = True)
     signature_scheme = Column(String(32), nullable = True)
-    status = Column(SmallInteger, nullable = True)
+    status = Column(String(32), nullable = True)
     event = Column(Text(), nullable = True)
-    confirmed_time = Column(Integer, nullable = True)
+    confirmed_time = Column(BigInteger, nullable = True)
 
 Index("address_index", ViolasTransaction.sender, ViolasTransaction.receiver)
 Index("sender_index", ViolasTransaction.sender)
