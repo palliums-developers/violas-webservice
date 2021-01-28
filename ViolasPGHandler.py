@@ -1412,7 +1412,7 @@ class ViolasPGHandler():
         timestamp = datetime.timestamp(today)
 
         try:
-            info = s.query(ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.address == address).filter(ViolasBankBorrowOrder.order_type == 0).filter(ViolasBankBorrowOrder.date >= timestamp).all()
+            info = s.query(ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.address == address).filter(ViolasBankBorrowOrder.order_type == 0).filter(ViolasBankBorrowOrder.status == 0).filter(ViolasBankBorrowOrder.date >= timestamp).all()
             s.close()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
