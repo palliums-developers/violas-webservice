@@ -239,11 +239,18 @@ class ViolasMessageRecord(Base):
     data = Column(Text, nullable = False)
     readed = Column(SmallInteger, nullable = False) # 0: unread; 1: readed
 
-
 class ViolasNotificationRecord(Base):
     __tablename__ = "notification_record"
 
     id = Column(BigInteger, primary_key = True, autoincrement = True)
     title = Column(Text, nullable = False)
     body = Column(Text, nullable = False)
-    data = Column(Text, nullable = False)
+    date = Column(Integer, nullable = False)
+
+class ViolasNotificationReadRecord(Base):
+    __tablename__ = "notification_read_record"
+
+    id = Column(BigInteger, primary_key = True, autoincrement = True)
+    address = Column(String(64), nullable = False)
+    read_ids = Column(Text, nullable = False)
+    delete_ids = Column(Text, nullable = False)

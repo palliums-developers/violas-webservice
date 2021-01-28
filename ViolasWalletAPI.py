@@ -361,29 +361,42 @@ def GetMessages():
     offset = request.args.get("offset", 0, int)
     limit = request.args.get("limit", 10, int)
 
+    if not all([address]):
+        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
     succ, messages = HViolas.GetMessages(address, offset, limit)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK, messages)
 
-@app.route("/1.0/violas/message/readed", methods=["PUT"])
-def SetMessageReaded():
+@app.route("/1.0/violas/messages/readed", methods=["PUT"])
+def SetMessagesReaded():
     params = request.get_json()
-    version = params.get("version")
     address = params.get("address")
+    messageIds = params.get("msg_ids")
 
-    if not all([version, address]):
-        MakeResp(ErrorCode.ERR_MISSING_PARAM)
+    if not all([address, messageIds]):
+        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
-    if not isinstance(version, int):
-        version = int(version)
-
-    succ = HViolas.SetMessageReaded(version, address)
+    succ = HViolas.SetMessagesReaded(address, messageIds)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/messages/unread/count")
+def GetMessagesUnreadcount():
+    address = request.args.get("address")
+
+    if not all([address]):
+        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    succ, count = HViolas.GetUnreadMessagesCount(address)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, count)
 
 @app.route("/1.0/violas/message/content")
 def GetMessageContent():
@@ -403,22 +416,69 @@ def GetMessageContent():
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
-@app.route("/1.0/violas/notifications")
-def GetNotifications():
-    offset = request.args.get("offset", 0, int)
-    limit = request.args.get("limit", 10, int)
-
-    succ, message = HViolas.GetNotificationMessages(offset, limit)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    return MakeResp(ErrorCode.ERR_OK, message)
-
 @app.route("/1.0/violas/message", methods = ["DELETE"])
 def DeleteMessage():
     messageId = request.args.get("message_id", type = int)
 
     succ = HViolas.DeleteMessage(messageId)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/notifications")
+def GetNotifications():
+    address = request.args.get("address")
+    offset = request.args.get("offset", 0, int)
+    limit = request.args.get("limit", 10, int)
+
+    if not all([address]):
+        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    succ, messages = HViolas.GetNotifications(address, offset, limit)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, messages)
+
+@app.route("/1.0/violas/notifications/unread/count")
+def GetUnreadNotificationCount():
+    address = request.args.get("address")
+
+    if not all([address]):
+        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    succ, count = HViolas.GetUnreadNotificationCount(address)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, count)
+
+@app.route("/1.0/violas/notifications/readed", methods = ["PUT"])
+def MakeNotificationReaded():
+    params = request.get_json()
+    address = params.get("address")
+    messageIds = params.get("ids")
+
+    if not all([address, messageIds]):
+        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    succ = HViolas.SetNotificationReaded(address, messageIds)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/notifications", methods = ["DELETE"])
+def DeleteNotification():
+    address = request.args.get("address")
+    messageIds = request.args.get("ids")
+
+    if not all([address, messageIds]):
+        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    messageIds = list(map(int, messageIds.split(",")))
+    succ = HViolas.DeleteNotification(address, messageIds)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
