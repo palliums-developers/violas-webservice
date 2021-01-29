@@ -24,6 +24,7 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 PHOTO_FOLDER = os.path.abspath("/var/www/violas_wallet/photo")
 PHOTO_URL = f"{config['IMAGE SERVER']['HOST']}/1.0/violas/photo/"
 ICON_URL = f"{config['IMAGE SERVER']['HOST']}/1.0/violas/icon/"
+NOTI_URL = "http://www.baidu.com"
 
 libraDBInfo = config["LIBRA DB INFO"]
 libraDBUrl = f"{libraDBInfo['DBTYPE']}+{libraDBInfo['DRIVER']}://{libraDBInfo['USERNAME']}:{libraDBInfo['PASSWORD']}@{libraDBInfo['HOSTNAME']}:{libraDBInfo['PORT']}/{libraDBInfo['DATABASE']}"

@@ -14,6 +14,7 @@ from sqlalchemy import func
 
 from util import get_show_name
 import TransferType
+from common import NOTI_URL
 
 class ViolasPGHandler():
     def __init__(self, dbUrl):
@@ -2372,7 +2373,7 @@ class ViolasPGHandler():
                     "title": i.title,
                     "body": i.body[:20],
                     "service": "violas_00",
-                    "content": "http://xxxxxxx" + str(i.id),
+                    "content": NOTI_URL + str(i.id),
                     "date": i.date,
                     "readed": 1 if i.id in readedIds else 0
                 }
