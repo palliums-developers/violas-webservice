@@ -222,9 +222,9 @@ class ViolasDeviceInfo(Base):
     __tablename__ = "device_info"
 
     id = Column(BigInteger, primary_key = True, autoincrement = True)
-    address = Column(String(64), nullable = False)
-    device_type = Column(String(16), nullable = False)
     token = Column(Text, nullable = False)
+    address = Column(String(64), nullable = True)
+    platform = Column(String(16), nullable = False)
     language = Column(String(32), nullable = False)
     location = Column(String(32), nullable = True)
 
@@ -232,25 +232,26 @@ class ViolasMessageRecord(Base):
     __tablename__ = "message_record"
 
     id = Column(BigInteger, primary_key = True, autoincrement = True)
-    version = Column(BigInteger, nullable = False)
+    message_id = Column(Text, nullable = False)
     address = Column(String(64), nullable = False)
     title = Column(Text, nullable = False)
     body = Column(Text, nullable = False)
     data = Column(Text, nullable = False)
     readed = Column(SmallInteger, nullable = False) # 0: unread; 1: readed
 
-class ViolasNotificationRecord(Base):
-    __tablename__ = "notification_record"
+class ViolasNoticeRecord(Base):
+    __tablename__ = "notice_record"
+
+    id = Column(BigInteger, primary_key = True, autoincrement = True) # 排序用序号
+    message_id = Column(Text, nullable = False) # 格式a_md5，识别消息
+    content = Column(Text, nullable = False)
+    platform = Column(Text, nullable = False)
+    date = Column(Integer, nullable = False) # 日期
+
+class ViolasNoticeReadRecord(Base):
+    __tablename__ = "notice_read_record"
 
     id = Column(BigInteger, primary_key = True, autoincrement = True)
-    title = Column(Text, nullable = False)
-    body = Column(Text, nullable = False)
-    date = Column(Integer, nullable = False)
-
-class ViolasNotificationReadRecord(Base):
-    __tablename__ = "notification_read_record"
-
-    id = Column(BigInteger, primary_key = True, autoincrement = True)
-    address = Column(String(64), nullable = False)
+    token = Column(Text, nullable = False)
     read_ids = Column(Text, nullable = False)
     delete_ids = Column(Text, nullable = False)

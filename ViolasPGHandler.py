@@ -3,18 +3,15 @@ from datetime import date, datetime
 import logging
 import json
 
-from ViolasModules import *
-
-from sqlalchemy import create_engine, or_, and_
+from sqlalchemy import create_engine, func, or_, and_
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.sql import exists, distinct, join
-from sqlalchemy.sql.expression import false
+from sqlalchemy.sql import exists, distinct, join, false
 from sqlalchemy.exc import OperationalError
-from sqlalchemy import func
+
+from ViolasModules import *
 
 from util import get_show_name
 import TransferType
-from common import NOTI_URL
 
 class ViolasPGHandler():
     def __init__(self, dbUrl):
@@ -2233,23 +2230,25 @@ class ViolasPGHandler():
 
         return True, count
 
-    def AddDeviceInfo(self, address, token, device_type, language, location = None):
+    def AddDeviceInfo(self, token, platform, language, address = None, location = None):
         s = self.session()
         try:
-            result = s.query(ViolasDeviceInfo).filter(ViolasDeviceInfo.address == address).first()
+            result = s.query(ViolasDeviceInfo).filter(ViolasDeviceInfo.token == token).first()
             if result is None:
                 info = ViolasDeviceInfo(
                     address = address,
                     token = token,
-                    device_type = device_type,
+                    platform = platform,
                     language = language,
                     location = location
                 )
 
                 s.add(info)
             else:
+                if address:
+                    result.address = address
                 result.token = token
-                result.device_type = device_type
+                result.platform = platform
                 result.language = language
                 result.location = location
 
@@ -2261,6 +2260,29 @@ class ViolasPGHandler():
             s.close()
 
         return True
+
+    def GetDeviceInfo(self, token):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasDeviceInfo).filter(ViolasDeviceInfo.token == token).first()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        if result:
+            info = {
+                "address": result.address,
+                "token": result.token,
+                "language": result.language,
+                "platform": result.platform
+            }
+
+            return True, info
+        else:
+            return True, None
 
     def GetMessages(self, address, offset, limit):
         s = self.session()
@@ -2276,7 +2298,7 @@ class ViolasPGHandler():
         for i in result:
             content = json.loads(i.data)
             item = {
-                "id": i.id,
+                "id": i.message_id,
                 "title": i.title,
                 "body": i.body,
                 "service": content.get("service"),
@@ -2291,22 +2313,48 @@ class ViolasPGHandler():
 
         return True, messages
 
-    def SetMessagesReaded(self, address, messageIds):
+    def GetNotice(self, token, messageId, language):
         s = self.session()
 
         try:
-            result = s.query(ViolasMessageRecord).filter(ViolasMessageRecord.address == address).filter(ViolasMessageRecord.id.in_(messageIds)).all()
-            if result is not None:
-                for i in result:
-                    i.readed = 1
-            s.commit()
+            result = s.query(ViolasNoticeReadRecord).filter(ViolasNoticeReadRecord.token == token).first()
+            readedIds = json.loads(result.read_ids, )
+            if messageId not in readedIds:
+                readedIds.append(messageId)
+                result.read_ids = json.dumps(readedIds, )
+                s.commit()
+
+            result = s.query(ViolasNoticeRecord).filter(ViolasNoticeRecord.message_id == messageId).first()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
-            return False
+            return False, None
         finally:
             s.close()
 
-        return True
+        content = json.loads(result.content, )
+        info = {
+            "title": content.get(language).get("title"),
+            "content": content.get(language).get("body"),
+            "author": content.get(language).get("author"),
+            "date": result.date
+        }
+
+        return True, info
+
+    def GetMessageInfo(self, messageId):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasMessageRecord).filter(ViolasMessageRecord.message_id == messageId).first()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        print(result.data)
+        content = json.loads(result.data, )
+        return True, content
 
     def GetUnreadMessagesCount(self, address):
         s = self.session()
@@ -2321,11 +2369,11 @@ class ViolasPGHandler():
 
         return True, count
 
-    def DeleteMessage(self, messageId):
+    def DeleteMessage(self, messageIds):
         s = self.session()
 
         try:
-            result = s.query(ViolasMessageRecord).filter(ViolasMessageRecord.id == messageId).delete(synchronize_session='evaluate')
+            result = s.query(ViolasMessageRecord).filter(ViolasMessageRecord.message_id.in_(messageIds)).delete(synchronize_session='fetch')
             s.commit()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -2335,20 +2383,20 @@ class ViolasPGHandler():
 
         return True
 
-    def GetNotifications(self, address, offset, limit):
+    def GetNotices(self, token, language, platform, offset, limit):
         s = self.session()
 
         try:
-            result = s.query(ViolasNotificationReadRecord).filter(ViolasNotificationReadRecord.address == address).first()
+            result = s.query(ViolasNoticeReadRecord).filter(ViolasNoticeReadRecord.token == token).first()
 
             if result is None:
                 readedIds = []
                 deleteIds = []
 
-                record = ViolasNotificationReadRecord(
-                    address = address,
-                    read_ids = "[]",
-                    delete_ids = "[]"
+                record = ViolasNoticeReadRecord(
+                    token = token,
+                    read_ids = json.dumps(readedIds),
+                    delete_ids = json.dumps(deleteIds)
                 )
 
                 s.add(record)
@@ -2358,7 +2406,7 @@ class ViolasPGHandler():
                 readedIds = json.loads(result.read_ids)
                 deleteIds = json.loads(result.delete_ids)
 
-            result = s.query(ViolasNotificationRecord).order_by(ViolasNotificationRecord.id.desc()).offset(offset).limit(limit).all()
+            result = s.query(ViolasNoticeRecord).order_by(ViolasNoticeRecord.id.desc()).offset(offset).limit(limit).all()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             return False, None
@@ -2367,29 +2415,30 @@ class ViolasPGHandler():
 
         messages = []
         for i in result:
-            if i.id not in deleteIds:
-                message = {
-                    "id": i.id,
-                    "title": i.title,
-                    "body": i.body[:20],
-                    "service": "violas_00",
-                    "content": NOTI_URL + str(i.id),
-                    "date": i.date,
-                    "readed": 1 if i.id in readedIds else 0
-                }
+            if platform in json.loads(i.platform, ):
+                if i.message_id not in deleteIds:
+                    content = json.loads(i.content, )
+                    message = {
+                        "id": i.message_id,
+                        "title": content.get(language).get("title"),
+                        "body": content.get(language).get("summary"),
+                        "service": "violas_00",
+                        "date": i.date,
+                        "readed": 1 if i.message_id in readedIds else 0
+                    }
 
-                messages.append(message)
+                    messages.append(message)
 
         return True, messages
 
-    def GetUnreadNotificationCount(self, address):
+    def GetUnreadNoticeCount(self, token, platform):
         s = self.session()
 
         try:
-            result = s.query(ViolasNotificationReadRecord).filter(ViolasNotificationReadRecord.address == address).first()
+            result = s.query(ViolasNoticeReadRecord).filter(ViolasNoticeReadRecord.token == token).first()
 
             if result is None:
-                record = ViolasNotificationReadRecord(
+                record = ViolasNoticeReadRecord(
                     address = address,
                     read_ids = "[]",
                     delete_ids = "[]"
@@ -2402,8 +2451,12 @@ class ViolasPGHandler():
                 ids = json.loads(result.read_ids)
                 readCount = len(ids)
 
-            result = s.query(ViolasNotificationRecord).count()
-            unreadCount = result - readCount
+            result = s.query(ViolasNoticeRecord).all()
+            count = 0
+            for i in result:
+                if platform in json.load(i.platform, ):
+                    count += 1
+            unreadCount = count - readCount
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             return False, None
@@ -2412,17 +2465,24 @@ class ViolasPGHandler():
 
         return True, unreadCount
 
-    def SetNotificationReaded(self, address, messageIds):
+    def SetNoticeReaded(self, token, platform, messageIds = None):
         s = self.session()
 
         try:
-            result = s.query(ViolasNotificationReadRecord).filter(ViolasNotificationReadRecord.address == address).first()
-            readedIds = json.loads(result.read_ids)
-            for i in messageIds:
-                if i not in readedIds:
-                    readedIds.append(i)
+            if not messageIds:
+                result = s.query(ViolasNoticeRecord).all()
+                messageIds = []
 
-            result.read_ids = json.dumps(readedIds)
+                for i in result:
+                    if platform in json.loads(i.platform, ):
+                        messageIds.append(i.message_id)
+
+            result = s.query(ViolasNoticeReadRecord).filter(ViolasNoticeReadRecord.token == token).first()
+            readedIds = json.loads(result.read_ids)
+            readedIds.extend(messageIds)
+            readedIds = list(set(readedIds))
+
+            result.read_ids = json.dumps(readedIds, )
             s.commit()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -2432,11 +2492,32 @@ class ViolasPGHandler():
 
         return True
 
-    def DeleteNotification(self, address, messageIds):
+    def SetMessageReaded(self, address, messageIds = None):
         s = self.session()
 
         try:
-            result = s.query(ViolasNotificationReadRecord).filter(ViolasNotificationReadRecord.address == address).first()
+            messages = s.query(ViolasMessageRecord).filter(ViolasMessageRecord.readed == 0).filter(ViolasMessageRecord.address == address)
+            if messageIds:
+                messages = messages.filter(ViolasMessageRecord.message_id.in_(messageIds))
+            messages = messages.all()
+
+            for i in messages:
+                i.readed = 1
+
+            s.commit()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False
+        finally:
+            s.close()
+
+        return True
+
+    def DeleteNotice(self, token, messageIds):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasNoticeReadRecord).filter(ViolasNoticeReadRecord.token == token).first()
             deleteIds = json.loads(result.delete_ids)
             readedIds = json.loads(result.read_ids)
 
