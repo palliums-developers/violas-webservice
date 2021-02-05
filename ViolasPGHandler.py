@@ -2439,7 +2439,7 @@ class ViolasPGHandler():
 
             if result is None:
                 record = ViolasNoticeReadRecord(
-                    address = address,
+                    token = token,
                     read_ids = "[]",
                     delete_ids = "[]"
                 )
