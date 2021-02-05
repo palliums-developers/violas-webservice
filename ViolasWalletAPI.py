@@ -387,7 +387,9 @@ def GetNoticeList():
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-    data = {}
+    if not deviceInfo:
+        return MakeResp(ErrorCode.ERR_OK, [])
+
     succ, notices = HViolas.GetNotices(token, deviceInfo.get("language"), deviceInfo.get("platform"), offset, limit)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
