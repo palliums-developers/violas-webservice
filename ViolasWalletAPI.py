@@ -359,7 +359,7 @@ def RegisterDeviceInfo():
     return MakeResp(ErrorCode.ERR_OK)
 
 @app.route("/1.0/violas/message/transfers")
-def GetMessages():
+def GetMessageList():
     address = request.args.get("address")
     offset = request.args.get("offset", 0, int)
     limit = request.args.get("limit", 10, int)
@@ -375,7 +375,7 @@ def GetMessages():
     return MakeResp(ErrorCode.ERR_OK, messages)
 
 @app.route("/1.0/violas/message/notices")
-def GetMessages():
+def GetNoticeList():
     token = request.args.get("token")
     offset = request.args.get("offset", 0, int)
     limit = request.args.get("limit", 10, int)
