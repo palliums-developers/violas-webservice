@@ -2454,7 +2454,7 @@ class ViolasPGHandler():
             result = s.query(ViolasNoticeRecord).all()
             count = 0
             for i in result:
-                if platform in json.load(i.platform, ):
+                if platform in json.loads(i.platform, ):
                     count += 1
             unreadCount = count - readCount
         except OperationalError:
