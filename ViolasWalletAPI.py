@@ -337,7 +337,7 @@ def RegisterDeviceInfo():
     platform = params.get("platform")
     language = params.get("language")
 
-    if not all([token, device_type, language]):
+    if not all([token, platform, language]):
         return MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     succ = HViolas.AddDeviceInfo(token = token, platform = platform.lower(), language = language.lower(), address = address)
@@ -358,7 +358,23 @@ def RegisterDeviceInfo():
 
     return MakeResp(ErrorCode.ERR_OK)
 
-@app.route("/1.0/violas/messages")
+@app.route("/1.0/violas/message/transfers")
+def GetMessages():
+    address = request.args.get("address")
+    offset = request.args.get("offset", 0, int)
+    limit = request.args.get("limit", 10, int)
+
+    if not all([address]):
+        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    succ, messages = HViolas.GetMessages(address, offset, limit)
+
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK, messages)
+
+@app.route("/1.0/violas/message/notices")
 def GetMessages():
     token = request.args.get("token")
     offset = request.args.get("offset", 0, int)
@@ -376,17 +392,7 @@ def GetMessages():
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-    data["notices"] = notices
-
-    if deviceInfo.get("address"):
-        succ, messages = HViolas.GetMessages(deviceInfo.get("address"), offset, limit)
-
-        if not succ:
-            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-        data["messages"] = messages
-
-    return MakeResp(ErrorCode.ERR_OK, data)
+    return MakeResp(ErrorCode.ERR_OK, notices)
 
 @app.route("/1.0/violas/message/notice")
 def GetNoticeMessage():
