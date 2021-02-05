@@ -470,6 +470,13 @@ def GetMessagesUnreadcount():
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
+    if not deviceInfo:
+        data = {
+            "notice": 0,
+            "message": 0
+        }
+        return MakeResp(ErrorCode.ERR_OK, data)
+
     succ, noticeCount = HViolas.GetUnreadNoticeCount(token, deviceInfo.get("platform"))
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
