@@ -2287,6 +2287,7 @@ class ViolasPGHandler():
     def GetMessages(self, address, offset, limit):
         s = self.session()
         try:
+            count = s.query(ViolasMessageRecord).filter(ViolasMessageRecord.address == address).count()
             result = s.query(ViolasMessageRecord).filter(ViolasMessageRecord.address == address).order_by(ViolasMessageRecord.id.desc()).offset(offset).limit(limit).all()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -2306,7 +2307,8 @@ class ViolasPGHandler():
                 "date": content.get("date"),
                 "status": content.get("status"),
                 "type": content.get("type"),
-                "readed": i.readed
+                "readed": i.readed,
+                "count": count
             }
 
             messages.append(item)
@@ -2387,6 +2389,12 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
+            result = s.query(ViolasNoticeRecord).all()
+            count = 0
+            for i in result:
+                platforms = json.loads(i.platform, )
+                if platform in platforms:
+                    count += 1
             result = s.query(ViolasNoticeReadRecord).filter(ViolasNoticeReadRecord.token == token).first()
 
             if result is None:
@@ -2424,7 +2432,8 @@ class ViolasPGHandler():
                         "body": content.get(language).get("summary"),
                         "service": "violas_00",
                         "date": i.date,
-                        "readed": 1 if i.message_id in readedIds else 0
+                        "readed": 1 if i.message_id in readedIds else 0,
+                        "count": count
                     }
 
                     messages.append(message)

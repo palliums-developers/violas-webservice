@@ -368,7 +368,6 @@ def GetMessageList():
         return MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     succ, messages = HViolas.GetMessages(address, offset, limit)
-
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
