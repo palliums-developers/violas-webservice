@@ -1,6 +1,6 @@
 from ViolasWebservice import app
 from common import *
-from util import MakeLibraClient, MakeViolasClient, MakeResp, AllowedType, GetRates, GetAccount, MakeTransfer
+from util import MakeLibraClient, MakeViolasClient, MakeResp, AllowedType, GetRates, GetAccount, MakeTransfer, GenUserToken
 from violas_client.lbrtypes.transaction import SignedTransaction
 
 @app.route("/1.0/violas/balance")
@@ -341,28 +341,60 @@ def GetLibraValue():
 def RegisterDeviceInfo():
     params = request.get_json()
     address= params.get("address")
-    token = params.get("token")
+    fcm_token = params.get("fcm_token")
     platform = params.get("platform")
     language = params.get("language")
 
-    if not all([token, platform, language]):
+    if not all([platform, language]):
         return MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
-    succ = HViolas.AddDeviceInfo(token = token, platform = platform.lower(), language = language.lower(), address = address)
+    token = GenUserToken()
+    succ = HViolas.AddDeviceInfo(token = token, platform = platform.lower(), language = language.lower(), fcm_token = fcm_token, address = address)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-    try:
-        requests.post(
-            "http://127.0.0.1:4006/violas/push/subscribe/topic",
-            json = {
-                "token": token,
-                "topic": f"notification_{language.lower()}_{platform.lower()}"
-            }
-        )
+    if fcm_token:
+        try:
+            requests.post(
+                "http://127.0.0.1:4006/violas/push/subscribe/topic",
+                json = {
+                    "token": fcm_token,
+                    "topic": f"notification_{language.lower()}_{platform.lower()}"
+                }
+            )
 
-    except:
-        logging.error(f"Device: [{token}] subscribe to topic failed!")
+        except:
+            logging.error(f"Device: [{token}] subscribe to topic failed!")
+
+    return MakeResp(ErrorCode.ERR_OK, {"token": token})
+
+@app.route("/1.0/violas/device/info", methods = ["PUT"])
+def ModifyDeviceInfo():
+    params = request.get_json()
+    token = params.get("token")
+    address= params.get("address")
+    fcm_token = params.get("fcm_token")
+    platform = params.get("platform")
+    language = params.get("language")
+
+    if not all([token]):
+        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    succ = HViolas.ModifyDeviceInfo(token = token, platform = platform.lower(), language = language.lower(), fcm_token = fcm_token, address = address)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    if fcm_token:
+        try:
+            requests.post(
+                "http://127.0.0.1:4006/violas/push/subscribe/topic",
+                json = {
+                    "token": fcm_token,
+                    "topic": f"notification_{language.lower()}_{platform.lower()}"
+                }
+            )
+        except:
+            logging.error(f"Device: [{token}] subscribe to topic failed!")
 
     return MakeResp(ErrorCode.ERR_OK)
 
@@ -426,14 +458,14 @@ def GetTransferMessage():
     address = request.args.get("address")
     messageId = request.args.get("msg_id")
 
-    if not all([messageId]):
+    if not all([address, messageId]):
         return MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     succ, messageInfo = HViolas.GetMessageInfo(messageId)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-    succ = HViolas.SetMessageReaded(address, [messageId])
+    succ = HViolas.SetMessagesReaded(address, [messageId])
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
@@ -455,12 +487,12 @@ def SetMessagesReaded():
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-    succ = HViolas.SetNoticeReaded(token, deviceInfo.get("platform"))
+    succ = HViolas.SetNoticesReaded(token, deviceInfo.get("platform"))
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     if deviceInfo.get("address"):
-        succ = HViolas.SetMessageReaded(deviceInfo.get("address"))
+        succ = HViolas.SetMessagesReaded(address = deviceInfo.get("address"))
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
@@ -517,12 +549,12 @@ def DeleteMessage():
         elif i[:1] == "b":
             messages.append(i)
 
-    if len(notics):
+    if notics:
         succ = HViolas.DeleteNotice(token, notics)
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
-    if len(messages):
+    if messages:
         succ = HViolas.DeleteMessage(messages)
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)

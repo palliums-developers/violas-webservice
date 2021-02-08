@@ -2,6 +2,7 @@ from common import *
 
 from datetime import datetime
 from decimal import Decimal
+from hashlib import md5
 
 from libra_client import Client as LibraClient
 from violas_client import Client as ViolasClient
@@ -240,3 +241,6 @@ def MakeTransfer(senderAccount, receiveAddress, amount, coin = None):
 
 def ConvertToUSD(amount):
     return float(Decimal(amount / 1000000).quantize(Decimal("0.00")))
+
+def GenUserToken():
+    return md5(str(time.time()).encode()).hexdigest()

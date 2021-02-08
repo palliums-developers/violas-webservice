@@ -223,6 +223,7 @@ class ViolasDeviceInfo(Base):
 
     id = Column(BigInteger, primary_key = True, autoincrement = True)
     token = Column(Text, nullable = False)
+    fcm_token = Column(Text, nullable = True)
     address = Column(String(64), nullable = True)
     platform = Column(String(16), nullable = False)
     language = Column(String(32), nullable = False)
