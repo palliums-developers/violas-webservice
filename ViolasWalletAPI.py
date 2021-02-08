@@ -30,7 +30,15 @@ def GetViolasBalance():
         else:
             balance = cli.get_balance(address, currency_code = currency)
             showName = currency[3:] if len(currency) > 3 else currency
-            data = [{currency: balance, "name": currency, "show_name": currency, "show_icon": f"{ICON_URL}violas.png"}]
+            data = [
+                {
+                    "name": currency,
+                    "balance": balance,
+                    "show_name": currency,
+                    "show_icon": f"{ICON_URL}violas.png",
+                    "address": address
+                }
+            ]
 
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
