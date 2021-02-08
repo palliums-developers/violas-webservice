@@ -931,23 +931,40 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            if currency is None:
-                if flows is None:
-                    result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-                elif flows == 0:
-                    result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            result = s.query(ViolasTransaction).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys()))
+
+            if currency:
+                result = result.filter(ViolasTransaction.currency == currency)
+
+            if flows:
+                if flows == 0:
+                    result = result.filter(ViolasTransaction.sender == address)
                 elif flows == 1:
-                    result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                    result = result.filter(ViolasTransaction.receiver == address)
             else:
-                if flows is None:
-                    result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.currency == currency).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-                elif flows == 0:
-                    result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.currency == currency).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-                elif flows == 1:
-                    result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.currency == currency).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+                result = result.filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address))
+
+            result = result.order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+
+            # if currency is None:
+            #     if flows is None:
+            #         result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            #     elif flows == 0:
+            #         result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            #     elif flows == 1:
+            #         result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            # else:
+            #     if flows is None:
+            #         result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.currency == currency).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            #     elif flows == 0:
+            #         result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.currency == currency).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            #     elif flows == 1:
+            #         result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.currency == currency).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
         except OperationalError:
-            s.close()
+            logging.error(f"ERROR: Database operation failed!")
             return False, None
+        finally:
+            s.close()
 
         infoList = []
         for i in result:
@@ -967,7 +984,6 @@ class ViolasPGHandler():
 
             infoList.append(info)
 
-        s.close()
         return True, infoList
 
     def GetGovernorInfoForSSO(self):
