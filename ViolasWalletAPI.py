@@ -380,7 +380,12 @@ def ModifyDeviceInfo():
     if not all([token]):
         return MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
-    succ = HViolas.ModifyDeviceInfo(token = token, platform = platform.lower(), language = language.lower(), fcm_token = fcm_token, address = address)
+    if platform:
+        platform = platform.lower()
+    if language:
+        language = language.lower()
+
+    succ = HViolas.ModifyDeviceInfo(token = token, platform = platform, language = language, fcm_token = fcm_token, address = address)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
