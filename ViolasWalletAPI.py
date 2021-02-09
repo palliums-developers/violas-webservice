@@ -97,7 +97,7 @@ def GetViolasTransactionInfo():
         MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     address = address.lower()
-    succ, datas = HViolas.GetTransactionsForWallet(address, currency, flows, offset, limit)
+    succ, datas = HViolas.GetTransactionsForWallet(address=address, offset=offset, limit=limit, currency=currency, flows=flows)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 

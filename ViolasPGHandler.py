@@ -927,7 +927,7 @@ class ViolasPGHandler():
 
         return True, infoList
 
-    def GetTransactionsForWallet(self, address, currency, flows, offset, limit):
+    def GetTransactionsForWallet(self, address, offset, limit, currency = None, flows = None):
         s = self.session()
 
         try:
@@ -936,7 +936,7 @@ class ViolasPGHandler():
             if currency:
                 result = result.filter(ViolasTransaction.currency == currency)
 
-            if flows:
+            if flows is not None:
                 if flows == 0:
                     result = result.filter(ViolasTransaction.sender == address)
                 elif flows == 1:
@@ -946,20 +946,6 @@ class ViolasPGHandler():
 
             result = result.order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
 
-            # if currency is None:
-            #     if flows is None:
-            #         result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-            #     elif flows == 0:
-            #         result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-            #     elif flows == 1:
-            #         result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-            # else:
-            #     if flows is None:
-            #         result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.currency == currency).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-            #     elif flows == 0:
-            #         result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.currency == currency).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-            #     elif flows == 1:
-            #         result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address).filter(ViolasTransaction.currency == currency).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys())).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             return False, None
