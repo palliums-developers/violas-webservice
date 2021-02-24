@@ -1,7 +1,7 @@
 from flask import request
 
 from ViolasWebservice import app
-from common import HCrossChain, requests
+from common import HCrossChain, requests, crosschainInfo
 from ErrorCode import ErrorCode
 from util import MakeResp, AddressInfo, get_show_name
 
@@ -24,7 +24,7 @@ def GetMappingAddressInfo():
         "opttype": "map"
     }
 
-    resp = requests.get("http://52.231.52.107", params= payload)
+    resp = requests.get(crosschainInfo["HOST"], params= payload)
     if not resp.ok:
         return MakeResp(ErrorCode.ERR_EXTERNAL_REQUEST)
     mapInfos = resp.json().get("datas")
@@ -59,9 +59,10 @@ def GetMappingTransactions():
         "limit": limit
     }
 
-    resp = requests.get("http://52.231.52.107", params = params)
+    resp = requests.get(crosschainInfo["HOST"], params = params)
     if not resp.ok:
         return MakeResp(ErrorCode.ERR_EXTERNAL_REQUEST)
+
     datas = resp.json()["datas"]["datas"]
     for i in datas:
         i["in_show_name"] = get_show_name(i["in_token"])
