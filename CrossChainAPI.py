@@ -65,7 +65,7 @@ def GetCrossChainTransactionInfo():
     limit = request.args.get("limit", 10, int)
     address = address.lower()
 
-    url = "http://52.231.52.107/?opt=record"
+    url = f"{crosschainInfo['HOST']}/?opt=record"
     if walletType == 0:
         wallet = "violas"
     elif walletType == 1:
