@@ -17,18 +17,18 @@ def MakeLibraClient():
 
 def MakeViolasClient():
     # return ViolasClient()
-    return ViolasClient.new(config['NODE INFO']['VIOLAS_HOST'], chain_id=config["NODE INFO"]["VIOLAS_CHAIN_ID"])
+    return ViolasClient.new(config['NODE INFO']['VIOLAS_HOST'], chain_id=int(config["NODE INFO"]["VIOLAS_CHAIN_ID"]))
 
 def MakeExchangeClient():
     # return exchange_client.Client()
-    cli = exchange_client.Client.new(config['NODE INFO']['VIOLAS_HOST'], chain_id=config["NODE INFO"]["VIOLAS_CHAIN_ID"])
+    cli = exchange_client.Client.new(config['NODE INFO']['VIOLAS_HOST'], chain_id=int(config["NODE INFO"]["VIOLAS_CHAIN_ID"]))
     cli.set_exchange_module_address(VIOLAS_CORE_CODE_ADDRESS)
     cli.set_exchange_owner_address(config["NODE INFO"]["EXCHANGE_MODULE_ADDRESS"])
     return cli
 
 def MakeBankClient():
     # return bank_client.Client()
-    cli = bank_client.Client.new(config['NODE INFO']['VIOLAS_HOST'], chain_id=config["NODE INFO"]["VIOLAS_CHAIN_ID"])
+    cli = bank_client.Client.new(config['NODE INFO']['VIOLAS_HOST'], chain_id=int(config["NODE INFO"]["VIOLAS_CHAIN_ID"]))
     cli.set_bank_module_address(VIOLAS_CORE_CODE_ADDRESS)
     cli.set_bank_owner_address(config["NODE INFO"]["BANK_MODULE_ADDRESS"])
     return cli
