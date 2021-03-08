@@ -41,7 +41,7 @@ def GetMappingAddressInfo():
             rcoin = coinPair.get("to_coin")
             info = AddressInfo(type, address, scoin, rcoin, lable)
 
-        data.append(info.to_mapping_json())
+            data.append(info.to_mapping_json())
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
