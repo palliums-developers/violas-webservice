@@ -939,12 +939,12 @@ class ViolasPGHandler():
             else:
                 result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address))
 
-            # if currency:
-            #     result = result.filter(ViolasTransaction.currency == currency)
+            if currency:
+                result = result.filter(ViolasTransaction.currency == currency)
 
-            # result = result.filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys()))
+            result = result.filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys()))
 
-            result = result.order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            result = result.order_by(ViolasTransaction.id.desc()).offset(offset).all()
 
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -953,7 +953,10 @@ class ViolasPGHandler():
             s.close()
 
         infoList = []
-        for i in result:
+        for idx, i in enumerate(result):
+            if idx == limit:
+                break
+
             info = {}
             info["type"] = i.transaction_type
             info["version"] = i.id - 1
