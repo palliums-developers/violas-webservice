@@ -933,9 +933,6 @@ class ViolasPGHandler():
         try:
             result = s.query(ViolasTransaction).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys()))
 
-            if currency:
-                result = result.filter(ViolasTransaction.currency == currency)
-
             if flows is not None:
                 if flows == 0:
                     result = result.filter(ViolasTransaction.sender == address)
@@ -943,6 +940,9 @@ class ViolasPGHandler():
                     result = result.filter(ViolasTransaction.receiver == address)
             else:
                 result = result.filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address))
+
+            if currency:
+                result = result.filter(ViolasTransaction.currency == currency)
 
             result = result.order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
 
