@@ -931,20 +931,20 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasTransaction).filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys()))
+            if flows is not None:
+                if flows == 0:
+                    s.query(ViolasTransaction).filter(ViolasTransaction.sender == address)
+                elif flows == 1:
+                    s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address)
+            else:
+                result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address))
 
             if currency:
                 result = result.filter(ViolasTransaction.currency == currency)
 
-            if flows is not None:
-                if flows == 0:
-                    result = result.filter(ViolasTransaction.sender == address)
-                elif flows == 1:
-                    result = result.filter(ViolasTransaction.receiver == address)
-            else:
-                result = result.filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address))
+            result = result.filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys()))
 
-            result = result.order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            result = result.order_by(ViolasTransaction.id.desc()).offset(offset).all()
 
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -953,7 +953,10 @@ class ViolasPGHandler():
             s.close()
 
         infoList = []
-        for i in result:
+        for idx, i in enumerate(result):
+            if idx == limit:
+                break
+
             info = {}
             info["type"] = i.transaction_type
             info["version"] = i.id - 1

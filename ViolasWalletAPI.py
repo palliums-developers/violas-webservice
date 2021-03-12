@@ -529,6 +529,8 @@ def GetMessagesUnreadcount():
         succ, messageCount = HViolas.GetUnreadMessagesCount(deviceInfo.get("address"))
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    else:
+        messageCount = 0
 
     data = {
         "notice": noticeCount,
