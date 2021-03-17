@@ -573,7 +573,7 @@ def BroadcastMessage():
     params = request.get_json()
 
     resp = requests.post(
-                "http://127.0.0.1:4006/violas/push/",
+                "http://127.0.0.1:4006/violas/push/multisign/broadcast",
                 json = params
             )
     if not resp.ok:
