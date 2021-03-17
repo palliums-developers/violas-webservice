@@ -567,3 +567,16 @@ def DeleteMessage():
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/message/broadcast", methods = ["POST"])
+def BroadcastMessage():
+    params = request.get_json()
+
+    resp = requests.post(
+                "http://127.0.0.1:4006/violas/push/",
+                json = params
+            )
+    if not resp.ok:
+        return MakeResp(ErrorCode.ERR_EXTERNAL_REQUEST)
+
+    return MakeResp(ErrorCode.ERR_OK)
