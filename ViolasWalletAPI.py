@@ -331,7 +331,10 @@ def GetLibraValue():
             name = currency
 
         item["name"] = currency
-        item["rate"] = rates.get(name) if rates.get(name) is not None else 0
+        if rates:
+            item["rate"] = rates.get(name) if rates.get(name) else 0
+        else:
+            item["rate"] = 0
 
         values.append(item)
 
@@ -400,6 +403,19 @@ def ModifyDeviceInfo():
             )
         except:
             logging.error(f"Device: [{token}] subscribe to topic failed!")
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/device/info", methods = ["DELETE"])
+def DeleteDeviceInfo():
+    token = request.args.get("token")
+
+    if not all([token]):
+        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    succ = HViolas.DeleteDeviceInfo(token)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     return MakeResp(ErrorCode.ERR_OK)
 
@@ -565,5 +581,18 @@ def DeleteMessage():
         succ = HViolas.DeleteMessage(messages)
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
+@app.route("/1.0/violas/message/broadcast", methods = ["POST"])
+def BroadcastMessage():
+    params = request.get_json()
+
+    resp = requests.post(
+                "http://127.0.0.1:4006/violas/push/multisign/broadcast",
+                json = params
+            )
+    if not resp.ok:
+        return MakeResp(ErrorCode.ERR_EXTERNAL_REQUEST)
 
     return MakeResp(ErrorCode.ERR_OK)
