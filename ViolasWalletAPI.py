@@ -403,6 +403,19 @@ def ModifyDeviceInfo():
 
     return MakeResp(ErrorCode.ERR_OK)
 
+@app.route("/1.0/violas/device/info", methods = ["DELETE"])
+def DeleteDeviceInfo():
+    token = request.args.get("token")
+
+    if not all([token]):
+        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    succ = HViolas.DeleteDeviceInfo(token)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    return MakeResp(ErrorCode.ERR_OK)
+
 @app.route("/1.0/violas/message/transfers")
 def GetMessageList():
     address = request.args.get("address")

@@ -2283,6 +2283,19 @@ class ViolasPGHandler():
 
         return True
 
+    def DeleteDeviceInfo(self, token):
+        s = self.session()
+
+        try:
+            s.query(ViolasDeviceInfo).filter(ViolasDeviceInfo.token == token).delete(synchronize_session='fetch')
+            s.commit()
+        except OperationalError:
+            return False
+        finally:
+            s.close()
+
+        return True
+
     def GetDeviceInfo(self, token):
         s = self.session()
 
