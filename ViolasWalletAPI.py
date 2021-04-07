@@ -331,7 +331,10 @@ def GetLibraValue():
             name = currency
 
         item["name"] = currency
-        item["rate"] = rates.get(name) if rates.get(name) is not None else 0
+        if rates:
+            item["rate"] = rates.get(name) if rates.get(name) else 0
+        else:
+            item["rate"] = 0
 
         values.append(item)
 
