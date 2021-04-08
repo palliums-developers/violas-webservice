@@ -63,7 +63,7 @@ def GetRates():
     resp = requests.get(url)
     if not resp.ok:
         return MakeResp(ErrorCode.ERR_EXTERNAL_REQUEST)
-    rates = resp.json()["rates"]
+    rates = resp.json().get("rates")
 
     return rates
 
