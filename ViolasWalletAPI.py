@@ -76,12 +76,10 @@ def MakeViolasTransaction():
     timestamp = int(time.time())
 
     try:
-        cli.submit_signed_transaction(signedtxn, True)
-    except Exception as e:
-        if not e.on_chain:
-            return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
+        cli.submit_signed_transaction(signedtxn, False)
         HViolas.AddTransactionInfo(sender, seqNum, timestamp, transactionInfo.to_json())
-        return MakeResp(ErrorCode.ERR_CLIENT_UNKNOW_ERROR)
+    except Exception as e:
+        return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
     return MakeResp(ErrorCode.ERR_OK)
 
@@ -97,9 +95,24 @@ def GetViolasTransactionInfo():
         MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     address = address.lower()
-    succ, datas = HViolas.GetTransactionsForWallet(address=address, offset=offset, limit=limit, currency=currency, flows=flows)
+    succ, txnIdxs = HViolas.GetTransactionsForWallet(address=address, offset=offset, limit=limit, currency=currency, flows=flows)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    datas = []
+    cli = MakeViolasClient()
+    for i in txnIdxs:
+        txn = cli.get_transaction(i.get("version"))
+        info = {
+            "version": i.get("version"),
+            "sender": txn.get_sender(),
+            "sequence_number": txn.get_sequence_number(),
+            "receiver": txn.get_receiver(),
+            "currency": txn.get_currency_code() if txn.get_currency_code() is not None else txn.get_gas_currency(),
+            "type": txn.get_code_type().name,
+            "status": txn.get_vm_status().enum_name
+        }
+        datas.append(info)
 
     return MakeResp(ErrorCode.ERR_OK, datas)
 
@@ -434,6 +447,46 @@ def GetMessageList():
 
     return MakeResp(ErrorCode.ERR_OK, messages)
 
+@app.route("/1.0/violas/message/transfer")
+def GetTransferMessage():
+    address = request.args.get("address")
+    messageId = request.args.get("msg_id")
+
+    if not all([address, messageId]):
+        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
+
+    succ, messageInfo = HViolas.GetMessageInfo(messageId)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    succ = HViolas.SetMessagesReaded(address, [messageId])
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    cli = MakeViolasClient()
+    txn = cli.get_transaction(version, True)
+    txnInfo = {
+        "version": version,
+        "sender": txn.get_sender(),
+        "sequence_number": txn.get_sequence_number(),
+        "receiver": txn.get_receiver(),
+        "amount": txn.get_amount(),
+        "currency": txn.get_currency_code() if txn.get_currency_code() is not None else txn.get_gas_currency(),
+        "gas_currency": txn.get_gas_currency(),
+        "gas": txn.get_gas_used_price(),
+        "expiration_time": txn.get_expiration_time(),
+        "type": txn.get_code_type().name,
+        "status": txn.get_vm_status().enum_name,
+        "gas_unit_price": txn.get_gas_unit_price(),
+        "max_gas_amount": txn.transaction.value.get_max_gas_amount(),
+        "public_key": txn.get_public_key(),
+        "signature": txn.get_signature(),
+        "data": txn.get_data(),
+        "confirmed_time": HViolas.GetTransactionTime(txn.get_sender(), txn.get_sequence_number())
+    }
+
+    return MakeResp(ErrorCode.ERR_OK, txnInfo)
+
 @app.route("/1.0/violas/message/notices")
 def GetNoticeList():
     token = request.args.get("token")
@@ -469,28 +522,6 @@ def GetNoticeMessage():
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     succ, data = HViolas.GetNotice(token, messageId, deviceInfo.get("language"))
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    return MakeResp(ErrorCode.ERR_OK, data)
-
-@app.route("/1.0/violas/message/transfer")
-def GetTransferMessage():
-    address = request.args.get("address")
-    messageId = request.args.get("msg_id")
-
-    if not all([address, messageId]):
-        return MakeResp(ErrorCode.ERR_MISSING_PARAM)
-
-    succ, messageInfo = HViolas.GetMessageInfo(messageId)
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    succ = HViolas.SetMessagesReaded(address, [messageId])
-    if not succ:
-        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
-
-    succ, data = HViolas.GetTransactionByVersion(int(messageInfo.get("version")))
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 

@@ -1,9 +1,15 @@
-from time import sleep
-from LibraModules import LibraAddressInfo, LibraTransaction
+from time import time, sleep
+from datetime import date, datetime
+import logging
+import json
+
 
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError
+
+from LibraModules import *
+import TransferType
 
 class LibraPGHandler():
     def __init__(self, dbUrl):
@@ -16,25 +22,17 @@ class LibraPGHandler():
         s = self.session()
 
         try:
-            result = s.query(LibraTransaction).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
-            s.close()
+            result = s.query(LibraTransaction).order_by(LibraTransaction.version.desc()).offset(offset).limit(limit).all()
         except OperationalError:
-            s.close()
             return False, None
+        finally:
+            s.close()
 
         infoList = []
         for i in result:
-            info = {}
-            info["version"] = i.id - 1
-            info["type"] = i.transaction_type
-            info["sender"] = i.sender
-            info["gas"] = int(i.gas_used * i.gas_unit_price)
-            info["expiration_time"] = i.expiration_time
-            info["receiver"] = i.receiver
-            info["amount"] = int(i.amount)
-            info["currency"] = i.currency
-            info["status"] = i.status
-
+            info = {
+                "version": i.version
+            }
 
             infoList.append(info)
 
@@ -44,25 +42,17 @@ class LibraPGHandler():
         s = self.session()
 
         try:
-            result = s.query(LibraTransaction).filter(LibraTransaction.currency == currency).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
-
-            s.close()
+            result = s.query(LibraTransaction).filter(LibraTransaction.currency == currency).order_by(LibraTransaction.version.desc()).offset(offset).limit(limit).all()
         except OperationalError:
-            s.close()
             return False, None
+        finally:
+            s.close()
 
         infoList = []
         for i in result:
-            info = {}
-            info["version"] = i.id - 1
-            info["type"] = i.transaction_type
-            info["sender"] = i.sender
-            info["gas"] = int(i.gas_used * i.gas_unit_price)
-            info["expiration_time"] = i.expiration_time
-            info["receiver"] = i.receiver
-            info["amount"] = int(i.amount)
-            info["status"] = i.status
-            info["currency"] = i.currency
+            info = {
+                "version": i.version
+            }
 
             infoList.append(info)
 
@@ -80,7 +70,6 @@ class LibraPGHandler():
 
         info = {}
         if result is not None:
-            info["type"] = result.type
             info["first_seen"] = result.first_seen
             info["sent_amount"] = int(result.sent_amount)
             info["received_amount"] = int(result.received_amount)
@@ -93,174 +82,99 @@ class LibraPGHandler():
 
         return True, info
 
-    def GetTransactionsByAddress(self, address, limit, offset):
+    def GetTransactionsByAddress(self, address, currency, limit, offset):
         s = self.session()
 
         try:
-            result  = s.query(LibraTransaction).filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address)).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
-            s.close()
+            result  = s.query(LibraTransaction).filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address))
+            if currency:
+                result = result.filter(LibraTransaction.currency == currency)
+
+            result = result.order_by(LibraTransaction.version.desc()).offset(offset).limit(limit).all()
         except OperationalError:
-            s.close()
             return False, None
+        finally:
+            s.close()
 
         infoList = []
         for i in result:
             info = {}
-            info["version"] = i.id - 1
-            info["type"] = i.transaction_type
+            info["version"] = i.version
             info["sender"] = i.sender
-            info["gas"] = int(i.gas_used * i.gas_unit_price)
-            info["expiration_time"] = i.expiration_time
-            info["receiver"] = i.receiver
-            info["amount"] = int(i.amount)
-            info["currency"] = i.currency
-            info["status"] = i.status
-            info["confirmed_time"] = i.confirmed_time
+            info["sequence_number"] = i.sequence_number
 
             infoList.append(info)
 
         return True, infoList
-
-    def GetTransactionsByAddressAboutCurrency(self, address, limit, offset, currency):
-        s = self.session()
-
-        try:
-            result = s.query(LibraTransaction).filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address)).filter(LibraTransaction.currency == currency).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
-
-            s.close()
-        except OperationalError:
-            s.close()
-            return False, None
-
-        infoList = []
-        for i in result:
-            info = {}
-            info["version"] = i.id - 1
-            info["type"] = i.transaction_type
-            info["sender"] = i.sender
-            info["gas"] = int(i.gas_used * i.gas_unit_price)
-            info["expiration_time"] = i.expiration_time
-            info["receiver"] = i.receiver
-            info["amount"] = int(i.amount)
-            info["status"] = i.status
-            info["currency"] = i.currency
-            info["confirmed_time"] = i.confirmed_time
-
-            infoList.append(info)
-
-        return True, infoList
-
-    def GetTransactionByVersion(self, version):
-        s = self.session()
-
-        try:
-            result = s.query(LibraTransaction).filter(LibraTransaction.id == (version + 1)).first()
-            s.close()
-        except OperationalError:
-            s.close()
-            return False, None
-
-        info = {}
-        info["version"] = result.id - 1
-        info["type"] = result.transaction_type
-        info["sequence_number"] = result.sequence_number
-        info["sender"] = result.sender
-        info["receiver"] = result.receiver
-        info["currency"] = result.currency
-        info["gas_currency"] = result.gas_currency
-        info["amount"] = int(result.amount)
-        info["gas"] = int(result.gas_used * i.gas_unit_price)
-        info["gas_unit_price"] = int(result.gas_unit_price)
-        info["max_gas_amount"] = int(result.max_gas_amount)
-        info["expiration_time"] = result.expiration_time
-        info["public_key"] = result.public_key
-        info["signature"] = result.signature
-        info["status"] = result.status
-        info["data"] = result.data
-        info["confirmed_time"] = result.confirmed_time
-
-        return True, info
-
-    def GetTransactionCount(self):
-        s = self.session()
-
-        try:
-            result = s.query(LibraTransaction.id).order_by(LibraTransaction.id.desc()).limit(1).first()
-            s.close()
-        except OperationalError:
-            s.close()
-            return False, None
-
-        if result is None:
-            result = 0
-        else:
-            result = result[0]
-
-        return True, result
 
     def GetTransactionsForWallet(self, address, currency, flows, offset, limit):
         s = self.session()
 
         try:
-            if currency is None:
-                if flows is None:
-                    result = s.query(LibraTransaction).filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address)).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
-                elif flows == 0:
-                    result = s.query(LibraTransaction).filter(LibraTransaction.sender == address).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+            if flows is not None:
+                if flows == 0:
+                    s.query(LibraTransaction).filter(LibraTransaction.sender == address)
                 elif flows == 1:
-                    result = s.query(LibraTransaction).filter(LibraTransaction.receiver == address).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+                    s.query(LibraTransaction).filter(LibraTransaction.receiver == address)
             else:
-                if flows is None:
-                    result = s.query(LibraTransaction).filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address)).filter(LibraTransaction.currency == currency).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
-                elif flows == 0:
-                    result = s.query(LibraTransaction).filter(LibraTransaction.sender == address).filter(LibraTransaction.currency == currency).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
-                elif flows == 1:
-                    result = s.query(LibraTransaction).filter(LibraTransaction.receiver == address).filter(LibraTransaction.currency == currency).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
+                result = s.query(LibraTransaction).filter(or_(LibraTransaction.sender == address, LibraTransaction.receiver == address))
 
-            s.close()
+            if currency:
+                result = result.filter(LibraTransaction.currency == currency)
+
+            result = result.filter(LibraTransaction.transaction_type.in_(TransferType.Common.keys()))
+
+            result = result.order_by(LibraTransaction.version.desc()).offset(offset).all()
+
         except OperationalError:
-            s.close()
+            logging.error(f"ERROR: Database operation failed!")
             return False, None
+        finally:
+            s.close()
 
         infoList = []
-        for i in result:
+        for idx, i in enumerate(result):
+            if idx == limit:
+                break
+
             info = {}
-            info["type"] = i.transaction_type
-            info["version"] = i.id - 1
+            info["version"] = i.version
             info["sender"] = i.sender
             info["sequence_number"] = i.sequence_number
-            info["gas"] = int(i.gas_used * i.gas_unit_price)
-            info["expiration_time"] = i.expiration_time
-            info["receiver"] = i.receiver
-            info["amount"] = int(i.amount)
-            info["currency"] = i.currency
-            info["gas_currency"] = i.gas_currency
-            info["status"] = i.status
-            info["confirmed_time"] = i.confirmed_time
 
             infoList.append(info)
 
         return True, infoList
 
-    def GetMapTransactionInfo(self, sender, receiver, offset, limit):
+    def GetTransactionTime(self, sender, sequence_number):
+        s = self.session()
+        try:
+            result = s.query(LibraSignedTransaction).filter(LibraSignedTransaction.sender == sender).filter(LibraSignedTransaction.sequence_number == sequence_number).first()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return None
+        finally:
+            s.close()
+
+        return result.date if result else None
+
+    def AddTransactionInfo(self, sender, seqNum, timestamp, sigtxn):
         s = self.session()
 
         try:
-            result = s.query(LibraTransaction).filter(LibraTransaction.sender == sender).filter(LibraTransaction.receiver == receiver).order_by(LibraTransaction.id.desc()).offset(offset).limit(limit).all()
-            s.close()
+            info = LibraSignedTransaction(
+                sender = sender,
+                sequence_number = seqNum,
+                time = timestamp,
+                sigtxn = sigtxn
+            )
+
+            s.add(info)
+            s.commit()
         except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False
+        finally:
             s.close()
-            return False, None
 
-        infos = []
-        for i in result:
-            info = {}
-            info["date"] = i.expiration_time
-            info["amount"] = int(i.amount)
-            info["address"] = receiver
-            info["coin"] = "vlibra"
-            info["status"] = 0
-
-            infos.append(info)
-
-        return True, infos
+        return True

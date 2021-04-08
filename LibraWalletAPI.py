@@ -1,6 +1,7 @@
 from ViolasWebservice import app
 from common import *
 from util import MakeLibraClient, MakeResp
+from libra_client.lbrtypes.transaction import SignedTransaction
 
 @app.route("/1.0/libra/balance")
 def GetLibraBalance():
@@ -74,8 +75,15 @@ def MakeLibraTransaction():
         return MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
     cli = MakeLibraClient()
+    transactionInfo = bytes.fromhex(signedtxn)
+    transactionInfo = SignedTransaction.deserialize(transactionInfo)
+    sender = transactionInfo.get_sender()
+    seqNum = transactionInfo.get_sequence_number()
+    timestamp = int(time.time())
+
     try:
-        cli.submit_signed_transaction(signedtxn, True)
+        cli.submit_signed_transaction(signedtxn, False)
+        HLibra.AddTransactionInfo(sender, seqNum, timestamp, transactionInfo.to_json())
     except Exception as e:
         return MakeResp(ErrorCode.ERR_NODE_RUNTIME, exception = e)
 
@@ -93,9 +101,30 @@ def GetLibraTransactionInfo():
     if not all([address]):
         MakeResp(ErrorCode.ERR_MISSING_PARAM)
 
-    succ, datas = HLibra.GetTransactionsForWallet(address, currency, flows, offset, limit)
+    succ, txnIdxs = HLibra.GetTransactionsForWallet(address, currency, flows, offset, limit)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    datas = []
+    cli = MakeLibraClient()
+    for i in txnIdxs:
+        txn = cli.get_transaction(i.get("version"), True)
+        data = {
+            "version": i.get("version"),
+            "sender": i.get("sender"),
+            "sequence_number": i.get("sequence_number"),
+            "receiver": txn.get_receiver(),
+            "amount": txn.get_amount(),
+            "currency": txn.get_currency_code() if txn.get_currency_code() is not None else txn.get_gas_currency(),
+            "gas_currency": txn.get_gas_currency(),
+            "gas": txn.get_gas_used_price(),
+            "expiration_time": txn.get_expiration_time(),
+            "type": txn.get_code_type().name,
+            "status": txn.get_vm_status().enum_name,
+            "confirmed_time": HLibra.GetTransactionTime(i.get("sender"), i.get("sequence_number"))
+        }
+
+        datas.append(data)
 
     return MakeResp(ErrorCode.ERR_OK, datas)
 
