@@ -291,6 +291,12 @@ def PostDepositWithdrawal():
     value = int(params["value"])
     sigtxn = params["sigtxn"]
 
+    cli = MakeBankClient()
+
+    if value == 0:
+        productInfo = HViolas.GetDepositProductDetail(productId)
+        value = cli.bank_get_lock_amount(address, productInfo.get("token_module"))
+
     orderInfo = {
         "order_id": GetIDNumber(),
         "product_id": productId,
@@ -299,7 +305,7 @@ def PostDepositWithdrawal():
         "order_type": 1,
         "status": 0
     }
-    cli = MakeBankClient()
+
     try:
         cli.submit_signed_transaction(sigtxn, True)
         succ = HViolas.AddDepositOrder(orderInfo)
@@ -383,6 +389,12 @@ def PostBorrowRepayTransaction():
     value = int(params["value"])
     sigtxn = params["sigtxn"]
 
+    cli = MakeBankClient()
+
+    if value == 0:
+        productInfo = HViolas.GetBorrowProductDetail(productId)
+        value = cli.bank_get_borrow_amount(address, productInfo.get("token_module"))
+
     orderInfo = {
         "order_id": GetIDNumber(),
         "product_id": productId,
@@ -391,7 +403,7 @@ def PostBorrowRepayTransaction():
         "order_type": 1,
         "status": 0
     }
-    cli = MakeBankClient()
+
     try:
         cli.submit_signed_transaction(sigtxn, True)
         succ = HViolas.AddBorrowOrder(orderInfo)
