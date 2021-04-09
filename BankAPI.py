@@ -29,6 +29,12 @@ def GetViolasBankAccountInfo():
     for b in borrowed:
         totalBorrow += b[0]
 
+    succ, repaymented = HViolas.GetRepaymentedToday(address)
+    if not succ:
+        return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+    for r in repaymented:
+        totalBorrow -= r[0]
+
     data = {
         "amount": ConvertToUSD(amount),
         "yesterday": ConvertToUSD(yesterday),

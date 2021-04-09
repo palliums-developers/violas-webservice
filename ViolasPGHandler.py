@@ -1300,6 +1300,21 @@ class ViolasPGHandler():
 
         return True, info
 
+    def GetRepaymentedToday(self, address):
+        s = self.session()
+        today = datetime.strptime(str(date.today()), "%Y-%m-%d")
+        timestamp = datetime.timestamp(today)
+
+        try:
+            info = s.query(ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.address == address).filter(ViolasBankBorrowOrder.order_type == 1).filter(ViolasBankBorrowOrder.status == 0).filter(ViolasBankBorrowOrder.date >= timestamp).all()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        return True, info
+
     def GetDepositProductList(self):
         s = self.session()
 
