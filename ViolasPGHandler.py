@@ -643,7 +643,7 @@ class ViolasPGHandler():
         infoList = []
         for i in result:
             info = {
-                "version" = i.version
+                "version": i.version
             }
 
             infoList.append(info)
