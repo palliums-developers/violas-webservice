@@ -2167,8 +2167,18 @@ class ViolasPGHandler():
                     result.fcm_token = fcm_token
                 if address:
                     result.address = address
+            else:
+                info = ViolasDeviceInfo(
+                    token = token,
+                    address = address,
+                    fcm_token = fcm_token,
+                    platform = platform,
+                    language = language,
+                    location = location
+                )
+                s.add(info)
 
-                s.commit()
+            s.commit()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             return False
