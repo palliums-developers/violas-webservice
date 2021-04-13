@@ -92,7 +92,7 @@ def GetMarketExchangeTransactions():
     infos = []
     for i in txnIdxs:
         txn = cli.get_transaction(i.get("version"), True)
-        succ, eventInfo = HViolas.GetMarketExchangeInfo(address, i.get(sequence_number))
+        succ, eventInfo = HViolas.GetMarketExchangeInfo(address, i.get("sequence_number"))
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
@@ -348,7 +348,7 @@ def GetMarketPoolTransactions():
     cli = MakeExchangeClient()
     for i in txnIdxs:
         txn = cli.get_transaction(i.get("version"), True)
-        succ, eventInfo = HViolas.GetMarketExchangeInfo(address, i.get("sequence_number"), i.get("transaction_type"))
+        succ, eventInfo = HViolas.GetMarketExchangeInfo(address, i.get("sequence_number"))
         if not succ:
             return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
