@@ -1181,17 +1181,20 @@ class ViolasPGHandler():
         finally:
             s.close()
 
-        sigTxn = json.loads(txnInfo.sigtxn)
-        info = {}
-        info["input_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
-        info["output_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][1]["Struct"]["module"]
-        info["input_amount"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
-        info["output_amount"] = 0
-        info["input_show_name"] = get_show_name(info["input_name"])
-        info["output_show_name"] = get_show_name(info["output_name"])
-        info["confirmed_time"] = txnInfo.date
+        if txnInfo:
+            sigTxn = json.loads(txnInfo.sigtxn)
+            info = {}
+            info["input_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
+            info["output_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][1]["Struct"]["module"]
+            info["input_amount"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
+            info["output_amount"] = 0
+            info["input_show_name"] = get_show_name(info["input_name"])
+            info["output_show_name"] = get_show_name(info["output_name"])
+            info["confirmed_time"] = txnInfo.date
 
-        return True, info
+            return True, info
+        else:
+            return True, {}
 
     def GetMarketPoolTransactionIndex(self, address, offset, limit):
         s = self.session()
