@@ -633,7 +633,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasTransaction).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            result = s.query(ViolasTransaction).order_by(ViolasTransaction.version.desc()).offset(offset).limit(limit).all()
             s.close()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -642,16 +642,9 @@ class ViolasPGHandler():
 
         infoList = []
         for i in result:
-            info = {}
-            info["version"] = i.id - 1
-            info["type"] = i.transaction_type
-            info["sender"] = i.sender
-            info["gas"] = int(i.gas_used * i.gas_unit_price)
-            info["expiration_time"] = i.expiration_time
-            info["receiver"] = i.receiver
-            info["amount"] = int(i.amount)
-            info["status"] = i.status
-            info["currency"] = i.currency
+            info = {
+                "version": i.version
+            }
 
             infoList.append(info)
 
@@ -661,7 +654,7 @@ class ViolasPGHandler():
         s = self.session()
 
         try:
-            result = s.query(ViolasTransaction).filter(ViolasTransaction.currency == currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            result = s.query(ViolasTransaction).filter(ViolasTransaction.currency == currency).order_by(ViolasTransaction.version.desc()).offset(offset).limit(limit).all()
 
             s.close()
         except OperationalError:
@@ -670,16 +663,9 @@ class ViolasPGHandler():
 
         infoList = []
         for i in result:
-            info = {}
-            info["version"] = i.id - 1
-            info["type"] = i.transaction_type
-            info["sender"] = i.sender
-            info["gas"] = int(i.gas_used * i.gas_unit_price)
-            info["expiration_time"] = i.expiration_time
-            info["receiver"] = i.receiver
-            info["amount"] = int(i.amount)
-            info["status"] = i.status
-            info["currency"] = i.currency
+            info = {
+                "version": i.version
+            }
 
             infoList.append(info)
 
@@ -699,7 +685,6 @@ class ViolasPGHandler():
             return True, None
         else:
             info = {}
-            info["type"] = result.type
             info["first_seen"] = result.first_seen
             info["sent_amount"] = int(result.sent_amount)
             info["received_amount"] = int(result.received_amount)
@@ -712,11 +697,15 @@ class ViolasPGHandler():
 
             return True, info
 
-    def GetTransactionsByAddress(self, address, limit, offset):
+    def GetTransactionsByAddress(self, address, currency, limit, offset):
         s = self.session()
 
         try:
-            result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address))
+            if currency:
+                result = result.filter(ViolasTransaction.currency == currency)
+
+            result = result.order_by(ViolasTransaction.version.desc()).offset(offset).limit(limit).all()
             s.close()
         except OperationalError:
             s.close()
@@ -725,103 +714,31 @@ class ViolasPGHandler():
         infoList = []
         for i in result:
             info = {}
-            info["version"] = i.id - 1
-            info["type"] = i.transaction_type
+            info["version"] = i.version
             info["sender"] = i.sender
-            info["gas"] = int(i.gas_used * i.gas_unit_price)
-            info["expiration_time"] = i.expiration_time
-            info["receiver"] = i.receiver
-            info["amount"] = int(i.amount)
-            info["status"] = i.status
-            info["currency"] = i.currency
-            info["confirmed_time"] = i.confirmed_time
+            info["sequence_number"] = i.sequence_number
 
             infoList.append(info)
 
         return True, infoList
 
-    def GetTransactionsByAddressAboutCurrency(self, address, limit, offset, currency):
+    def GetTransactionTime(self, sender, sequence_number):
         s = self.session()
-
         try:
-            result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address)).filter(ViolasTransaction.currency == currency).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-
-            s.close()
+            result = s.query(ViolasSignedTransaction).filter(ViolasSignedTransaction.sender == sender).filter(ViolasSignedTransaction.sequence_number == sequence_number).first()
         except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return None
+        finally:
             s.close()
-            return False, None
 
-        infoList = []
-        for i in result:
-            info = {}
-            info["version"] = i.id - 1
-            info["type"] = i.transaction_type
-            info["sender"] = i.sender
-            info["gas"] = int(i.gas_used * i.gas_unit_price)
-            info["expiration_time"] = i.expiration_time
-            info["receiver"] = i.receiver
-            info["amount"] = int(i.amount)
-            info["status"] = i.status
-            info["currency"] = i.currency
-            info["confirmed_time"] = i.confirmed_time
-
-            infoList.append(info)
-
-        return True, infoList
-
-    def GetTransactionByVersion(self, version):
-        s = self.session()
-
-        try:
-            result = s.query(ViolasTransaction).filter(ViolasTransaction.id == (version + 1)).first()
-            s.close()
-        except OperationalError:
-            s.close()
-            return False, None
-
-        info = {}
-        info["version"] = result.id - 1
-        info["type"] = result.transaction_type
-        info["sequence_number"] = result.sequence_number
-        info["sender"] = result.sender
-        info["receiver"] = result.receiver
-        info["currency"] = result.currency
-        info["gas_currency"] = result.gas_currency
-        info["amount"] = int(result.amount)
-        info["gas"] = int(result.gas_used * result.gas_unit_price)
-        info["gas_unit_price"] = int(result.gas_unit_price)
-        info["max_gas_amount"] = int(result.max_gas_amount)
-        info["expiration_time"] = result.expiration_time
-        info["public_key"] = result.public_key
-        info["signature"] = result.signature
-        info["status"] = result.status
-        info["data"] = result.data
-        info["confirmed_time"] = result.confirmed_time
-
-        return True, info
-
-    def GetTransactionCount(self):
-        s = self.session()
-
-        try:
-            result = s.query(ViolasTransaction.id).order_by(ViolasTransaction.id.desc()).limit(1).first()
-            s.close()
-        except OperationalError:
-            s.close()
-            return False, None
-
-        if result is None:
-            result = 0
-        else:
-            result = result[0]
-
-        return True, result
+        return result.date if result else None
 
     def VerifyTransactionAboutVBtc(self, data):
         s = self.session()
 
         try:
-            result = s.query(ViolasTransaction).filter(ViolasTransaction.id == data["version"] + 1).first()
+            result = s.query(ViolasTransaction).filter(ViolasTransaction.version == data["version"]).first()
             s.close()
         except OperationalError:
             s.close()
@@ -933,9 +850,9 @@ class ViolasPGHandler():
         try:
             if flows is not None:
                 if flows == 0:
-                    s.query(ViolasTransaction).filter(ViolasTransaction.sender == address)
+                    result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address)
                 elif flows == 1:
-                    s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address)
+                    result = s.query(ViolasTransaction).filter(ViolasTransaction.receiver == address)
             else:
                 result = s.query(ViolasTransaction).filter(or_(ViolasTransaction.sender == address, ViolasTransaction.receiver == address))
 
@@ -944,7 +861,7 @@ class ViolasPGHandler():
 
             result = result.filter(ViolasTransaction.transaction_type.in_(TransferType.Common.keys()))
 
-            result = result.order_by(ViolasTransaction.id.desc()).offset(offset).all()
+            result = result.order_by(ViolasTransaction.version.desc()).offset(offset).all()
 
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
@@ -957,19 +874,9 @@ class ViolasPGHandler():
             if idx == limit:
                 break
 
-            info = {}
-            info["type"] = i.transaction_type
-            info["version"] = i.id - 1
-            info["sender"] = i.sender
-            info["sequence_number"] = i.sequence_number
-            info["gas"] = int(i.gas_used * i.gas_unit_price)
-            info["expiration_time"] = i.expiration_time
-            info["receiver"] = i.receiver
-            info["amount"] = int(i.amount)
-            info["currency"] = i.currency
-            info["gas_currency"] = i.gas_currency
-            info["status"] = i.status
-            info["confirmed_time"] = i.confirmed_time
+            info = {
+                "version": i.version
+            }
 
             infoList.append(info)
 
@@ -1018,29 +925,6 @@ class ViolasPGHandler():
             return False, None
 
         return True, result
-
-    def GetMapTransactionInfo(self, sender, receiver, moduleMap, offset, limit):
-        s = self.session()
-
-        try:
-            result = s.query(ViolasTransaction).filter(ViolasTransaction.sender == sender).filter(ViolasTransaction.receiver == receiver).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
-            s.close()
-        except OperationalError:
-            s.close()
-            return False, None
-
-        infos = []
-        for i in result:
-            info = {}
-            info["date"] = i.expiration_time
-            info["amount"] = int(i.amount)
-            info["address"] = receiver
-            info["coin"] = moduleMap.get(i.module)
-            info["status"] = 0
-
-            infos.append(info)
-
-        return True, infos
 
     def GetVstakeModuleAddress(self):
         s = self.session()
@@ -1263,116 +1147,111 @@ class ViolasPGHandler():
 
         return True, True
 
-    def GetMarketExchangeTransaction(self, address, offset, limit):
+    def GetMarketExchangeTransactionIndex(self, address, offset, limit):
         s = self.session()
 
         try:
-            transactions = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.transaction_type == "SWAP").order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            transactions = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(ViolasTransaction.transaction_type == "SWAP").order_by(ViolasTransaction.version.desc()).offset(offset).limit(limit).all()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
-            s.close()
             return False, None
+        finally:
+            s.close()
 
         infos = []
         for i in transactions:
-            info = {}
-            event = {}
-            info["version"] = i.id - 1
-            info["date"] = i.expiration_time
-            info["status"] = i.status
-            info["confirmed_time"] = i.confirmed_time
-
-
-            if i.event is not None:
-                event = json.loads(i.event)
-                info["input_name"] = event.get("input_name")
-                info["output_name"] = event.get("output_name")
-                info["input_amount"] = event.get("input_amount")
-                info["output_amount"] = event.get("output_amount")
-                info["input_show_name"] = get_show_name(info["input_name"])
-                info["output_show_name"] = get_show_name(info["output_name"])
-
-            else:
-                txnInfo = s.query(ViolasSignedTransaction).filter(ViolasSignedTransaction.sender == address).filter(ViolasSignedTransaction.sequence_number == i.sequence_number).first()
-                if txnInfo is not None:
-                    sigTxn = json.loads(txnInfo.sigtxn)
-                    info["input_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
-                    info["output_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][1]["Struct"]["module"]
-                    info["input_amount"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
-                    info["output_amount"] = 0
-                    info["input_show_name"] = get_show_name(info["input_name"])
-                    info["output_show_name"] = get_show_name(info["output_name"])
-
-            info["gas_used"] = int(i.gas_used * i.gas_unit_price)
-            info["gas_currency"] = i.gas_currency
+            info = {
+                "version": i.version,
+                "sender": i.sender,
+                "sequence_number": i.sequence_number
+            }
 
             infos.append(info)
 
         return True, infos
 
-    def GetMarketPoolTransaction(self, address, offset, limit):
+    def GetMarketExchangeInfo(self, address, sequenceNumber):
         s = self.session()
+
         try:
-            transactions = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(or_(ViolasTransaction.transaction_type == "REMOVE_LIQUIDITY", ViolasTransaction.transaction_type == "ADD_LIQUIDITY")).order_by(ViolasTransaction.id.desc()).offset(offset).limit(limit).all()
+            txnInfo = s.query(ViolasSignedTransaction).filter(ViolasSignedTransaction.sender == address).filter(ViolasSignedTransaction.sequence_number == sequenceNumber).first()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
-            s.close()
             return False, None
+        finally:
+            s.close()
+
+        if txnInfo:
+            sigTxn = json.loads(txnInfo.sigtxn)
+            info = {}
+            info["input_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
+            info["output_name"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][1]["Struct"]["module"]
+            info["input_amount"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
+            info["output_amount"] = 0
+            info["input_show_name"] = get_show_name(info["input_name"])
+            info["output_show_name"] = get_show_name(info["output_name"])
+            info["confirmed_time"] = txnInfo.date
+
+            return True, info
+        else:
+            return True, {}
+
+    def GetMarketPoolTransactionIndex(self, address, offset, limit):
+        s = self.session()
+        try:
+            transactions = s.query(ViolasTransaction).filter(ViolasTransaction.sender == address).filter(or_(ViolasTransaction.transaction_type == "REMOVE_LIQUIDITY", ViolasTransaction.transaction_type == "ADD_LIQUIDITY")).order_by(ViolasTransaction.version.desc()).offset(offset).limit(limit).all()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
         infos = []
         for i in transactions:
-            info = {}
-            event = {}
-            info["version"] = i.id - 1
-            info["date"] = i.expiration_time
-            info["status"] = i.status
-            info["transaction_type"] = i.transaction_type
-            info["confirmed_time"] = i.confirmed_time
-
-            if i.event is not None:
-                event = json.loads(i.event)
-                if i.transaction_type == "REMOVE_LIQUIDITY":
-                    info["coina"] = event.get("coina")
-                    info["coinb"] = event.get("coinb")
-                    info["amounta"] = event.get("withdraw_amounta")
-                    info["amountb"] = event.get("withdraw_amountb")
-                    info["token"] = event.get("burn_amount")
-                    info["coina_show_name"] = get_show_name(info["coina"])
-                    info["coinb_show_name"] = get_show_name(info["coinb"])
-                else:
-                    info["coina"] = event.get("coina")
-                    info["coinb"] = event.get("coinb")
-                    info["amounta"] = event.get("deposit_amounta")
-                    info["amountb"] = event.get("deposit_amountb")
-                    info["token"] = event.get("mint_amount")
-                    info["coina_show_name"] = get_show_name(info["coina"])
-                    info["coinb_show_name"] = get_show_name(info["coinb"])
-            else:
-                txnInfo = s.query(ViolasSignedTransaction).filter(ViolasSignedTransaction.sender == address).filter(ViolasSignedTransaction.sequence_number == i.sequence_number).first()
-                if txnInfo is not None:
-                    sigTxn = json.loads(txnInfo.sigtxn)
-                    if i.transaction_type == "REMOVE_LIQUIDITY":
-                        info["coina"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
-                        info["coinb"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
-                        info["amounta"] = 0
-                        info["amountb"] = 0
-                        info["token"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][0]["U64"]
-                        info["coina_show_name"] = get_show_name(info["coina"])
-                        info["coinb_show_name"] = get_show_name(info["coinb"])
-                    else:
-                        info["coina"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
-                        info["coinb"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][1]["Struct"]["module"]
-                        info["amounta"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][0]["U64"]
-                        info["amountb"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
-                        info["coina_show_name"] = get_show_name(info["coina"])
-                        info["coinb_show_name"] = get_show_name(info["coinb"])
-                        info["token"] = 0
-            info["gas_used"] = int(i.gas_used * i.gas_unit_price)
-            info["gas_currency"] = i.gas_currency
-
+            info = {
+                "version": i.version,
+                "sender": i.sender,
+                "sequence_number": i.sequence_number,
+                "transaction_type": i.transaction_type
+            }
 
             infos.append(info)
 
         return True, infos
+
+    def GetMarketPoolTransactionInfo(self, address, sequenceNumber, txnType):
+        s = self.session()
+
+        try:
+            result = s.query(ViolasSignedTransaction).filter(ViolasSignedTransaction.sender == address).filter(ViolasSignedTransaction.sequence_number == sequenceNumber).first()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
+
+        info = {}
+        info["confirmed_time"] = result.confirmed_time
+
+        sigTxn = json.loads(result.sigtxn)
+        if  txnType == "REMOVE_LIQUIDITY":
+            info["coina"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
+            info["coinb"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
+            info["amounta"] = 0
+            info["amountb"] = 0
+            info["coina_show_name"] = get_show_name(info["coina"])
+            info["coinb_show_name"] = get_show_name(info["coinb"])
+            info["token"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][0]["U64"]
+        else:
+            info["coina"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][0]["Struct"]["module"]
+            info["coinb"] = sigTxn["raw_txn"]["payload"]["Script"]["ty_args"][1]["Struct"]["module"]
+            info["amounta"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][0]["U64"]
+            info["amountb"] = sigTxn["raw_txn"]["payload"]["Script"]["args"][1]["U64"]
+            info["coina_show_name"] = get_show_name(info["coina"])
+            info["coinb_show_name"] = get_show_name(info["coinb"])
+            info["token"] = 0
+
+        return True, info
 
     def AddTransactionInfo(self, sender, seqNum, timestamp, sigtxn):
         s = self.session()
@@ -1421,6 +1300,21 @@ class ViolasPGHandler():
             logging.error(f"ERROR: Database operation failed!")
             s.close()
             return False, None
+
+        return True, info
+
+    def GetRepaymentedToday(self, address):
+        s = self.session()
+        today = datetime.strptime(str(date.today()), "%Y-%m-%d")
+        timestamp = datetime.timestamp(today)
+
+        try:
+            info = s.query(ViolasBankBorrowOrder.value).filter(ViolasBankBorrowOrder.address == address).filter(ViolasBankBorrowOrder.order_type == 1).filter(ViolasBankBorrowOrder.status == 0).filter(ViolasBankBorrowOrder.date >= timestamp).all()
+        except OperationalError:
+            logging.error(f"ERROR: Database operation failed!")
+            return False, None
+        finally:
+            s.close()
 
         return True, info
 
@@ -2273,8 +2167,18 @@ class ViolasPGHandler():
                     result.fcm_token = fcm_token
                 if address:
                     result.address = address
+            else:
+                info = ViolasDeviceInfo(
+                    token = token,
+                    address = address,
+                    fcm_token = fcm_token,
+                    platform = platform,
+                    language = language,
+                    location = location
+                )
+                s.add(info)
 
-                s.commit()
+            s.commit()
         except OperationalError:
             logging.error(f"ERROR: Database operation failed!")
             return False
@@ -2398,7 +2302,6 @@ class ViolasPGHandler():
         finally:
             s.close()
 
-        print(result.data)
         content = json.loads(result.data, )
         return True, content
 

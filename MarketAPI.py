@@ -1,6 +1,6 @@
 from ViolasWebservice import app
 from common import *
-from util import MakeLibraClient, MakeExchangeClient, MakeResp
+from util import MakeLibraClient, MakeExchangeClient, MakeResp, get_show_name
 
 @app.route("/1.0/market/exchange/currency")
 def GetMarketExchangeCurrencies():
@@ -84,9 +84,46 @@ def GetMarketExchangeTransactions():
     offset = request.args.get("offset", type = int, default = 0)
     limit = request.args.get("limit", type = int, default = 5)
 
-    succ, infos = HViolas.GetMarketExchangeTransaction(address, offset, limit)
+    succ, txnIdxs = HViolas.GetMarketExchangeTransactionIndex(address, offset, limit)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    cli = MakeExchangeClient()
+    infos = []
+    for i in txnIdxs:
+        txn = cli.get_transaction(i.get("version"), True)
+        succ, eventInfo = HViolas.GetMarketExchangeInfo(address, i.get("sequence_number"))
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+        info = {
+            "version": i.get("version"),
+            "date": txn.get_expiration_time(),
+            "status": txn.get_vm_status().enum_name,
+            "gas_used": txn.get_gas_used_price(),
+            "gas_currency": txn.get_gas_currency(),
+            "confirmed_time": eventInfo.get("confirmed_time")
+        }
+
+        event = txn.get_swap_type_events(txn.get_code_type())[0].get_swap_event().to_json() if txn.get_swap_type_events(txn.get_code_type()) else None
+
+        if event:
+            event = json.loads(event)
+            info["input_name"] = event.get("input_name")
+            info["output_name"] = event.get("output_name")
+            info["input_amount"] = event.get("input_amount")
+            info["output_amount"] = event.get("output_amount")
+            info["input_show_name"] = get_show_name(info["input_name"])
+            info["output_show_name"] = get_show_name(info["output_name"])
+        else:
+            info["input_name"] = eventInfo.get("input_name")
+            info["output_name"] = eventInfo.get("output_name")
+            info["input_amount"] = eventInfo.get("input_amount")
+            info["output_amount"] = eventInfo.get("output_amount")
+            info["input_show_name"] = get_show_name(info["input_name"])
+            info["output_show_name"] = get_show_name(info["output_name"])
+
+        infos.append(info)
 
     return MakeResp(ErrorCode.ERR_OK, infos)
 
@@ -303,9 +340,57 @@ def GetMarketPoolTransactions():
     offset = request.args.get("offset", type = int, default = 0)
     limit = request.args.get("limit", type = int, default = 5)
 
-    succ, infos = HViolas.GetMarketPoolTransaction(address, offset, limit)
+    succ, txnIdxs = HViolas.GetMarketPoolTransactionIndex(address, offset, limit)
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+    infos = []
+    cli = MakeExchangeClient()
+    for i in txnIdxs:
+        txn = cli.get_transaction(i.get("version"), True)
+        succ, eventInfo = HViolas.GetMarketExchangeInfo(address, i.get("sequence_number"))
+        if not succ:
+            return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
+
+        info = {
+            "version": i.get("version"),
+            "date": txn.get_expiration_time(),
+            "status": txn.get_vm_status().enum_name,
+            "transaction_type": i.get("transaction_type"),
+            "gas_used": txn.get_gas_used_price(),
+            "gas_currency": txn.get_gas_currency(),
+            "confirmed_time": eventInfo.get("confirmed_time")
+        }
+
+        event = txn.get_swap_type_events(txn.get_code_type())[0].get_swap_event().to_json() if txn.get_swap_type_events(txn.get_code_type()) else None
+        if event:
+            event = json.loads(event)
+            if i.get("transaction_type") == "REMOVE_LIQUIDITY":
+                info["coina"] = event.get("coina")
+                info["coinb"] = event.get("coinb")
+                info["amounta"] = event.get("withdraw_amounta")
+                info["amountb"] = event.get("withdraw_amountb")
+                info["coina_show_name"] = get_show_name(info["coina"])
+                info["coinb_show_name"] = get_show_name(info["coinb"])
+                info["token"] = event.get("burn_amount")
+            else:
+                info["coina"] = event.get("coina")
+                info["coinb"] = event.get("coinb")
+                info["amounta"] = event.get("deposit_amounta")
+                info["amountb"] = event.get("deposit_amountb")
+                info["coina_show_name"] = get_show_name(info["coina"])
+                info["coinb_show_name"] = get_show_name(info["coinb"])
+                info["token"] = event.get("mint_amount")
+        else:
+                info["coina"] = eventInfo.get("coina")
+                info["coinb"] = eventInfo.get("coinb")
+                info["amounta"] = eventInfo.get("amounta")
+                info["amountb"] = eventInfo.get("amountb")
+                info["coina_show_name"] = eventInfo.get("coina_show_name")
+                info["coinb_show_name"] = eventInfo.get("coinb_show_name")
+                info["token"] = eventInfo.get("token")
+
+        infos.append(info)
 
     return MakeResp(ErrorCode.ERR_OK, infos)
 
