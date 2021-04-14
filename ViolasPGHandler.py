@@ -875,7 +875,9 @@ class ViolasPGHandler():
                 break
 
             info = {
-                "version": i.version
+                "version": i.version,
+                "sender": i.sender,
+                "sequence_number": i.sequence_number
             }
 
             infoList.append(info)
