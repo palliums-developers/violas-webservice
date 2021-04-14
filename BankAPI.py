@@ -300,7 +300,7 @@ def PostDepositWithdrawal():
     cli = MakeBankClient()
 
     if value == 0:
-        productInfo = HViolas.GetDepositProductDetail(productId)
+        succ, productInfo = HViolas.GetDepositProductDetail(productId)
         value = cli.bank_get_lock_amount(address, productInfo.get("token_module"))
 
     orderInfo = {
@@ -398,7 +398,7 @@ def PostBorrowRepayTransaction():
     cli = MakeBankClient()
 
     if value == 0:
-        productInfo = HViolas.GetBorrowProductDetail(productId)
+        succ, productInfo = HViolas.GetBorrowProductDetail(productId)
         value = cli.bank_get_borrow_amount(address, productInfo.get("token_module"))
 
     orderInfo = {
