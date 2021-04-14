@@ -105,12 +105,17 @@ def GetViolasTransactionInfo():
         txn = cli.get_transaction(i.get("version"))
         info = {
             "version": i.get("version"),
-            "sender": txn.get_sender(),
-            "sequence_number": txn.get_sequence_number(),
+            "sender": i.get("sender"),
+            "sequence_number": i.get("sequence_number"),
             "receiver": txn.get_receiver(),
+            "amount": txn.get_amount(),
             "currency": txn.get_currency_code() if txn.get_currency_code() is not None else txn.get_gas_currency(),
+            "gas_currency": txn.get_gas_currency(),
+            "gas": txn.get_gas_used_price(),
+            "expiration_time": txn.get_expiration_time(),
             "type": txn.get_code_type().name,
-            "status": txn.get_vm_status().enum_name
+            "status": txn.get_vm_status().enum_name,
+            "confirmed_time": HLibra.GetTransactionTime(i.get("sender"), i.get("sequence_number"))
         }
         datas.append(info)
 
