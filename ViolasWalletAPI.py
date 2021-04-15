@@ -471,7 +471,7 @@ def GetTransferMessage():
     cli = MakeViolasClient()
     txn = cli.get_transaction(messageInfo.get("version"), True)
     txnInfo = {
-        "version": version,
+        "version": messageInfo.get("version"),
         "sender": txn.get_sender(),
         "sequence_number": txn.get_sequence_number(),
         "receiver": txn.get_receiver(),
