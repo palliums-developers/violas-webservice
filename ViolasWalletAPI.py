@@ -469,7 +469,7 @@ def GetTransferMessage():
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
     cli = MakeViolasClient()
-    txn = cli.get_transaction(version, True)
+    txn = cli.get_transaction(messageInfo.get("version"), True)
     txnInfo = {
         "version": version,
         "sender": txn.get_sender(),
