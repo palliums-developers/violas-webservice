@@ -100,6 +100,7 @@ def GetDepositOrders():
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
+    cli = MakeBankClient()
     data = []
     for product in products:
         succ, order = HViolas.GetDepositOrderInfo(address, product)
@@ -111,6 +112,7 @@ def GetDepositOrders():
 
         order['logo'] = ICON_URL + order['logo']
         order['total_count'] = len(products)
+        order["principal"] = cli.bank_get_lock_amount(address, order["currency"])
         if order["principal"] != 0:
             data.append(order)
 
@@ -182,6 +184,7 @@ def GetBorrowOrders():
         order['logo'] = ICON_URL + order['logo']
         order['available_borrow'] = cli.bank_get_max_borrow_amount(address, order['name'])
         order['total_count'] = len(products)
+        order["amount"] = cli.bank_get_borrow_amount(address, order["name"])
         if order["amount"] != 0:
             data.append(order)
 
