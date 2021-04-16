@@ -402,7 +402,7 @@ def PostBorrowRepayTransaction():
 
     if value == 0:
         succ, productInfo = HViolas.GetBorrowProductDetail(productId)
-        value = cli.bank_get_borrow_amount(address, productInfo.get("token_module"))
+        value = cli.bank_get_borrow_amount(address, productInfo.get("token_module"))[1]
 
     orderInfo = {
         "order_id": GetIDNumber(),
