@@ -112,7 +112,7 @@ def GetDepositOrders():
 
         order['logo'] = ICON_URL + order['logo']
         order['total_count'] = len(products)
-        order["principal"] = cli.bank_get_lock_amount(address, order["currency"])
+        order["earnings"] = cli.bank_get_lock_amount(address, order["currency"]) - order["principal"]
         if order["principal"] != 0:
             data.append(order)
 
@@ -281,8 +281,9 @@ def DepositWithdrawal():
     if quantity is None:
         return MakeResp(ErrorCode.ERR_OK, {})
 
+    cli = MakeBankClient()
     data = {
-        "available_quantity": quantity,
+        "available_quantity": cli.bank_get_lock_amount(address, currency),
         "product_id": productId,
         "token_name": currency,
         "token_module": currency,
