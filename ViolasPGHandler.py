@@ -2154,7 +2154,7 @@ class ViolasPGHandler():
 
         return True
 
-    def ModifyDeviceInfo(self, token, platform = None, language = None, fcm_token = None, address = None):
+    def ModifyDeviceInfo(self, token, platform = None, language = None, fcm_token = None, address = None, location = None):
         s = self.session()
 
         try:
