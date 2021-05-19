@@ -229,7 +229,9 @@ def GetBorrowOrderDetail():
     if not succ:
         return MakeResp(ErrorCode.ERR_DATABASE_CONNECT)
 
+    cli = MakeBankClient()
     info['list'] = orderList
+    info["balance"] = cli.bank_get_borrow_amount(address, info["name"])[1]
 
     return MakeResp(ErrorCode.ERR_OK, info)
 
@@ -383,11 +385,13 @@ def RepaymentBorrow():
     if data is None:
         return MakeResp(ErrorCode.ERR_OK, {})
 
+    cli = MakeBankClient()
     data['logo'] = ICON_URL + data['logo']
     data['product_id'] = productId
     data['token_address'] = VIOLAS_CORE_CODE_ADDRESS.hex()
     data['token_name'] = data['token_module']
     data['token_show_name'] = data['token_module']
+    data["balance"] = cli.bank_get_borrow_amount(address, data["token_module"])[1]
 
     return MakeResp(ErrorCode.ERR_OK, data)
 
